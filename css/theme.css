@@ -1,0 +1,117 @@
+/* =====================================================================
+   THÈME DE L'ATELIER — le seul fichier à modifier pour changer l'apparence
+   Valeurs reprises à l'identique du portfolio de l'Omni-système
+   (https://github.com/FerrusDantioch/omni-systeme, fichier index.html).
+   ===================================================================== */
+
+/* ---------- 1. Polices (fichiers locaux, fonctionnent hors ligne) ----------
+   Ce sont des polices « variables » : un seul fichier contient toutes les
+   graisses (de fin à gras). Licence : SIL Open Font License (voir fonts/OFL.txt). */
+@font-face{
+  font-family:"Oxanium";
+  src:url("../fonts/oxanium.woff2") format("woff2");
+  font-weight:200 800;          /* toutes les graisses disponibles */
+  font-style:normal;
+  font-display:swap;            /* affiche le texte tout de suite, même avant le chargement */
+}
+@font-face{
+  font-family:"Literata";
+  src:url("../fonts/literata.woff2") format("woff2");
+  font-weight:200 900;
+  font-style:normal;
+  font-display:swap;
+}
+@font-face{
+  font-family:"Literata";
+  src:url("../fonts/literata-italique.woff2") format("woff2");
+  font-weight:200 900;
+  font-style:italic;
+  font-display:swap;
+}
+@font-face{
+  font-family:"JetBrains Mono";
+  src:url("../fonts/jetbrains-mono.woff2") format("woff2");
+  font-weight:100 800;
+  font-style:normal;
+  font-display:swap;
+}
+
+/* ---------- 2. Variables (couleurs, polices, formes) ---------- */
+:root{
+  /* Couleurs de base — identiques au portfolio */
+  --nuit:#14111d;        /* fond, encre violette très sombre */
+  --table:#1d1929;       /* surfaces (cartes, panneaux) */
+  --table-haute:#251f35; /* surface survolée ou sélectionnée (un cran plus clair) */
+  --trait:#332c47;       /* filets et bordures */
+  --texte:#e9e4f2;       /* texte principal */
+  --discret:#a59cbb;     /* texte secondaire */
+  --omni:#a777ff;        /* violet du logo (accent principal) */
+  --halo:#d6c2ff;        /* lueur de l'anneau */
+  --sur-accent:#140d24;  /* texte posé sur un bouton violet */
+  --danger:#e0705f;      /* actions dangereuses (supprimer) */
+
+  /* Couleurs des univers — identiques au portfolio */
+  --cyber:#ff4fa3;       /* Cyberpunk : rose */
+  --fantasy:#c9a24a;     /* Fantasy : or */
+  --space:#5fb4ff;       /* Space opéra : bleu */
+  --horreur:#c2412f;     /* Horreur / enquête : rouge */
+  --autre:var(--omni);   /* Autre : violet de l'Omni-système */
+
+  /* Couleur d'accent de l'univers en cours (changée automatiquement plus bas) */
+  --univers:var(--omni);
+
+  /* Zone d'écriture : bien contrastée sans être éblouissante */
+  --ecriture-fond:#18151f;   /* un peu plus doux que le fond général */
+  --ecriture-texte:#dcd5e6;  /* blanc cassé, moins agressif que du blanc pur */
+  --ecriture-taille:1.15rem; /* taille du texte du roman */
+  --ecriture-interligne:1.8; /* espace entre les lignes */
+  --ecriture-largeur:68ch;   /* largeur max d'une ligne (≈ 68 caractères) */
+
+  /* Polices */
+  --f-titre:"Oxanium", "Trebuchet MS", system-ui, sans-serif;     /* titres, navigation */
+  --f-texte:"Literata", Georgia, "Times New Roman", serif;        /* texte courant */
+  --f-des:"JetBrains Mono", ui-monospace, Menlo, Consolas, monospace; /* éléments techniques */
+
+  /* Arrondis (repris du portfolio) */
+  --arrondi-carte:6px 6px 14px 14px; /* cartes avec liseré en haut */
+  --arrondi-panneau:14px;            /* grands blocs */
+  --arrondi-bouton:10px;             /* boutons principaux */
+  --arrondi-petit:8px;               /* petits boutons, champs */
+  --arrondi-pilule:999px;            /* étiquettes arrondies */
+
+  /* Épaisseurs */
+  --liseré:4px;          /* liseré épais en haut des cartes */
+  --filet:1px;           /* bordures fines */
+
+  /* Lueurs discrètes (comme le médaillon du portfolio, en plus doux) */
+  --lueur:0 0 24px color-mix(in srgb, var(--omni) 40%, transparent);
+  --lueur-douce:0 0 14px color-mix(in srgb, var(--univers) 22%, transparent);
+  --ombre:0 8px 28px rgba(0,0,0,.45); /* ombre des fenêtres flottantes */
+
+  /* Espacements */
+  --esp-1:4px;
+  --esp-2:8px;
+  --esp-3:12px;
+  --esp-4:16px;
+  --esp-5:22px;   /* rembourrage des cartes du portfolio */
+  --esp-6:32px;
+  --esp-7:48px;
+
+  /* Transitions : très courtes et douces (désactivées si l'ordinateur le demande) */
+  --duree:.15s;
+
+  color-scheme:dark;     /* indique au navigateur d'utiliser ses éléments en mode sombre */
+}
+
+/* ---------- 3. Couleur d'accent selon l'univers du roman ouvert ----------
+   L'application pose data-univers="cyber" (etc.) sur la page. */
+[data-univers="cyber"]{   --univers:var(--cyber); }
+[data-univers="fantasy"]{ --univers:var(--fantasy); }
+[data-univers="space"]{   --univers:var(--space); }
+[data-univers="horreur"]{ --univers:var(--horreur); }
+[data-univers="autre"]{   --univers:var(--autre); }
+
+/* ---------- 4. Confort visuel : moins de mouvement si demandé ---------- */
+@media (prefers-reduced-motion: reduce){
+  :root{ --duree:0s; }
+}

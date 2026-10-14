@@ -1,0 +1,150 @@
+/* =====================================================================
+   MISE EN PAGE DE L'APPLICATION
+   Les couleurs et polices viennent toutes de theme.css (variables --...).
+   ===================================================================== */
+
+/* ---------- Bases ---------- */
+*{ box-sizing:border-box; }
+html,body{ height:100%; }
+body{
+  margin:0;
+  background:var(--nuit);
+  color:var(--texte);
+  font-family:var(--f-texte);
+  font-size:1.0625rem;
+  line-height:1.65;
+}
+h1,h2,h3,h4{ font-family:var(--f-titre); line-height:1.15; margin:0; text-wrap:balance; }
+h1{ font-size:clamp(1.8rem,4vw,2.4rem); font-weight:800; }
+h2{ font-size:1.5rem; font-weight:700; }
+h3{ font-size:1.15rem; font-weight:700; }
+p{ margin:0; }
+a{ color:var(--halo); text-underline-offset:3px; }
+[hidden]{ display:none !important; }
+
+/* Contour visible au clavier (pour savoir où l'on est) */
+a:focus-visible, button:focus-visible, input:focus-visible,
+select:focus-visible, textarea:focus-visible, summary:focus-visible{
+  outline:2px solid var(--halo);
+  outline-offset:2px;
+  border-radius:4px;
+}
+
+/* Petits textes réutilisables */
+.etiquette{ font-family:var(--f-titre); font-size:.78rem; letter-spacing:.14em; text-transform:uppercase; color:var(--discret); }
+.mono{ font-family:var(--f-des); }
+.discret{ color:var(--discret); }
+.signature{ color:var(--discret); font-style:italic; }
+
+/* ---------- En-tête ---------- */
+.entete{
+  position:sticky; top:0; z-index:20;
+  background:color-mix(in srgb, var(--nuit) 92%, transparent);
+  border-bottom:var(--filet) solid var(--trait);
+}
+.entete-in{
+  display:flex; align-items:center; gap:var(--esp-4);
+  padding:var(--esp-2) var(--esp-4);
+  min-height:54px;
+}
+.marque{
+  display:flex; align-items:center; gap:10px;
+  color:var(--texte); text-decoration:none;
+  font-family:var(--f-titre); font-weight:800; letter-spacing:.04em;
+  background:none; border:0; padding:0; cursor:pointer; font-size:1rem;
+}
+.marque img{ width:34px; height:34px; border-radius:8px; display:block; }
+.marque small{ display:block; font-weight:500; font-size:.72rem; letter-spacing:.14em; text-transform:uppercase; color:var(--discret); }
+.nav{ display:flex; gap:var(--esp-1) var(--esp-4); margin-left:auto; flex-wrap:wrap; font-family:var(--f-titre); font-size:.85rem; }
+.nav button{
+  background:none; border:0; cursor:pointer;
+  color:var(--discret); font:inherit;
+  letter-spacing:.14em; text-transform:uppercase;
+  padding:6px 2px; border-bottom:2px solid transparent;
+}
+.nav button:hover{ color:var(--texte); }
+.nav button[aria-current="page"]{ color:var(--texte); border-bottom-color:var(--univers); }
+
+/* ---------- Boutons ---------- */
+.bouton{
+  font:700 .95rem var(--f-titre); letter-spacing:.04em;
+  background:var(--omni); color:var(--sur-accent);
+  border:0; border-radius:var(--arrondi-bouton);
+  padding:10px 18px; cursor:pointer;
+  transition:background var(--duree);
+}
+.bouton:hover{ background:var(--halo); }
+.petit-bouton{
+  font:600 .85rem var(--f-titre);
+  background:none; color:var(--halo);
+  border:var(--filet) solid var(--trait); border-radius:var(--arrondi-petit);
+  padding:6px 12px; cursor:pointer; text-decoration:none;
+  transition:border-color var(--duree);
+}
+.petit-bouton:hover{ border-color:var(--omni); }
+.petit-bouton.danger{ color:var(--danger); }
+.petit-bouton.danger:hover{ border-color:var(--danger); }
+
+/* ---------- Cartes (style du portfolio : liseré épais coloré en haut) ---------- */
+.carte{
+  --c:var(--univers);
+  background:var(--table);
+  border:var(--filet) solid var(--trait);
+  border-top:var(--liseré) solid var(--c);
+  border-radius:var(--arrondi-carte);
+  padding:var(--esp-5);
+  display:grid; gap:var(--esp-3); align-content:start; min-width:0;
+}
+.carte.cyber{ --c:var(--cyber); }
+.carte.fantasy{ --c:var(--fantasy); }
+.carte.space{ --c:var(--space); }
+.carte.horreur{ --c:var(--horreur); }
+.carte.autre{ --c:var(--autre); }
+
+/* Étiquette arrondie à contour fin (« JOUABLE », « EN TEST »…) */
+.statut{
+  --c:var(--univers);
+  font:600 .72rem var(--f-titre); letter-spacing:.08em; text-transform:uppercase;
+  color:var(--c);
+  border:var(--filet) solid color-mix(in srgb, var(--c) 55%, transparent);
+  border-radius:var(--arrondi-pilule);
+  padding:3px 10px; white-space:nowrap;
+}
+
+/* Liste à puces en losange */
+.losanges{ list-style:none; margin:0; padding:0; display:grid; gap:6px; }
+.losanges li{ position:relative; padding-left:20px; }
+.losanges li::before{
+  content:""; position:absolute; left:1px; top:.62em; width:8px; height:8px;
+  transform:rotate(45deg);
+  background:var(--c, var(--univers));
+}
+
+/* Séparateur en pointillés fins */
+.pointilles{ border:0; border-top:var(--filet) dashed var(--trait); margin:var(--esp-4) 0; }
+
+/* ---------- Vues (pages de l'application) ---------- */
+.vue{ max-width:1080px; margin:0 auto; padding:var(--esp-6) var(--esp-4) var(--esp-7); }
+
+/* ---------- Page « À propos » ---------- */
+.apropos{ display:grid; gap:var(--esp-5); max-width:70ch; }
+.apropos-tete{ display:flex; align-items:center; gap:var(--esp-5); }
+.medaillon{
+  width:96px; height:96px; flex:none; border-radius:50%;
+  border:2px solid var(--omni); overflow:hidden;
+  box-shadow:var(--lueur);
+}
+.medaillon img{ width:100%; height:100%; object-fit:cover; display:block; }
+.apropos p{ color:var(--discret); }
+.apropos .version{ font-family:var(--f-des); color:var(--halo); font-size:.9rem; }
+
+/* Démo des couleurs d'univers (page À propos) */
+.palette{ display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:var(--esp-3); }
+.palette .carte{ padding:var(--esp-4); gap:var(--esp-2); }
+
+/* ---------- Petit écran ---------- */
+@media (max-width:760px){
+  .entete-in{ flex-wrap:wrap; }
+  .nav{ margin-left:0; width:100%; }
+  .apropos-tete{ flex-direction:column; align-items:flex-start; }
+}

@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="fr" data-univers="autre">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>L'Atelier — Omni-système</title>
+<meta name="description" content="Atelier d'écriture de romans tirés des parties de l'Omni-système.">
+<meta name="theme-color" content="#14111d">
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<link rel="apple-touch-icon" href="assets/icone-192.png">
+
+<!-- Polices chargées en avance (fichiers locaux, pas d'internet) -->
+<link rel="preload" href="fonts/oxanium.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+
+<!-- Styles : theme.css d'abord (les variables), puis la mise en page -->
+<link rel="stylesheet" href="css/theme.css">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+
+<!-- ============ EN-TÊTE ============ -->
+<header class="entete">
+  <div class="entete-in">
+    <button class="marque" type="button" data-aller="bibliotheque" aria-label="L'Atelier, retour à la bibliothèque">
+      <img src="assets/logo.png" alt="" width="34" height="34">
+      <span>L'ATELIER<small>Omni-système</small></span>
+    </button>
+    <nav class="nav" aria-label="Navigation principale">
+      <button type="button" data-aller="bibliotheque">Bibliothèque</button>
+      <button type="button" data-aller="apropos">À propos</button>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <!-- ============ BIBLIOTHÈQUE (remplie à l'étape 2) ============ -->
+  <section class="vue" id="vue-bibliotheque" aria-labelledby="titre-bibliotheque">
+    <p class="etiquette">Mes romans</p>
+    <h1 id="titre-bibliotheque">Bibliothèque</h1>
+    <hr class="pointilles">
+    <p class="discret">La bibliothèque arrive à l'étape 2. En attendant, la page « À propos » montre le thème complet.</p>
+  </section>
+
+  <!-- ============ À PROPOS ============ -->
+  <section class="vue" id="vue-apropos" aria-labelledby="titre-apropos" hidden>
+    <div class="apropos">
+      <div class="apropos-tete">
+        <div class="medaillon"><img src="assets/logo-rond.png" alt="Logo de l'Omni-système : un dé à 20 faces violet entouré d'un anneau lumineux"></div>
+        <div>
+          <p class="etiquette">À propos</p>
+          <h1 id="titre-apropos">L'Atelier</h1>
+          <p class="version">version <span id="numero-version"></span></p>
+        </div>
+      </div>
+
+      <p>Un atelier d'écriture pour transformer les parties de l'Omni-système en romans. Les fiches des personnages, des lieux et des événements restent à portée de main, à côté du texte.</p>
+      <p>Tout reste sur cet appareil : aucun compte, aucun serveur, aucune connexion nécessaire. Pensez à exporter vos données régulièrement.</p>
+
+      <hr class="pointilles">
+
+      <div>
+        <p class="etiquette" style="margin-bottom:var(--esp-3)">Les univers</p>
+        <div class="palette">
+          <div class="carte cyber"><h3>Cyberpunk</h3><span class="statut" style="--c:var(--cyber);justify-self:start">Néons</span></div>
+          <div class="carte fantasy"><h3>Fantasy</h3><span class="statut" style="--c:var(--fantasy);justify-self:start">Légendes</span></div>
+          <div class="carte space"><h3>Space opéra</h3><span class="statut" style="--c:var(--space);justify-self:start">Étoiles</span></div>
+          <div class="carte horreur"><h3>Horreur / enquête</h3><span class="statut" style="--c:var(--horreur);justify-self:start">Ombres</span></div>
+        </div>
+      </div>
+
+      <ul class="losanges" style="--c:var(--omni)">
+        <li>Écrire en mode <em>Notes</em> ou <em>Rédigé</em></li>
+        <li>Consulter une fiche sans quitter le texte (<span class="mono">Ctrl+K</span>)</li>
+        <li>Exporter en PDF, mise en page de livre</li>
+      </ul>
+
+      <hr class="pointilles">
+      <p class="signature">Réalisé par Ferrus Dantioch</p>
+    </div>
+  </section>
+</main>
+
+<!-- Le script principal (type="module" = découpé proprement en fichiers) -->
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

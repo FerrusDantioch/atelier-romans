@@ -1,0 +1,5 @@
+Polices incluses (licence SIL Open Font License 1.1, texte complet dans OFL.txt) :
+- Oxanium        © 2019 The Oxanium Project Authors
+- Literata       © 2017 The Literata Project Authors
+- JetBrains Mono © 2020 The JetBrains Mono Project Authors
+Téléchargées depuis Google Fonts (sous-ensemble « latin », accents français compris).
