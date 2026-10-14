@@ -123,6 +123,11 @@ export async function fermerEditeur() {
   scene = null;
 }
 
+// Remet le curseur dans le texte, exactement où il était (utilisé par le panneau et la recherche)
+export function revenirAuTexte() {
+  if (scene && !$("vue-roman").hidden) zoneActive().focus({ preventScroll: true });
+}
+
 function zoneActive() {
   return scene && scene.mode === "redige" ? zones.redige : zones.notes;
 }

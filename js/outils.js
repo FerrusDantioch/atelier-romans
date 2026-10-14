@@ -32,7 +32,7 @@ export function el(balise, attributs = {}, ...enfants) {
       e.setAttribute(nom, valeur === true ? "" : valeur);
     }
   }
-  for (const enfant of enfants.flat()) {
+  for (const enfant of enfants.flat(Infinity)) { // les listes imbriquées sont dépliées
     if (enfant == null || enfant === false) continue;
     e.append(enfant instanceof Node ? enfant : String(enfant));
   }

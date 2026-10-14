@@ -11,6 +11,7 @@ export const etat = {
   roman: null,     // le roman ouvert
   chapitres: [],   // ses chapitres
   scenes: [],      // toutes ses scènes
+  fiches: [],      // ses fiches (personnages, PNJ, lieux, événements)
   sceneId: null,   // la scène affichée dans l'éditeur
 };
 
@@ -19,13 +20,14 @@ const mots = new Map();
 
 // Charge un roman et tout son contenu. Renvoie le roman, ou null s'il n'existe pas.
 export async function chargerRoman(id) {
-  const [roman, chapitres, scenes] = await Promise.all([
-    db.lire("romans", id), db.lireDuRoman("chapitres", id), db.lireDuRoman("scenes", id),
+  const [roman, chapitres, scenes, fiches] = await Promise.all([
+    db.lire("romans", id), db.lireDuRoman("chapitres", id), db.lireDuRoman("scenes", id), db.lireDuRoman("fiches", id),
   ]);
   if (!roman) return null;
   etat.roman = roman;
   etat.chapitres = chapitres;
   etat.scenes = scenes;
+  etat.fiches = fiches;
   etat.sceneId = null;
   mots.clear();
   for (const s of scenes) mots.set(s.id, compterMots(s.texte));
@@ -36,6 +38,7 @@ export function fermerRoman() {
   etat.roman = null;
   etat.chapitres = [];
   etat.scenes = [];
+  etat.fiches = [];
   etat.sceneId = null;
   mots.clear();
 }
@@ -58,6 +61,18 @@ export function trouverChapitre(id) {
 // Toutes les scènes dans l'ordre de lecture (chapitre 1 scène 1, chapitre 1 scène 2…)
 export function scenesDansLOrdre() {
   return chapitresTries().flatMap((c) => scenesDe(c.id));
+}
+
+// ---------- Fiches ----------
+
+export function trouverFiche(id) {
+  return etat.fiches.find((f) => f.id === id) || null;
+}
+// Les fiches d'une catégorie, triées : par ordre pour les événements, par nom pour les autres
+export function fichesDe(categorie) {
+  const liste = etat.fiches.filter((f) => f.categorie === categorie);
+  if (categorie === "evenement") return liste.sort(parOrdre);
+  return liste.sort((a, b) => (a.titre || "").localeCompare(b.titre || "", "fr", { sensitivity: "base" }));
 }
 
 // ---------- Compteurs de mots ----------

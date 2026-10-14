@@ -3,7 +3,7 @@
 Application d'écriture de romans tirés des parties de l'Omni-système.
 Elle fonctionne dans le navigateur, hors ligne, et garde tout sur l'ordinateur.
 
-> 🚧 En construction — étape 3 sur 7 terminée (thème, bibliothèque, sauvegarde, écriture).
+> 🚧 En construction — étape 4 sur 7 terminée (thème, bibliothèque, sauvegarde, écriture, fiches).
 
 ## Lancer l'application sur son ordinateur
 
@@ -75,7 +75,7 @@ puis `git pull` pour les mises à jour.*
 ## Écrire
 
 Ouvrez un roman depuis la Bibliothèque. L'écran se divise en trois colonnes :
-**le plan** à gauche, **le texte** au centre, **la consultation des fiches** à droite (étape 4).
+**le plan** à gauche, **le texte** au centre, **la consultation des fiches** à droite.
 
 - **Plan** : « + Chapitre » et « + Scène » pour ajouter. Au survol d'une ligne apparaissent
   ↑ ↓ (déplacer), ✎ (renommer) et ✕ (supprimer, avec confirmation).
@@ -91,6 +91,23 @@ Ouvrez un roman depuis la Bibliothèque. L'écran se divise en trois colonnes :
 - **Enregistrement** : automatique, en continu (« Enregistré ✓ » en bas à droite).
   Même si l'onglet se ferme en pleine phrase, le texte est récupéré à la réouverture.
 
+## Consulter et modifier les fiches (colonne de droite)
+
+- **4 onglets** : Principal (personnage principal), PNJ, Lieux, Événements.
+  « + Nouveau… » crée une fiche ; « ✎ Modifier » ouvre le formulaire ; tout s'enregistre seul ;
+  « Terminé » revient à la lecture.
+- **Champs** : personnages → apparence, caractère, background, relations ;
+  lieux → description, ambiance ; événements → date ou moment, résumé, personnages et lieux concernés.
+  Chaque fiche a aussi un **type** libre (allié, taverne…) et des **notes libres**.
+- **Fiche épinglée** : elle reste affichée en haut du panneau, quel que soit l'onglet.
+  Le premier personnage principal s'épingle tout seul ; « 📌 Épingler » en choisit une autre ;
+  « Replier » la réduit à son nom.
+- **Événements** : listés dans l'ordre, avec le moment et le début du résumé. ↑ ↓ pour les réordonner.
+  Les personnages et lieux cochés deviennent des étiquettes cliquables ; chaque fiche indique
+  en retour « Apparaît dans » ses événements.
+- **`Échap`** dans le panneau : retour au texte, le curseur exactement où il était.
+- **Écran moyen ou petit** : le panneau devient un volet, ouvert par le bouton « Fiches ».
+
 ### Raccourcis clavier
 
 | Raccourci | Effet |
@@ -99,7 +116,8 @@ Ouvrez un roman depuis la Bibliothèque. L'écran se divise en trois colonnes :
 | `Ctrl+B` | gras `**…**` |
 | `Entrée` sur une ligne `- …` (mode Notes) | nouvelle puce ; sur une puce vide : fin de la liste |
 | `Ctrl+Maj+F` | mode concentration (seul le texte reste) |
-| `Échap` | quitter le mode concentration |
+| `Échap` | quitter le mode concentration, ou revenir au texte depuis le panneau |
+| `←` `→` sur les onglets du panneau | changer d'onglet |
 | `Ctrl+Z` | annuler |
 | `Ctrl+S` | inutile : tout est déjà enregistré (un message le rappelle) |
 
@@ -149,6 +167,7 @@ js/bibliotheque.js  la liste des romans
 js/etat.js          le roman ouvert, en mémoire (chapitres, scènes, compteurs)
 js/plan.js          le plan : chapitres et scènes
 js/editeur.js       l'écriture : modes, mise en forme, enregistrement, session, concentration
+js/panneau.js       le panneau de consultation : onglets, fiches, épinglage, événements
 js/sauvegarde.js    les boutons d'export/import et le rappel
 js/dialogues.js     les fenêtres de confirmation et les petits messages
 js/outils.js        petites fonctions partagées (compteur de mots, dates…)

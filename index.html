@@ -121,6 +121,7 @@
             <button type="button" data-format="puce" title="Ajouter ou retirer une puce" aria-label="Puce" class="seulement-notes">• –</button>
           </div>
           <button class="petit-bouton" type="button" id="bouton-concentration" aria-pressed="false" title="Mode concentration (Ctrl+Maj+F)">Concentration</button>
+          <button class="petit-bouton seulement-moyen-ecran" type="button" id="bouton-fiches" aria-controls="panneau" aria-expanded="false">Fiches</button>
         </div>
 
         <div class="zone-ecriture">
@@ -139,10 +140,24 @@
       <button class="sortie-concentration" type="button" id="sortie-concentration">Quitter la concentration (Échap)</button>
     </section>
 
-    <!-- Colonne de droite : la consultation (étape 4) -->
+    <!-- Colonne de droite : la consultation des fiches -->
     <aside class="panneau" id="panneau" aria-label="Consultation des fiches">
-      <p class="etiquette">Consultation</p>
-      <p class="discret petit">Le panneau des fiches (personnage principal, PNJ, lieux, événements) arrive à l'étape 4.</p>
+      <div class="panneau-tete">
+        <p class="etiquette">Consultation</p>
+        <button class="petit-bouton seulement-moyen-ecran" type="button" id="fermer-panneau">Fermer</button>
+      </div>
+
+      <!-- Fiche épinglée : reste visible quel que soit l'onglet -->
+      <section class="epinglee" id="epinglee" aria-label="Fiche épinglée" hidden></section>
+
+      <div class="onglets" role="tablist" aria-label="Catégories de fiches">
+        <button type="button" role="tab" id="onglet-principal" data-onglet="principal" aria-controls="contenu-panneau" title="Personnage principal">Principal</button>
+        <button type="button" role="tab" id="onglet-pnj" data-onglet="pnj" aria-controls="contenu-panneau">PNJ</button>
+        <button type="button" role="tab" id="onglet-lieu" data-onglet="lieu" aria-controls="contenu-panneau">Lieux</button>
+        <button type="button" role="tab" id="onglet-evenement" data-onglet="evenement" aria-controls="contenu-panneau">Événements</button>
+      </div>
+      <div class="contenu-panneau" id="contenu-panneau" role="tabpanel"></div>
+      <p class="aide-panneau"><span class="mono">Échap</span> : retour au texte</p>
     </aside>
   </section>
 

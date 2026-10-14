@@ -27,9 +27,13 @@ export function initialiserPlan() {
   });
   // Petit écran : le bouton « Plan » ouvre / ferme la colonne
   const vue = document.getElementById("vue-roman");
-  document.getElementById("bouton-plan").addEventListener("click", () => vue.classList.toggle("plan-ouvert"));
-  // Toucher le voile sombre (à côté du volet) ou appuyer sur Échap referme le plan
-  vue.addEventListener("click", (e) => { if (e.target === vue) vue.classList.remove("plan-ouvert"); });
+  document.getElementById("bouton-plan").addEventListener("click", () => {
+    if (vue.classList.toggle("plan-ouvert")) vue.classList.remove("panneau-ouvert"); // un seul volet à la fois
+  });
+  // Toucher le voile sombre (à côté d'un volet) referme les volets ; Échap referme le plan
+  vue.addEventListener("click", (e) => {
+    if (e.target === vue) vue.classList.remove("plan-ouvert", "panneau-ouvert");
+  });
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape" && vue.classList.contains("plan-ouvert") && !document.querySelector("dialog[open]")) {
       vue.classList.remove("plan-ouvert");

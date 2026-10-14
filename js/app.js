@@ -13,9 +13,10 @@ import { initialiserPlan, afficherPlan } from "./plan.js";
 import {
   initialiserEditeur, preparerEditeur, fermerEditeur, recupererSecours, effacerTousLesSecours,
 } from "./editeur.js";
+import { initialiserPanneau, preparerPanneau, fermerPanneau } from "./panneau.js";
 
 // Numéro de version affiché dans « À propos »
-export const VERSION = "0.3.0";
+export const VERSION = "0.4.0";
 
 // Liste des pages (« vues ») de l'application
 const VUES = ["bibliotheque", "roman", "apropos"];
@@ -44,6 +45,7 @@ async function suivreAdresse() {
   if (page === "roman" && id) {
     const romanId = decodeURIComponent(id);
     if (etat.roman && etat.roman.id === romanId && !document.getElementById("vue-roman").hidden) return;
+    await fermerPanneau();
     await fermerEditeur();
     const roman = await chargerRoman(romanId);
     if (!roman) {
@@ -57,11 +59,13 @@ async function suivreAdresse() {
     montrer("roman");
     afficherPlan();
     await preparerEditeur();
+    await preparerPanneau();
     await db.ecrireReglage("dernierRoman", roman.id);
     return;
   }
 
   // On quitte la page d'écriture : on enregistre tout avant
+  await fermerPanneau();
   await fermerEditeur();
   fermerRoman();
   document.body.classList.remove("mode-ecriture");
@@ -110,6 +114,7 @@ async function demarrer() {
   });
   initialiserPlan();
   initialiserEditeur();
+  initialiserPanneau();
 
   await suivreAdresse();
   await mettreAJourEtat();

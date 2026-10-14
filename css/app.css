@@ -447,14 +447,135 @@ body.mode-ecriture main{ flex:1; min-height:0; }
 .etat-enregistrement{ margin-left:auto; }
 .etat-enregistrement[data-etat="erreur"]{ color:var(--danger); font-weight:600; }
 
-/* ---------- Colonne de droite : la consultation (remplie à l'étape 4) ---------- */
+/* ---------- Colonne de droite : le panneau de consultation ---------- */
 .panneau{
-  overflow-y:auto; min-height:0;
+  min-height:0; overflow:hidden;
   background:var(--table);
   border-left:var(--filet) solid var(--trait);
-  padding:var(--esp-4);
-  display:flex; flex-direction:column; gap:var(--esp-3);
+  display:flex; flex-direction:column;
 }
+.panneau-tete{
+  display:flex; align-items:center; justify-content:space-between; gap:var(--esp-2);
+  padding:var(--esp-3) var(--esp-4) 0;
+}
+.aide-panneau{
+  flex:none; padding:6px var(--esp-4);
+  border-top:var(--filet) dashed var(--trait);
+  font-size:.75rem; color:var(--discret);
+}
+
+/* Fiche épinglée : carte avec liseré de l'univers, défile seule si elle est longue */
+.epinglee{
+  flex:none; max-height:45%; overflow-y:auto;
+  margin:var(--esp-3) var(--esp-4) 0;
+  background:var(--nuit);
+  border:var(--filet) solid var(--trait); border-top:var(--liseré) solid var(--univers);
+  border-radius:var(--arrondi-carte);
+  padding:var(--esp-2) var(--esp-3) var(--esp-3);
+}
+.epinglee-tete{ display:flex; justify-content:space-between; align-items:center; gap:var(--esp-2); font-size:.78rem; }
+.epinglee-titre-seul{
+  display:block; width:100%; text-align:left; margin-top:4px;
+  background:none; border:0; padding:0; cursor:pointer;
+  font:700 1rem var(--f-titre); color:var(--texte);
+}
+
+/* Onglets */
+.onglets{
+  flex:none; display:flex;
+  margin:var(--esp-3) var(--esp-4) 0;
+  border-bottom:var(--filet) solid var(--trait);
+}
+.onglets button{
+  flex:1 1 auto; min-width:0;
+  background:none; border:0; cursor:pointer;
+  border-bottom:2px solid transparent; margin-bottom:-1px;
+  padding:8px 4px;
+  font:600 .72rem var(--f-titre); letter-spacing:.05em; text-transform:uppercase;
+  color:var(--discret);
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.onglets button:hover{ color:var(--texte); }
+.onglets button[aria-selected="true"]{ color:var(--texte); border-bottom-color:var(--univers); }
+
+.contenu-panneau{ flex:1; min-height:0; overflow-y:auto; padding:var(--esp-3) var(--esp-4) var(--esp-5); }
+.liste-fiches, .liste-vide{ display:grid; gap:var(--esp-3); justify-items:start; }
+.nouvelle-fiche{ justify-self:start; }
+
+/* Liste des fiches d'un onglet */
+.fiches{ list-style:none; margin:0; padding:0; display:grid; gap:2px; width:100%; }
+.fiche-item{
+  width:100%; display:flex; align-items:baseline; gap:var(--esp-2);
+  background:none; border:0; border-radius:var(--arrondi-petit); cursor:pointer;
+  padding:7px var(--esp-2); text-align:left; color:var(--texte); font:inherit;
+}
+.fiche-item:hover{ background:var(--table-haute); }
+.fiche-item::before{ content:""; flex:none; width:7px; height:7px; transform:rotate(45deg) translateY(-1px); background:var(--univers); }
+.fiche-item-titre{ flex:1; min-width:0; font:600 .95rem var(--f-texte); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.fiche-item-type{ flex:none; font:600 .68rem var(--f-titre); letter-spacing:.06em; text-transform:uppercase; color:var(--discret); max-width:45%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.fiche-item-epingle{ flex:none; font-size:.75rem; }
+
+/* Frise des événements : dans l'ordre, lisible d'un coup d'œil */
+.frise{ list-style:none; margin:0; padding:0 0 0 var(--esp-3); width:100%; border-left:var(--filet) dashed var(--trait); display:grid; gap:var(--esp-2); }
+.frise-item{ position:relative; display:flex; align-items:flex-start; gap:4px; }
+.frise-item::before{ /* losange posé sur la ligne pointillée */
+  content:""; position:absolute; left:calc(-1 * var(--esp-3) - 4px); top:13px;
+  width:7px; height:7px; transform:rotate(45deg); background:var(--univers);
+}
+.frise-ouvrir{
+  flex:1; min-width:0; display:grid; gap:1px;
+  background:none; border:0; border-radius:var(--arrondi-petit); cursor:pointer;
+  padding:6px var(--esp-2); text-align:left; color:var(--texte); font:inherit;
+}
+.frise-ouvrir:hover{ background:var(--table-haute); }
+.frise-quand{ font-size:.72rem; color:var(--halo); }
+.frise-titre{ font:600 .95rem var(--f-texte); }
+.frise-resume{
+  font-size:.85rem; color:var(--discret); line-height:1.45;
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+}
+.frise-actions{ flex:none; display:flex; flex-direction:column; opacity:.35; transition:opacity var(--duree); }
+.frise-item:hover .frise-actions, .frise-item:focus-within .frise-actions{ opacity:1; }
+
+/* Une fiche en lecture */
+.fiche{ display:grid; gap:var(--esp-3); }
+.lien-retour{
+  justify-self:start; background:none; border:0; padding:0; cursor:pointer;
+  font:600 .75rem var(--f-titre); letter-spacing:.12em; text-transform:uppercase; color:var(--discret);
+}
+.lien-retour:hover{ color:var(--texte); }
+.fiche-tete{ display:flex; align-items:baseline; gap:var(--esp-2); flex-wrap:wrap; }
+.fiche-titre{ font:700 1.2rem var(--f-titre); margin:0; }
+.fiche-titre:focus{ outline:none; }
+.fiche.compacte .fiche-titre{ font-size:1rem; }
+.fiche-champs{ margin:0; display:grid; gap:var(--esp-2); }
+.fiche-champs dt{ font:600 .72rem var(--f-titre); letter-spacing:.1em; text-transform:uppercase; color:var(--discret); }
+.fiche-champs dd{ margin:0 0 var(--esp-1); white-space:pre-wrap; overflow-wrap:anywhere; font-size:.95rem; line-height:1.55; }
+.fiche.compacte .fiche-champs dd{ font-size:.88rem; }
+.fiche-liens{ display:grid; gap:6px; border-top:var(--filet) dashed var(--trait); padding-top:var(--esp-2); }
+.pastilles{ display:flex; flex-wrap:wrap; gap:6px; }
+.pastille{
+  --c:var(--univers);
+  font:600 .78rem var(--f-titre); cursor:pointer;
+  color:var(--texte); background:none;
+  border:var(--filet) solid color-mix(in srgb, var(--c) 55%, transparent); border-radius:var(--arrondi-pilule);
+  padding:3px 10px;
+}
+.pastille:hover{ background:color-mix(in srgb, var(--c) 14%, transparent); }
+.fiche-actions{ display:flex; flex-wrap:wrap; gap:var(--esp-2); }
+.fiche.compacte .fiche-actions .petit-bouton{ font-size:.78rem; padding:4px 10px; }
+
+/* Une fiche en modification */
+.fiche-edition{ display:grid; gap:var(--esp-3); }
+.fiche-edition textarea{ resize:vertical; min-height:3.2em; line-height:1.5; font-size:.95rem; }
+.choix-liens{
+  border:var(--filet) solid var(--trait); border-radius:var(--arrondi-petit);
+  margin:0; padding:var(--esp-2) var(--esp-3);
+  display:grid; gap:2px; max-height:180px; overflow-y:auto;
+}
+.choix-liens legend{ padding:0 4px; }
+.case{ display:flex; align-items:center; gap:var(--esp-2); font-size:.92rem; cursor:pointer; }
+.case input{ accent-color:var(--univers); }
 
 /* ---------- Mode concentration : seul le texte reste ---------- */
 .sortie-concentration{ display:none; }
@@ -474,12 +595,25 @@ body.concentration .sortie-concentration{
 body.concentration .sortie-concentration:hover,
 body.concentration .sortie-concentration:focus-visible{ opacity:1; }
 
-.seulement-petit-ecran{ display:none; }
+.seulement-petit-ecran, .seulement-moyen-ecran{ display:none; }
 
-/* Écran moyen : le panneau de consultation se replie (il deviendra un volet à l'étape 4) */
+/* Écran moyen : le panneau de consultation devient un volet (bouton « Fiches ») */
 @media (max-width:1100px){
   .vue-ecriture{ grid-template-columns:var(--largeur-plan) minmax(0,1fr); }
-  .panneau{ display:none; }
+  .seulement-moyen-ecran{ display:inline-block; }
+  .panneau{
+    position:fixed; z-index:30; top:0; bottom:0; right:0;
+    width:min(90vw, 400px);
+    box-shadow:var(--ombre);
+    visibility:hidden; transform:translateX(100%);
+    transition:transform var(--duree), visibility var(--duree);
+  }
+  .vue-ecriture.panneau-ouvert .panneau{ visibility:visible; transform:none; }
+  /* Voile sombre derrière le volet : le toucher referme le volet */
+  .vue-ecriture.panneau-ouvert::after{
+    content:""; position:fixed; inset:0; z-index:25;
+    background:rgba(8,6,14,.6);
+  }
 }
 /* Petit écran : le plan devient un volet qu'on ouvre avec le bouton « ☰ Plan » */
 @media (max-width:760px){
