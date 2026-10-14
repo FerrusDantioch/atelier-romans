@@ -3,7 +3,7 @@
 Application d'écriture de romans tirés des parties de l'Omni-système.
 Elle fonctionne dans le navigateur, hors ligne, et garde tout sur l'ordinateur.
 
-> 🚧 En construction — étape 2 sur 7 terminée (thème, bibliothèque de romans, sauvegarde de sécurité).
+> 🚧 En construction — étape 3 sur 7 terminée (thème, bibliothèque, sauvegarde, écriture).
 
 ## Lancer l'application sur son ordinateur
 
@@ -72,6 +72,39 @@ une fenêtre où l'on donne des instructions en tapant du texte au lieu de cliqu
 *Pour les habitués de git : `git clone https://github.com/FerrusDantioch/atelier-romans.git`,
 puis `git pull` pour les mises à jour.*
 
+## Écrire
+
+Ouvrez un roman depuis la Bibliothèque. L'écran se divise en trois colonnes :
+**le plan** à gauche, **le texte** au centre, **la consultation des fiches** à droite (étape 4).
+
+- **Plan** : « + Chapitre » et « + Scène » pour ajouter. Au survol d'une ligne apparaissent
+  ↑ ↓ (déplacer), ✎ (renommer) et ✕ (supprimer, avec confirmation).
+  Une scène qu'on monte depuis le haut de son chapitre passe à la fin du chapitre précédent.
+- **Notes / Rédigé** : chaque scène a deux textes. *Notes* pour les fragments et les puces,
+  *Rédigé* pour le texte du roman. On bascule à tout moment ; chacun garde son curseur.
+- **Mise en forme** : `*italique*`, `**gras**`, et `* * *` (séparateur) sur sa propre ligne.
+  Les boutons I, G et * * * insèrent ces symboles autour du texte sélectionné.
+- **Compteurs** : mots de la scène, du chapitre et du roman (seul le texte *Rédigé* compte).
+- **Session** : la barre suit les mots ajoutés depuis le début de la session.
+  La session redémarre chaque jour, ou avec « Nouvelle session ». L'objectif se change
+  avec « Changer l'objectif ».
+- **Enregistrement** : automatique, en continu (« Enregistré ✓ » en bas à droite).
+  Même si l'onglet se ferme en pleine phrase, le texte est récupéré à la réouverture.
+
+### Raccourcis clavier
+
+| Raccourci | Effet |
+|---|---|
+| `Ctrl+I` | italique `*…*` (une 2e fois : le retire) |
+| `Ctrl+B` | gras `**…**` |
+| `Entrée` sur une ligne `- …` (mode Notes) | nouvelle puce ; sur une puce vide : fin de la liste |
+| `Ctrl+Maj+F` | mode concentration (seul le texte reste) |
+| `Échap` | quitter le mode concentration |
+| `Ctrl+Z` | annuler |
+| `Ctrl+S` | inutile : tout est déjà enregistré (un message le rappelle) |
+
+Sur Mac, `Cmd` remplace `Ctrl`.
+
 ## Mes données : où sont-elles, comment les protéger ?
 
 - Tout est enregistré **automatiquement**, dans le navigateur, **sur cet ordinateur uniquement**.
@@ -113,6 +146,9 @@ css/app.css    la mise en page
 js/app.js           le chef d'orchestre (navigation entre les pages)
 js/db.js            le stockage des données (IndexedDB) + export/import
 js/bibliotheque.js  la liste des romans
+js/etat.js          le roman ouvert, en mémoire (chapitres, scènes, compteurs)
+js/plan.js          le plan : chapitres et scènes
+js/editeur.js       l'écriture : modes, mise en forme, enregistrement, session, concentration
 js/sauvegarde.js    les boutons d'export/import et le rappel
 js/dialogues.js     les fenêtres de confirmation et les petits messages
 js/outils.js        petites fonctions partagées (compteur de mots, dates…)

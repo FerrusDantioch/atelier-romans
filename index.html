@@ -68,15 +68,82 @@
     </section>
   </section>
 
-  <!-- ============ ROMAN OUVERT (l'écriture arrive à l'étape 3) ============ -->
-  <section class="vue" id="vue-roman" aria-labelledby="titre-roman" hidden>
-    <p class="etiquette"><a href="#bibliotheque">← Bibliothèque</a></p>
-    <div class="vue-tete">
-      <h1 id="titre-roman"></h1>
-      <span class="statut" id="univers-roman"></span>
-    </div>
-    <hr class="pointilles">
-    <p class="discret">L'écriture (chapitres, scènes, panneau de fiches) arrive à l'étape 3.</p>
+  <!-- ============ ÉCRITURE : plan | texte | consultation ============ -->
+  <section class="vue-ecriture" id="vue-roman" aria-label="Écriture du roman" hidden>
+
+    <!-- Colonne de gauche : le plan -->
+    <aside class="plan" id="plan" aria-label="Plan du roman">
+      <a class="retour etiquette" href="#bibliotheque">← Bibliothèque</a>
+      <div class="plan-roman">
+        <span class="statut" id="univers-roman"></span>
+        <h1 id="titre-roman"></h1>
+        <p class="discret petit" id="mots-roman"></p>
+      </div>
+
+      <!-- Objectif de la session d'écriture -->
+      <div class="session">
+        <p class="etiquette">Session</p>
+        <p class="session-chiffres"><b class="mono" id="mots-session">0</b> / <span class="mono" id="objectif-session">500</span> mots</p>
+        <div class="barre-progression" id="barre-session" role="progressbar" aria-label="Progression de la session" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
+        <span class="session-liens">
+          <button class="lien-discret" type="button" id="bouton-objectif">Changer l'objectif</button>
+          <button class="lien-discret" type="button" id="bouton-nouvelle-session">Nouvelle session</button>
+        </span>
+      </div>
+
+      <hr class="pointilles">
+      <nav id="plan-liste" aria-label="Chapitres et scènes"></nav>
+      <button class="petit-bouton ajout-chapitre" type="button" id="bouton-ajout-chapitre">+ Chapitre</button>
+    </aside>
+
+    <!-- Colonne centrale : l'écriture -->
+    <section class="editeur" aria-label="Texte de la scène">
+      <!-- Aucun chapitre : message d'accueil -->
+      <div class="editeur-vide" id="editeur-vide">
+        <p class="etiquette">Prêt à écrire</p>
+        <h2>Ce roman est encore vide</h2>
+        <p class="discret">Créez un premier chapitre : une première scène sera ouverte, prête à recevoir vos notes.</p>
+        <button class="bouton" type="button" id="bouton-premier-chapitre">Créer le premier chapitre</button>
+      </div>
+
+      <div class="editeur-plein" id="editeur-plein" hidden>
+        <div class="barre-outils" id="barre-outils">
+          <button class="petit-bouton seulement-petit-ecran" type="button" id="bouton-plan" aria-controls="plan">☰ Plan</button>
+          <input class="titre-scene" id="titre-scene" type="text" aria-label="Titre de la scène" placeholder="Titre de la scène" maxlength="200" autocomplete="off">
+          <div class="modes" role="group" aria-label="Mode d'écriture">
+            <button type="button" data-mode="notes" aria-pressed="true" title="Fragments, idées, puces">Notes</button>
+            <button type="button" data-mode="redige" aria-pressed="false" title="Le texte du roman">Rédigé</button>
+          </div>
+          <div class="outils-format" role="group" aria-label="Mise en forme">
+            <button type="button" data-format="italique" title="Italique : *texte* (Ctrl+I)" aria-label="Italique"><em>I</em></button>
+            <button type="button" data-format="gras" title="Gras : **texte** (Ctrl+B)" aria-label="Gras"><strong>G</strong></button>
+            <button type="button" data-format="separateur" title="Séparateur de scène * * *" aria-label="Séparateur de scène" class="mono">* * *</button>
+            <button type="button" data-format="puce" title="Ajouter ou retirer une puce" aria-label="Puce" class="seulement-notes">• –</button>
+          </div>
+          <button class="petit-bouton" type="button" id="bouton-concentration" aria-pressed="false" title="Mode concentration (Ctrl+Maj+F)">Concentration</button>
+        </div>
+
+        <div class="zone-ecriture">
+          <textarea id="texte-notes" class="texte texte-notes" lang="fr" spellcheck="true" aria-label="Notes de la scène"
+            placeholder="Notes, fragments, idées…&#10;- une puce commence par un tiret&#10;- Entrée continue la liste"></textarea>
+          <textarea id="texte-redige" class="texte texte-redige" lang="fr" spellcheck="true" aria-label="Texte rédigé de la scène"
+            placeholder="Le texte du roman…" hidden></textarea>
+        </div>
+
+        <div class="barre-etat" aria-live="off">
+          <span>Scène : <b class="mono" id="mots-scene">0</b> mots rédigés</span>
+          <span>Chapitre : <b class="mono" id="mots-chapitre">0</b></span>
+          <span class="etat-enregistrement" id="etat-enregistrement" data-etat="enregistre">Enregistré ✓</span>
+        </div>
+      </div>
+      <button class="sortie-concentration" type="button" id="sortie-concentration">Quitter la concentration (Échap)</button>
+    </section>
+
+    <!-- Colonne de droite : la consultation (étape 4) -->
+    <aside class="panneau" id="panneau" aria-label="Consultation des fiches">
+      <p class="etiquette">Consultation</p>
+      <p class="discret petit">Le panneau des fiches (personnage principal, PNJ, lieux, événements) arrive à l'étape 4.</p>
+    </aside>
   </section>
 
   <!-- ============ À PROPOS ============ -->

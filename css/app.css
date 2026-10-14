@@ -201,13 +201,13 @@ select:focus-visible, textarea:focus-visible, summary:focus-visible{
 
 /* Champs de formulaire */
 .champ{ display:grid; gap:6px; }
-input[type=text], input[type=number], input[type=search], select, textarea{
+:where(input[type=text], input[type=number], input[type=search], select, textarea){
   font:inherit; color:var(--texte);
   background:var(--nuit);
   border:var(--filet) solid var(--trait); border-radius:var(--arrondi-petit);
   padding:8px 12px; width:100%;
 }
-input[type=text]:focus, input[type=number]:focus, input[type=search]:focus, select:focus, textarea:focus{
+:where(input[type=text], input[type=number], input[type=search], select, textarea):focus{
   border-color:var(--omni); outline:none; box-shadow:var(--lueur-douce);
 }
 
@@ -243,7 +243,268 @@ input[type=text]:focus, input[type=number]:focus, input[type=search]:focus, sele
   animation:apparition var(--duree) ease-out;
 }
 .notification.erreur{ border-left-color:var(--danger); }
+/* Page d'écriture : les messages restent au-dessus de la barre d'état */
+body.mode-ecriture #notifications{ bottom:48px; }
 @keyframes apparition{ from{ opacity:0; } to{ opacity:1; } } /* simple fondu, pas de mouvement */
+
+
+/* =====================================================================
+   PAGE D'ÉCRITURE : plan | texte | consultation
+   ===================================================================== */
+
+/* La page d'écriture occupe tout l'écran, chaque colonne défile seule */
+body.mode-ecriture{ height:100dvh; display:flex; flex-direction:column; overflow:hidden; }
+body.mode-ecriture main{ flex:1; min-height:0; }
+.vue-ecriture{
+  height:100%;
+  display:grid;
+  grid-template-columns:var(--largeur-plan) minmax(0,1fr) var(--largeur-panneau);
+}
+
+/* Petit bouton qui ressemble à un lien */
+.lien-discret{
+  background:none; border:0; padding:0; cursor:pointer;
+  font:inherit; color:var(--discret);
+  text-decoration:underline dotted; text-underline-offset:3px;
+}
+.lien-discret:hover{ color:var(--texte); }
+
+/* ---------- Colonne de gauche : le plan ---------- */
+.plan{
+  overflow-y:auto; min-height:0;
+  background:var(--table);
+  border-right:var(--filet) solid var(--trait);
+  padding:var(--esp-4);
+  display:flex; flex-direction:column; gap:var(--esp-3);
+}
+.retour{ text-decoration:none; color:var(--discret); }
+.retour:hover{ color:var(--texte); }
+.plan-roman{ display:grid; gap:6px; justify-items:start; }
+.plan-roman h1{ font-size:1.3rem; }
+.plan .pointilles{ margin:0; }
+
+/* Objectif de session */
+.session{
+  display:grid; gap:6px;
+  background:var(--nuit);
+  border:var(--filet) solid var(--trait); border-radius:var(--arrondi-bouton);
+  padding:var(--esp-3);
+}
+.session-chiffres{ font-size:.92rem; color:var(--discret); }
+.session-chiffres b{ color:var(--texte); font-size:1.05rem; }
+.session-liens{ display:flex; flex-wrap:wrap; gap:2px var(--esp-3); font-size:.78rem; }
+.barre-progression{
+  height:6px; border-radius:var(--arrondi-pilule);
+  background:var(--trait); overflow:hidden;
+}
+.barre-progression::before{
+  content:""; display:block; height:100%;
+  width:var(--progression, 0%);
+  background:var(--univers);
+  border-radius:inherit;
+  transition:width var(--duree);
+}
+.barre-progression.atteint::before{ box-shadow:var(--lueur-douce); background:var(--halo); }
+
+/* Liste des chapitres et scènes */
+.plan-chapitres, .plan-scenes{ list-style:none; margin:0; padding:0; }
+.plan-chapitres{ display:grid; gap:var(--esp-3); }
+.plan-ligne, .plan-scene{ position:relative; display:flex; align-items:center; gap:6px; min-width:0; }
+.chapitre-ligne{ font:700 .92rem var(--f-titre); padding:2px 0; }
+.chapitre-ligne::before{ /* puce en losange, couleur de l'univers */
+  content:""; flex:none; width:7px; height:7px; transform:rotate(45deg); background:var(--univers);
+}
+.plan-titre{ flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.plan-mots{ flex:none; font-size:.72rem; color:var(--discret); }
+.plan-scenes{
+  margin:4px 0 2px 3px; padding-left:var(--esp-3);
+  border-left:var(--filet) dashed var(--trait);
+  display:grid; gap:1px;
+}
+.plan-scene{ border-radius:6px; padding:1px 6px 1px 0; }
+.plan-scene:hover{ background:var(--table-haute); }
+.plan-scene.active{
+  background:color-mix(in srgb, var(--univers) 14%, transparent);
+  box-shadow:inset 3px 0 0 var(--univers);
+}
+.plan-ouvrir{
+  flex:1; min-width:0; display:flex; align-items:center; gap:6px;
+  background:none; border:0; cursor:pointer; text-align:left;
+  color:var(--texte); font:.92rem/1.5 var(--f-texte);
+  padding:4px 0 4px 8px;
+}
+.plan-mode{
+  flex:none; font:600 .62rem var(--f-titre); letter-spacing:.08em; text-transform:uppercase;
+  color:var(--discret); border:var(--filet) dashed var(--trait); border-radius:var(--arrondi-pilule); padding:0 6px;
+}
+.ajout-scene{
+  background:none; border:0; cursor:pointer;
+  color:var(--discret); font:600 .78rem var(--f-titre);
+  padding:4px 0 0 var(--esp-4);
+}
+.ajout-scene:hover{ color:var(--texte); }
+.ajout-chapitre{ justify-self:start; align-self:flex-start; }
+
+/* Petits boutons ↑ ↓ ✎ ✕ : apparaissent au survol ou au clavier, par-dessus la ligne */
+.plan-actions{
+  position:absolute; right:0; top:50%; transform:translateY(-50%);
+  display:flex; gap:1px;
+  background:var(--table-haute); border:var(--filet) solid var(--trait); border-radius:var(--arrondi-petit);
+  opacity:0; pointer-events:none;
+  transition:opacity var(--duree);
+}
+.plan-ligne:hover > .plan-actions, .plan-ligne:focus-within > .plan-actions,
+.plan-scene:hover > .plan-actions, .plan-scene:focus-within > .plan-actions{
+  opacity:1; pointer-events:auto;
+}
+.plan-action{
+  width:26px; height:24px; display:grid; place-items:center;
+  background:none; border:0; border-radius:6px; cursor:pointer;
+  color:var(--discret); font:600 .85rem var(--f-titre);
+}
+.plan-action:hover{ color:var(--texte); background:var(--trait); }
+.plan-action.danger:hover{ color:var(--danger); }
+.plan-action:disabled{ opacity:.3; cursor:default; background:none; }
+
+/* ---------- Colonne centrale : l'éditeur ---------- */
+.editeur{ position:relative; min-height:0; display:flex; flex-direction:column; background:var(--ecriture-fond); }
+.editeur-plein{ flex:1; min-height:0; display:flex; flex-direction:column; }
+.editeur-vide{
+  margin:auto; max-width:46ch; padding:var(--esp-6) var(--esp-4);
+  display:grid; gap:var(--esp-3); justify-items:start;
+}
+
+.barre-outils{
+  display:flex; align-items:center; gap:var(--esp-2) var(--esp-3); flex-wrap:wrap;
+  padding:var(--esp-2) var(--esp-4);
+  background:var(--nuit);
+  border-bottom:var(--filet) solid var(--trait);
+}
+.titre-scene{
+  flex:1 1 180px; min-width:0;
+  font:700 1rem var(--f-titre);
+  background:transparent; border-color:transparent;
+  padding:6px 8px;
+}
+.titre-scene:hover{ border-color:var(--trait); }
+.titre-scene:focus{ border-color:var(--omni); }
+
+/* Interrupteur Notes / Rédigé (repris du portfolio) */
+.modes{ display:inline-flex; border:var(--filet) solid var(--trait); border-radius:var(--arrondi-pilule); padding:3px; gap:2px; }
+.modes button{
+  font:600 .85rem var(--f-titre); color:var(--discret);
+  background:none; border:0; border-radius:var(--arrondi-pilule);
+  padding:5px 12px; cursor:pointer;
+}
+.modes button:hover{ color:var(--texte); }
+.modes button[aria-pressed="true"]{ background:var(--omni); color:var(--sur-accent); }
+
+.outils-format{ display:inline-flex; gap:4px; }
+.outils-format button{
+  min-width:34px; height:32px; padding:0 8px;
+  background:none; color:var(--texte);
+  border:var(--filet) solid var(--trait); border-radius:var(--arrondi-petit);
+  font:1rem var(--f-texte); cursor:pointer;
+}
+.outils-format button.mono{ font:600 .8rem var(--f-des); }
+.outils-format button:hover{ border-color:var(--omni); }
+.vue-ecriture[data-mode="redige"] .seulement-notes{ display:none; }
+#bouton-concentration[aria-pressed="true"]{ border-color:var(--omni); }
+
+/* La zone de texte : large, aérée, centrée, contrastée sans éblouir */
+.zone-ecriture{ flex:1; min-height:0; display:flex; }
+.texte{
+  flex:1; width:100%; height:100%; resize:none; margin:0;
+  border:0; border-radius:0; box-shadow:none;
+  background:var(--ecriture-fond);
+  color:var(--ecriture-texte);
+  font-family:var(--f-texte);
+  font-size:var(--ecriture-taille);
+  line-height:var(--ecriture-interligne);
+  /* Marges qui centrent une colonne de texte de --ecriture-largeur */
+  padding:var(--esp-6) max(var(--esp-5), calc((100% - var(--ecriture-largeur)) / 2)) 35vh;
+  caret-color:var(--halo);
+  tab-size:4;
+}
+.texte:focus, .texte:focus-visible{ outline:none; }
+.texte::placeholder{ color:color-mix(in srgb, var(--discret) 60%, transparent); }
+.texte::selection{ background:color-mix(in srgb, var(--omni) 40%, transparent); }
+/* Mode Notes : un fond très légèrement teinté de la couleur de l'univers, un texte un peu plus petit */
+.texte-notes{
+  background:color-mix(in srgb, var(--univers) 4%, var(--ecriture-fond));
+  font-size:calc(var(--ecriture-taille) * .92);
+  line-height:1.7;
+}
+
+.barre-etat{
+  display:flex; gap:var(--esp-2) var(--esp-5); flex-wrap:wrap;
+  padding:6px var(--esp-4);
+  background:var(--nuit);
+  border-top:var(--filet) solid var(--trait);
+  font-size:.8rem; color:var(--discret);
+}
+.barre-etat b{ color:var(--texte); font-weight:500; }
+.etat-enregistrement{ margin-left:auto; }
+.etat-enregistrement[data-etat="erreur"]{ color:var(--danger); font-weight:600; }
+
+/* ---------- Colonne de droite : la consultation (remplie à l'étape 4) ---------- */
+.panneau{
+  overflow-y:auto; min-height:0;
+  background:var(--table);
+  border-left:var(--filet) solid var(--trait);
+  padding:var(--esp-4);
+  display:flex; flex-direction:column; gap:var(--esp-3);
+}
+
+/* ---------- Mode concentration : seul le texte reste ---------- */
+.sortie-concentration{ display:none; }
+body.concentration .entete,
+body.concentration .rappel,
+body.concentration .plan,
+body.concentration .panneau,
+body.concentration .barre-outils,
+body.concentration .barre-etat{ display:none; }
+body.concentration .vue-ecriture{ grid-template-columns:minmax(0,1fr); }
+body.concentration .sortie-concentration{
+  display:block; position:absolute; top:var(--esp-2); right:var(--esp-4); z-index:5;
+  background:none; border:0; cursor:pointer;
+  font:600 .75rem var(--f-titre); letter-spacing:.06em; color:var(--discret);
+  opacity:.35; transition:opacity var(--duree);
+}
+body.concentration .sortie-concentration:hover,
+body.concentration .sortie-concentration:focus-visible{ opacity:1; }
+
+.seulement-petit-ecran{ display:none; }
+
+/* Écran moyen : le panneau de consultation se replie (il deviendra un volet à l'étape 4) */
+@media (max-width:1100px){
+  .vue-ecriture{ grid-template-columns:var(--largeur-plan) minmax(0,1fr); }
+  .panneau{ display:none; }
+}
+/* Petit écran : le plan devient un volet qu'on ouvre avec le bouton « ☰ Plan » */
+@media (max-width:760px){
+  .vue-ecriture{ grid-template-columns:minmax(0,1fr); }
+  .seulement-petit-ecran{ display:inline-block; }
+  .plan{
+    position:fixed; z-index:30; top:0; bottom:0; left:0;
+    width:min(86vw, 340px);
+    box-shadow:var(--ombre);
+    visibility:hidden; transform:translateX(-100%);
+    transition:transform var(--duree), visibility var(--duree);
+  }
+  .vue-ecriture.plan-ouvert .plan{ visibility:visible; transform:none; }
+  /* Voile sombre derrière le volet : le toucher referme le plan */
+  .vue-ecriture.plan-ouvert::after{
+    content:""; position:fixed; inset:0; z-index:25;
+    background:rgba(8,6,14,.6);
+  }
+  .plan-actions{ opacity:1; pointer-events:auto; position:static; transform:none; }
+  .texte{ padding-top:var(--esp-4); }
+}
+/* Écrans tactiles : les boutons ↑ ↓ ✎ ✕ restent visibles (pas de survol possible) */
+@media (hover:none){
+  .plan-actions{ opacity:1; pointer-events:auto; position:static; transform:none; }
+}
 
 /* ---------- Petit écran ---------- */
 @media (max-width:760px){

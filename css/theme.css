@@ -67,6 +67,10 @@
   --ecriture-interligne:1.8; /* espace entre les lignes */
   --ecriture-largeur:68ch;   /* largeur max d'une ligne (≈ 68 caractères) */
 
+  /* Largeur des colonnes de la page d'écriture */
+  --largeur-plan:270px;      /* plan (chapitres, scènes) à gauche */
+  --largeur-panneau:360px;   /* panneau de consultation à droite */
+
   /* Polices */
   --f-titre:"Oxanium", "Trebuchet MS", system-ui, sans-serif;     /* titres, navigation */
   --f-texte:"Literata", Georgia, "Times New Roman", serif;        /* texte courant */

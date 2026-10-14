@@ -8,9 +8,14 @@ import { UNIVERS } from "./outils.js";
 import { informer } from "./dialogues.js";
 import { initialiserBibliotheque, afficherBibliotheque } from "./bibliotheque.js";
 import { initialiserSauvegarde, mettreAJourEtat } from "./sauvegarde.js";
+import { chargerRoman, fermerRoman, etat } from "./etat.js";
+import { initialiserPlan, afficherPlan } from "./plan.js";
+import {
+  initialiserEditeur, preparerEditeur, fermerEditeur, recupererSecours, effacerTousLesSecours,
+} from "./editeur.js";
 
 // Numéro de version affiché dans « À propos »
-export const VERSION = "0.2.0";
+export const VERSION = "0.3.0";
 
 // Liste des pages (« vues ») de l'application
 const VUES = ["bibliotheque", "roman", "apropos"];
@@ -37,21 +42,29 @@ async function suivreAdresse() {
   const [page, id] = location.hash.slice(1).split("/");
 
   if (page === "roman" && id) {
-    const roman = await db.lire("romans", decodeURIComponent(id));
+    const romanId = decodeURIComponent(id);
+    if (etat.roman && etat.roman.id === romanId && !document.getElementById("vue-roman").hidden) return;
+    await fermerEditeur();
+    const roman = await chargerRoman(romanId);
     if (!roman) {
       informer("Ce roman n'existe plus.", { erreur: true });
       location.hash = "bibliotheque";
       return;
     }
     colorerUnivers(roman.univers);
-    document.getElementById("titre-roman").textContent = roman.titre;
-    document.getElementById("univers-roman").textContent = UNIVERS[roman.univers]?.nom || "Autre";
     document.title = roman.titre + " — L'Atelier";
-    await db.ecrireReglage("dernierRoman", roman.id);
+    document.body.classList.add("mode-ecriture");
     montrer("roman");
+    afficherPlan();
+    await preparerEditeur();
+    await db.ecrireReglage("dernierRoman", roman.id);
     return;
   }
 
+  // On quitte la page d'écriture : on enregistre tout avant
+  await fermerEditeur();
+  fermerRoman();
+  document.body.classList.remove("mode-ecriture");
   colorerUnivers("autre");
   document.title = "L'Atelier — Omni-système";
   if (page === "apropos") {
@@ -59,6 +72,7 @@ async function suivreAdresse() {
   } else {
     await afficherBibliotheque();
     montrer("bibliotheque");
+    await mettreAJourEtat();
   }
 }
 
@@ -83,8 +97,19 @@ async function demarrer() {
   // Demande au navigateur de protéger nos données (sans bloquer le démarrage)
   db.protegerStockage().then(mettreAJourEtat);
 
+  // Récupère d'éventuelles frappes non enregistrées (onglet fermé en pleine phrase…)
+  await recupererSecours();
+
   initialiserBibliotheque({ quandCaChange: mettreAJourEtat });
-  initialiserSauvegarde({ quandImporte: suivreAdresse });
+  initialiserSauvegarde({
+    quandImporte: async () => {
+      effacerTousLesSecours();
+      fermerRoman();               // force le rechargement du roman affiché
+      await suivreAdresse();
+    },
+  });
+  initialiserPlan();
+  initialiserEditeur();
 
   await suivreAdresse();
   await mettreAJourEtat();

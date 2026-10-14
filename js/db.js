@@ -125,6 +125,22 @@ export async function supprimer(magasin, id) {
   return finTransaction(tx);
 }
 
+// Fait plusieurs écritures et suppressions d'un seul coup (tout ou rien).
+// Exemple : lot({ ecrire: { scenes: [s1, s2] }, supprimer: { chapitres: [id] } })
+export async function lot({ ecrire: aEcrire = {}, supprimer: aSupprimer = {} }) {
+  const noms = [...new Set([...Object.keys(aEcrire), ...Object.keys(aSupprimer), "reglages"])];
+  const db = await ouvrirBase();
+  const tx = db.transaction(noms, "readwrite");
+  for (const [nom, elements] of Object.entries(aEcrire)) {
+    for (const e of elements) tx.objectStore(nom).put(e);
+  }
+  for (const [nom, ids] of Object.entries(aSupprimer)) {
+    for (const id of ids) tx.objectStore(nom).delete(id);
+  }
+  noterModification(tx);
+  return finTransaction(tx);
+}
+
 // Supprime un roman ET tout ce qu'il contient (chapitres, scènes, fiches), d'un seul coup :
 // soit tout est supprimé, soit rien (jamais à moitié).
 export async function supprimerRoman(romanId) {

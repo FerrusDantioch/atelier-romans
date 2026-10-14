@@ -17,7 +17,7 @@ import { el } from "./outils.js";
 export function ouvrirDialogue({ titre, corps, ok = "Valider", annuler = "Annuler", danger = false, lireFormulaire = null }) {
   return new Promise((repondre) => {
     const zoneErreur = el("p", { class: "dialogue-erreur", role: "alert" });
-    const form = el("form", { method: "dialog", class: "dialogue-form" },
+    const form = el("form", { method: "dialog", class: "dialogue-form", novalidate: true },
       el("h2", { class: "dialogue-titre" }, titre),
       el("div", { class: "dialogue-corps" }, corps),
       zoneErreur,
