@@ -33,13 +33,50 @@
   </div>
 </header>
 
+<!-- ============ RAPPEL DOUX D'EXPORTER (caché si tout est à jour) ============ -->
+<div class="rappel" id="rappel-export" role="status" hidden>
+  <p id="rappel-texte"></p>
+  <div class="ligne">
+    <button class="bouton bouton-petit" type="button" data-action="exporter">Exporter maintenant</button>
+    <button class="petit-bouton" type="button" id="bouton-plus-tard">Plus tard</button>
+  </div>
+</div>
+
 <main>
-  <!-- ============ BIBLIOTHÈQUE (remplie à l'étape 2) ============ -->
+  <!-- ============ BIBLIOTHÈQUE ============ -->
   <section class="vue" id="vue-bibliotheque" aria-labelledby="titre-bibliotheque">
-    <p class="etiquette">Mes romans</p>
-    <h1 id="titre-bibliotheque">Bibliothèque</h1>
+    <div class="vue-tete">
+      <div>
+        <p class="etiquette">Mes romans</p>
+        <h1 id="titre-bibliotheque">Bibliothèque</h1>
+      </div>
+      <button class="bouton" type="button" id="bouton-nouveau-roman">+ Nouveau roman</button>
+    </div>
     <hr class="pointilles">
-    <p class="discret">La bibliothèque arrive à l'étape 2. En attendant, la page « À propos » montre le thème complet.</p>
+    <div class="grille-romans" id="liste-romans"></div>
+
+    <!-- Sauvegarde de sécurité -->
+    <section class="encart-sauvegarde" aria-labelledby="titre-sauvegarde">
+      <h2 id="titre-sauvegarde">Sauvegarde de sécurité</h2>
+      <p class="discret">Vos romans sont enregistrés automatiquement, mais uniquement dans ce navigateur, sur cet appareil. Exportez-les régulièrement dans un fichier et rangez-le en lieu sûr.</p>
+      <ul class="losanges discret" id="etat-sauvegarde" style="--c:var(--omni)"></ul>
+      <div class="ligne">
+        <button class="bouton" type="button" data-action="exporter">Exporter mes données</button>
+        <button class="petit-bouton" type="button" id="bouton-importer">Importer mes données</button>
+        <input type="file" id="fichier-import" accept=".json,application/json" hidden>
+      </div>
+    </section>
+  </section>
+
+  <!-- ============ ROMAN OUVERT (l'écriture arrive à l'étape 3) ============ -->
+  <section class="vue" id="vue-roman" aria-labelledby="titre-roman" hidden>
+    <p class="etiquette"><a href="#bibliotheque">← Bibliothèque</a></p>
+    <div class="vue-tete">
+      <h1 id="titre-roman"></h1>
+      <span class="statut" id="univers-roman"></span>
+    </div>
+    <hr class="pointilles">
+    <p class="discret">L'écriture (chapitres, scènes, panneau de fiches) arrive à l'étape 3.</p>
   </section>
 
   <!-- ============ À PROPOS ============ -->

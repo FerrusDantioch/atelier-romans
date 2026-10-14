@@ -3,7 +3,7 @@
 Application d'écriture de romans tirés des parties de l'Omni-système.
 Elle fonctionne dans le navigateur, hors ligne, et garde tout sur l'ordinateur.
 
-> 🚧 En construction — étape 1 sur 7 terminée (thème, polices, logo, page « À propos »).
+> 🚧 En construction — étape 2 sur 7 terminée (thème, bibliothèque de romans, sauvegarde de sécurité).
 
 ## Lancer l'application sur son ordinateur
 
@@ -20,6 +20,20 @@ Python est déjà installé sur la plupart des ordinateurs.
    (Sous Windows, si `python3` n'est pas reconnu : `py -m http.server 8000`)
 3. Ouvrir le navigateur à l'adresse **http://localhost:8000**
 4. Pour arrêter : revenir dans le terminal et taper `Ctrl+C`.
+
+## Mes données : où sont-elles, comment les protéger ?
+
+- Tout est enregistré **automatiquement**, dans le navigateur, **sur cet ordinateur uniquement**.
+  Aucun compte, aucun serveur.
+- ⚠️ Si vous effacez les données de navigation du site, ou changez d'ordinateur ou de navigateur,
+  vous ne retrouverez pas vos romans… sauf si vous les avez **exportés**.
+- **Exporter** : bouton « Exporter mes données » en bas de la Bibliothèque.
+  Un fichier `atelier-romans-sauvegarde-AAAA-MM-JJ.json` est téléchargé.
+  Rangez-le en lieu sûr (clé USB, cloud…).
+- **Importer** : bouton « Importer mes données », puis choisir un fichier de sauvegarde.
+  ⚠️ L'import **remplace** toutes les données actuelles par celles du fichier.
+- Un **rappel discret** apparaît en haut de l'écran quand des modifications n'ont pas été
+  exportées depuis 3 jours. « Plus tard » le cache pendant 2 jours.
 
 ## Changer l'apparence
 
@@ -45,7 +59,12 @@ dans `assets/` (en gardant les mêmes noms) :
 index.html     la page de l'application
 css/theme.css  toutes les couleurs et polices
 css/app.css    la mise en page
-js/app.js      le script principal
+js/app.js           le chef d'orchestre (navigation entre les pages)
+js/db.js            le stockage des données (IndexedDB) + export/import
+js/bibliotheque.js  la liste des romans
+js/sauvegarde.js    les boutons d'export/import et le rappel
+js/dialogues.js     les fenêtres de confirmation et les petits messages
+js/outils.js        petites fonctions partagées (compteur de mots, dates…)
 fonts/         les polices (hors ligne)
 assets/        logos et icônes
 ```

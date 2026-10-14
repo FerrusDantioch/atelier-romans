@@ -142,6 +142,109 @@ select:focus-visible, textarea:focus-visible, summary:focus-visible{
 .palette{ display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:var(--esp-3); }
 .palette .carte{ padding:var(--esp-4); gap:var(--esp-2); }
 
+
+/* ---------- Boutons : variantes ---------- */
+.bouton-petit{ font-size:.85rem; padding:7px 14px; border-radius:var(--arrondi-petit); text-decoration:none; display:inline-block; }
+.bouton-danger{ background:var(--danger); color:var(--sur-accent); }
+.bouton-danger:hover{ background:color-mix(in srgb, var(--danger) 75%, white); }
+.petit{ font-size:.85rem; }
+.ligne{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+
+/* ---------- En-tête d'une page (titre à gauche, bouton à droite) ---------- */
+.vue-tete{ display:flex; align-items:flex-end; justify-content:space-between; gap:var(--esp-4); flex-wrap:wrap; }
+.vue .etiquette a{ color:var(--discret); text-decoration:none; }
+.vue .etiquette a:hover{ color:var(--texte); }
+
+/* ---------- Bibliothèque ---------- */
+.grille-romans{ display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr)); gap:var(--esp-5); }
+.carte-tete{ display:flex; justify-content:space-between; align-items:baseline; gap:var(--esp-3); flex-wrap:wrap; }
+.roman-carte .statut{ --c:inherit; color:var(--c); border-color:color-mix(in srgb, var(--c) 55%, transparent); }
+.titre-roman{ color:var(--texte); text-decoration:none; }
+.titre-roman:hover{ color:var(--halo); }
+.vide{ grid-column:1 / -1; display:grid; gap:var(--esp-3); justify-items:start;
+  padding:var(--esp-6); border:var(--filet) dashed var(--trait); border-radius:var(--arrondi-panneau); }
+
+/* Encart « Sauvegarde de sécurité » (bordure en pointillés violets, comme l'encart IA du portfolio) */
+.encart-sauvegarde{
+  margin-top:var(--esp-7); padding:var(--esp-5);
+  border:var(--filet) dashed var(--omni); border-radius:var(--arrondi-panneau);
+  display:grid; gap:var(--esp-3); max-width:75ch;
+}
+.encart-sauvegarde h2{ font-size:1.15rem; }
+.encart-sauvegarde p, .encart-sauvegarde li{ font-size:.95rem; }
+
+/* Bandeau de rappel d'export (discret, sans animation) */
+.rappel{
+  display:flex; align-items:center; justify-content:space-between; gap:var(--esp-3); flex-wrap:wrap;
+  padding:var(--esp-2) var(--esp-4);
+  background:color-mix(in srgb, var(--omni) 10%, var(--nuit));
+  border-bottom:var(--filet) solid color-mix(in srgb, var(--omni) 35%, transparent);
+  font-size:.92rem;
+}
+
+/* ---------- Fenêtres de dialogue ---------- */
+.dialogue{
+  width:min(520px, calc(100vw - 32px));
+  background:var(--table); color:var(--texte);
+  border:var(--filet) solid var(--trait); border-top:var(--liseré) solid var(--omni);
+  border-radius:var(--arrondi-carte);
+  padding:0; box-shadow:var(--ombre);
+}
+.dialogue::backdrop{ background:rgba(8,6,14,.7); }
+.dialogue-form{ display:grid; gap:var(--esp-4); padding:var(--esp-5); }
+.dialogue-titre{ font-size:1.25rem; }
+.dialogue-corps{ display:grid; gap:var(--esp-3); }
+.dialogue-erreur{ color:var(--danger); font-size:.9rem; }
+.dialogue-erreur:empty{ display:none; }
+.dialogue-boutons{ display:flex; justify-content:flex-end; gap:10px; flex-wrap:wrap; }
+.avertissement{ color:var(--texte); border-left:3px solid var(--danger); padding-left:var(--esp-3); }
+
+/* Champs de formulaire */
+.champ{ display:grid; gap:6px; }
+input[type=text], input[type=number], input[type=search], select, textarea{
+  font:inherit; color:var(--texte);
+  background:var(--nuit);
+  border:var(--filet) solid var(--trait); border-radius:var(--arrondi-petit);
+  padding:8px 12px; width:100%;
+}
+input[type=text]:focus, input[type=number]:focus, input[type=search]:focus, select:focus, textarea:focus{
+  border-color:var(--omni); outline:none; box-shadow:var(--lueur-douce);
+}
+
+/* Choix de l'univers : petites cartes avec liseré de couleur */
+.choix-univers{ border:0; padding:0; margin:0; display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:var(--esp-2); }
+.choix-univers legend{ margin-bottom:var(--esp-2); padding:0; }
+.option-univers{
+  --c:var(--omni);
+  display:flex; align-items:center; gap:var(--esp-2);
+  padding:8px 10px; cursor:pointer;
+  background:var(--nuit);
+  border:var(--filet) solid var(--trait); border-left:var(--liseré) solid var(--c);
+  border-radius:var(--arrondi-petit);
+  font-family:var(--f-titre); font-size:.9rem;
+}
+.option-univers.cyber{ --c:var(--cyber); } .option-univers.fantasy{ --c:var(--fantasy); }
+.option-univers.space{ --c:var(--space); } .option-univers.horreur{ --c:var(--horreur); }
+.option-univers.autre{ --c:var(--autre); }
+.option-univers input{ accent-color:var(--c); margin:0; }
+.option-univers:has(input:checked){ border-color:var(--c); background:color-mix(in srgb, var(--c) 10%, var(--nuit)); }
+
+/* ---------- Petits messages en bas de l'écran ---------- */
+#notifications{
+  position:fixed; bottom:var(--esp-4); left:50%; transform:translateX(-50%);
+  display:grid; gap:var(--esp-2); z-index:100; width:min(480px, calc(100vw - 32px));
+  pointer-events:none;
+}
+.notification{
+  background:var(--table-haute); color:var(--texte);
+  border:var(--filet) solid var(--trait); border-left:var(--liseré) solid var(--omni);
+  border-radius:var(--arrondi-petit); padding:10px 14px; font-size:.92rem;
+  box-shadow:var(--ombre);
+  animation:apparition var(--duree) ease-out;
+}
+.notification.erreur{ border-left-color:var(--danger); }
+@keyframes apparition{ from{ opacity:0; } to{ opacity:1; } } /* simple fondu, pas de mouvement */
+
 /* ---------- Petit écran ---------- */
 @media (max-width:760px){
   .entete-in{ flex-wrap:wrap; }
