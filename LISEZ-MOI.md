@@ -7,19 +7,70 @@ Elle fonctionne dans le navigateur, hors ligne, et garde tout sur l'ordinateur.
 
 ## Lancer l'application sur son ordinateur
 
-Il faut un petit serveur local (obligatoire pour le fonctionnement hors ligne).
-Python est déjà installé sur la plupart des ordinateurs.
+L'application a besoin d'un petit « serveur » local pour fonctionner (c'est une règle des
+navigateurs pour le mode hors ligne). Il se lance avec une commande tapée dans un **terminal** :
+une fenêtre où l'on donne des instructions en tapant du texte au lieu de cliquer.
 
-1. Ouvrir un terminal dans le dossier `atelier-romans`.
-2. Copier-coller :
+### Étape A — Récupérer les fichiers (sans terminal)
+
+1. Aller sur https://github.com/FerrusDantioch/atelier-romans (connecté à son compte GitHub).
+2. Cliquer sur le bouton vert **« Code »**, puis **« Download ZIP »**.
+3. Décompresser le ZIP :
+   - **Windows** : clic droit sur le fichier → **« Extraire tout… »**
+   - **Mac** : double-clic sur le fichier
+4. On obtient un dossier `atelier-romans-main`.
+
+### Étape B — Lancer le petit serveur
+
+**Sur Windows**
+
+1. Ouvrir le dossier `atelier-romans-main` dans l'Explorateur de fichiers
+   (on doit voir `index.html` dedans).
+2. Cliquer dans la **barre d'adresse** en haut de la fenêtre (là où s'affiche le chemin du dossier).
+3. Effacer ce qui est écrit, taper `cmd` puis **Entrée** : une fenêtre noire s'ouvre,
+   c'est le terminal, déjà placé dans le bon dossier.
+4. Copier-coller cette commande, puis **Entrée** :
+
+   ```
+   py -m http.server 8000
+   ```
+
+5. Si un message dit que Python est introuvable : installer Python depuis
+   https://www.python.org/downloads/ en **cochant la case « Add python.exe to PATH »**
+   pendant l'installation. Fermer la fenêtre noire et recommencer à l'étape 1.
+
+**Sur Mac**
+
+1. Ouvrir l'application **Terminal** : `Cmd + Espace`, taper `Terminal`, **Entrée**.
+2. Taper `cd` suivi d'un **espace** (sans appuyer sur Entrée).
+3. **Glisser le dossier** `atelier-romans-main` depuis le Finder dans la fenêtre du Terminal :
+   son chemin s'écrit tout seul. Appuyer sur **Entrée**.
+4. Copier-coller cette commande, puis **Entrée** :
 
    ```
    python3 -m http.server 8000
    ```
 
-   (Sous Windows, si `python3` n'est pas reconnu : `py -m http.server 8000`)
-3. Ouvrir le navigateur à l'adresse **http://localhost:8000**
-4. Pour arrêter : revenir dans le terminal et taper `Ctrl+C`.
+   Si le Mac propose d'installer des « outils de développement », accepter, puis relancer la commande.
+
+### Étape C — Ouvrir l'application
+
+- Le terminal affiche une ligne du type `Serving HTTP on … port 8000` : c'est bon signe.
+- Ouvrir le navigateur (Chrome ou Edge de préférence) à l'adresse **http://localhost:8000**
+- **Laisser la fenêtre du terminal ouverte** pendant qu'on utilise l'application (on peut la réduire).
+- Pour arrêter : cliquer dans le terminal et appuyer sur `Ctrl + C`, ou fermer la fenêtre.
+
+### Deux points importants
+
+- **Toujours utiliser le numéro `8000`.** Le navigateur range les romans selon l'adresse exacte :
+  avec `localhost:8001`, on verrait une bibliothèque vide (les données ne seraient pas perdues,
+  juste rangées sous l'autre adresse).
+- **Pour récupérer une nouvelle version** : retélécharger le ZIP et lancer le serveur depuis le
+  nouveau dossier. Les romans ne sont pas dans le dossier mais dans le navigateur : ils restent
+  là tant qu'on utilise la même adresse `localhost:8000`.
+
+*Pour les habitués de git : `git clone https://github.com/FerrusDantioch/atelier-romans.git`,
+puis `git pull` pour les mises à jour.*
 
 ## Mes données : où sont-elles, comment les protéger ?
 
