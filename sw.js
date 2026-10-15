@@ -34,6 +34,7 @@ const FICHIERS = [
   "js/editeur.js",
   "js/etat.js",
   "js/export-pdf.js",
+  "js/fusion.js",
   "js/hors-ligne.js",
   "js/onglets.js",
   "js/outils.js",

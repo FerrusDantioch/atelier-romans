@@ -23,7 +23,7 @@ import { initialiserHorsLigne } from "./hors-ligne.js";
 import { initialiserReperage } from "./reperage.js";
 
 // Numéro de version affiché dans « À propos »
-export const VERSION = "1.1.0";
+export const VERSION = "1.2.0";
 
 // Liste des pages (« vues ») de l'application
 const VUES = ["bibliotheque", "roman", "apropos"];
@@ -128,6 +128,8 @@ async function demarrer() {
   }
   // Demande au navigateur de protéger nos données (sans bloquer le démarrage)
   db.protegerStockage().then(mettreAJourEtat);
+  // L'identité de cet appareil : chaque modification la retient (pour la fusion entre appareils)
+  await db.monAppareil();
 
   // Récupère d'éventuelles frappes non enregistrées (onglet fermé en pleine phrase…)
   await recupererSecours();

@@ -82,10 +82,12 @@
     <section class="encart-sauvegarde" aria-labelledby="titre-sauvegarde">
       <h2 id="titre-sauvegarde">Sauvegarde de sécurité</h2>
       <p class="discret">Vos romans sont enregistrés automatiquement, mais uniquement dans ce navigateur, sur cet appareil. Exportez-les régulièrement dans un fichier et rangez-le en lieu sûr.</p>
+      <p class="discret">Pour écrire sur deux appareils : exportez sur l'un, puis importez ce fichier sur l'autre en choisissant « Fusionner ».</p>
       <ul class="losanges discret" id="etat-sauvegarde" style="--c:var(--omni)"></ul>
       <div class="ligne">
         <button class="bouton" type="button" data-action="exporter">Exporter mes données</button>
         <button class="petit-bouton" type="button" id="bouton-importer">Importer mes données</button>
+        <button class="petit-bouton" type="button" id="bouton-annuler-import" hidden>Annuler le dernier import</button>
         <input type="file" id="fichier-import" accept=".json,application/json" hidden>
       </div>
     </section>
@@ -230,6 +232,7 @@
         <li>Écrire en mode <em>Notes</em> ou <em>Rédigé</em></li>
         <li>Consulter une fiche sans quitter le texte (<span class="mono">Ctrl+K</span>)</li>
         <li>Voir d'un coup d'œil les personnages et lieux nommés dans la scène</li>
+        <li>Écrire sur deux appareils : exporter sur l'un, fusionner sur l'autre</li>
         <li>Exporter en PDF, mise en page de livre (<span class="mono">Ctrl+P</span>)</li>
       </ul>
 

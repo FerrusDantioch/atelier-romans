@@ -3,7 +3,8 @@
 Application d'écriture de romans tirés des parties de l'Omni-système.
 Elle s'installe comme une application, fonctionne **sans connexion**, et garde tout sur l'ordinateur.
 
-**Version 1.1** — les sept étapes prévues sont terminées, plus l'étape 8 : les fiches repérées dans le texte.
+**Version 1.2** — les sept étapes prévues sont terminées, plus l'étape 8 (les fiches repérées dans le texte)
+et l'étape 9 (écrire sur deux appareils : la fusion).
 
 **En ligne : https://ferrusdantioch.github.io/atelier-romans/** — s'ouvre aussi sur téléphone,
 sans rien installer d'autre (voir « L'Atelier en ligne » plus bas).
@@ -22,6 +23,8 @@ sans rien installer d'autre (voir « L'Atelier en ligne » plus bas).
 - **Export PDF** d'une scène, d'un chapitre ou du roman, mis en page comme un livre.
 - **Sauvegarde automatique** permanente, copie de secours si l'onglet se ferme en pleine phrase,
   et **export / import** de toutes les données dans un fichier, avec un rappel doux.
+- **Deux appareils** (téléphone et ordinateur) : le fichier exporté sur l'un se **fusionne** sur l'autre,
+  sans rien écraser.
 
 ## Première installation (une seule fois)
 
@@ -245,12 +248,43 @@ Sur Mac, `Cmd` remplace `Ctrl`.
 - ⚠️ Si vous effacez les données de navigation du site, ou changez d'ordinateur ou de navigateur,
   vous ne retrouverez pas vos romans… sauf si vous les avez **exportés**.
 - **Exporter** : bouton « Exporter mes données » en bas de la Bibliothèque.
-  Un fichier `atelier-romans-sauvegarde-AAAA-MM-JJ.json` est téléchargé.
-  Rangez-le en lieu sûr (clé USB, cloud…).
+  Un fichier `atelier-romans-sauvegarde-AAAA-MM-JJ-appareil.json` est téléchargé
+  (par exemple `…-2026-10-15-telephone-android.json`). Rangez-le en lieu sûr (clé USB, cloud…).
 - **Importer** : bouton « Importer mes données », puis choisir un fichier de sauvegarde.
-  ⚠️ L'import **remplace** toutes les données actuelles par celles du fichier.
+  L'Atelier montre ce que contient le fichier et ce qui changerait, puis propose :
+  - **Fusionner** (conseillé pour un fichier venant d'un autre appareil) : voir ci-dessous ;
+  - **Remplacer tout** : les données de cet appareil sont remplacées par celles du fichier.
+  Pour une sauvegarde faite sur ce même appareil, seul « Remplacer » est proposé (c'est une restauration).
+- **Annuler le dernier import** : ce bouton (à côté d'« Importer ») remet l'Atelier exactement
+  dans son état d'avant le dernier import, fusion ou remplacement. Attention : ce qui a été écrit
+  depuis cet import est retiré aussi.
 - Un **rappel discret** apparaît en haut de l'écran quand des modifications n'ont pas été
   exportées depuis 3 jours. « Plus tard » le cache pendant 2 jours.
+
+### Écrire sur deux appareils (téléphone et ordinateur)
+
+Chaque appareil garde ses propres données : on passe de l'un à l'autre par le fichier d'export.
+
+1. Sur l'appareil où vous venez d'écrire : **« Exporter mes données »**.
+2. Faites passer le fichier sur l'autre appareil : envoyez-le-vous par e-mail, mettez-le sur
+   Google Drive, ou branchez le téléphone à l'ordinateur avec un câble. Sur Android, le fichier
+   est dans **Téléchargements** (application « Fichiers »).
+3. Sur l'autre appareil : **« Importer mes données »**, choisir le fichier, puis **« Fusionner »**.
+
+La fusion :
+- **ajoute** ce qui est nouveau (romans, chapitres, scènes, fiches) ;
+- pour ce qui existe des deux côtés, **garde la version la plus récente**, en prenant séparément le
+  contenu, le titre et la place dans le plan : une scène renommée ou déplacée ici et réécrite là-bas
+  garde le nouveau titre, la nouvelle place ET le nouveau texte ;
+- **supprime** ce qui a été supprimé sur l'autre appareil, sauf ce qui a été modifié ici après
+  cette suppression (du travail récent n'est jamais jeté) ;
+- si une même scène a été **écrite sur les deux appareils** depuis le dernier échange, **les deux
+  versions sont gardées** : la plus récente à sa place, l'autre juste après dans le plan, avec
+  « (autre version : téléphone Android) » dans son titre. Relisez-les, gardez la bonne, supprimez
+  l'autre. Pour une fiche modifiée des deux côtés, l'autre version est recopiée dans ses notes.
+
+Conseil : faites l'aller-retour à chaque changement d'appareil (exporter ici, fusionner là-bas),
+pour éviter d'écrire la même scène des deux côtés.
 
 ## Changer l'apparence
 
@@ -281,7 +315,8 @@ Prévu « pour plus tard » dès le départ (hors de la première version) :
 - des **liens automatiques** entre le texte et les fiches : premier pas fait avec « Dans cette scène »
   (étape 8) ; reste possible : les noms mis en surbrillance directement dans le texte ;
 - l'**import des fiches PDF** de JDR ;
-- la **synchronisation** entre plusieurs appareils.
+- la **synchronisation** entre plusieurs appareils : faite à l'étape 9 par fichier et fusion ;
+  reste possible : une synchronisation automatique (elle demanderait un compte en ligne).
 
 À savoir :
 - **Remplacer les logos** par les vôtres (voir plus haut), si ceux repris du portfolio ne conviennent pas.
@@ -338,10 +373,11 @@ js/panneau.js       le panneau de consultation : onglets, fiches, épinglage, é
 js/recherche.js     la recherche rapide Ctrl+K
 js/reperage.js      « Dans cette scène » : les fiches nommées dans le texte
 js/export-pdf.js    l'export PDF (le livre à imprimer)
+js/fusion.js        la fusion des données de deux appareils
 js/annulation.js    Ctrl+Z en toute sécurité (n'annule que là où l'on écrit)
 js/onglets.js       une seule page de l'Atelier ouverte à la fois
 js/hors-ligne.js    le mode hors ligne et le bouton « Installer l'application »
-js/sauvegarde.js    les boutons d'export/import et le rappel
+js/sauvegarde.js    les boutons d'export/import (fusion, annulation) et le rappel
 js/dialogues.js     les fenêtres de confirmation et les petits messages
 js/outils.js        petites fonctions partagées (compteur de mots, dates…)
 fonts/         les polices (hors ligne)

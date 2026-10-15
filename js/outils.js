@@ -80,6 +80,23 @@ function debutDuJour(ms) {
   return d.getTime();
 }
 
+// Date et heure lisibles : « 14 oct. 2026 à 15:42 »
+export function dateHeure(ms) {
+  return dateCourte(ms) + " à " + new Date(ms).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+}
+
+// Ce qu'est cet appareil, en mots simples (pour reconnaître d'où vient un fichier de sauvegarde)
+export function nomAppareil(ua = navigator.userAgent, tactile = navigator.maxTouchPoints > 1) {
+  if (/iPhone/.test(ua)) return "iPhone";
+  if (/iPad/.test(ua) || (/Macintosh/.test(ua) && tactile)) return "iPad";
+  if (/Android/.test(ua)) return /Mobile/.test(ua) ? "téléphone Android" : "tablette Android";
+  if (/CrOS/.test(ua)) return "Chromebook";
+  if (/Windows/.test(ua)) return "ordinateur Windows";
+  if (/Macintosh/.test(ua)) return "Mac";
+  if (/Linux/.test(ua)) return "ordinateur Linux";
+  return "autre appareil";
+}
+
 // Date du jour pour un nom de fichier : 2026-10-14
 export function dateFichier(ms = Date.now()) {
   const d = new Date(ms);

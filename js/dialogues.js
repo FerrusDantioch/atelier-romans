@@ -13,8 +13,9 @@ import { el } from "./outils.js";
 // - danger  : true pour un bouton rouge (suppression…)
 // - lireFormulaire : si présent, appelé à la validation ; renvoie la valeur
 //   du formulaire, ou une chaîne d'erreur pour bloquer la validation.
+// - autres  : boutons supplémentaires [{ texte, valeur, danger }] ; un clic renvoie leur « valeur »
 // Renvoie la valeur obtenue, ou null si l'on a annulé.
-export function ouvrirDialogue({ titre, corps, ok = "Valider", annuler = "Annuler", danger = false, lireFormulaire = null }) {
+export function ouvrirDialogue({ titre, corps, ok = "Valider", annuler = "Annuler", danger = false, lireFormulaire = null, autres = [] }) {
   return new Promise((repondre) => {
     const zoneErreur = el("p", { class: "dialogue-erreur", role: "alert" });
     const form = el("form", { method: "dialog", class: "dialogue-form", novalidate: true },
@@ -23,6 +24,7 @@ export function ouvrirDialogue({ titre, corps, ok = "Valider", annuler = "Annule
       zoneErreur,
       el("div", { class: "dialogue-boutons" },
         el("button", { type: "button", class: "petit-bouton", value: "annuler", onclick: () => fermer(null) }, annuler),
+        autres.map((b) => el("button", { type: "button", class: "petit-bouton" + (b.danger ? " danger" : ""), value: b.valeur, onclick: () => fermer(b.valeur) }, b.texte)),
         el("button", { type: "submit", class: danger ? "bouton bouton-danger" : "bouton", value: "ok" }, ok),
       ),
     );
