@@ -137,6 +137,8 @@ select:focus-visible, textarea:focus-visible, summary:focus-visible{
 .medaillon img{ width:100%; height:100%; object-fit:cover; display:block; }
 .apropos p{ color:var(--discret); }
 .apropos .version{ font-family:var(--f-des); color:var(--halo); font-size:.9rem; }
+.conception{ display:grid; gap:var(--esp-2); }
+.conception strong{ color:var(--texte); font-weight:600; }
 
 /* Démo des couleurs d'univers (page À propos) */
 .palette{ display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:var(--esp-3); }

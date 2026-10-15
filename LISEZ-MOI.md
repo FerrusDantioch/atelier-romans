@@ -211,5 +211,12 @@ fonts/         les polices (hors ligne)
 assets/        logos et icônes
 ```
 
+## Conception
+
+L'Atelier a été conçu par **Ferrus Dantioch** et **Claude**, l'assistant d'intelligence artificielle
+d'Anthropic : Ferrus Dantioch, créateur de l'Omni-système, en a imaginé l'idée, les besoins et
+l'apparence ; Claude en a écrit le code. Application personnelle, destinée pour l'instant à son seul auteur.
+(C'est aussi indiqué dans la page « À propos » de l'application.)
+
 ---
 *Réalisé par Ferrus Dantioch*
