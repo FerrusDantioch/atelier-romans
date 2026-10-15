@@ -14,7 +14,7 @@ import * as db from "./db.js";
 import { el, nombre, pluriel, dateFichier } from "./outils.js";
 import { ouvrirDialogue, informer } from "./dialogues.js";
 import {
-  etat, trouverScene, scenesDansLOrdre, recompterScene, motsScene, motsChapitre, motsRoman, ecouter,
+  etat, trouverScene, scenesDansLOrdre, recompterScene, motsScene, motsChapitre, motsRoman, ecouter, annoncer,
 } from "./etat.js";
 import { afficherPlan, majComptes, marquerActive, ajouterChapitre } from "./plan.js";
 import { oublierHistorique } from "./annulation.js";
@@ -165,6 +165,7 @@ async function ouvrirScene(id) {
   indiquerEnregistrement("enregistre");
   if (reprise) { afficherPlan(); marquerModifiee(); } // le texte repris sera enregistré dans un instant
   db.ecrireReglage("derniereScene:" + etat.roman.id, id);
+  annoncer("scene-affichee", id); // (le panneau cherche les fiches nommées dans la scène)
 }
 
 function afficherAucuneScene() {
@@ -173,6 +174,7 @@ function afficherAucuneScene() {
   $("editeur-vide").hidden = false;
   $("editeur-plein").hidden = true;
   majCompteurs();
+  annoncer("scene-affichee", null);
 }
 
 // Une scène vient d'être supprimée : si c'était la scène ouverte, on ouvre sa voisine

@@ -20,9 +20,10 @@ import { initialiserAnnulation } from "./annulation.js";
 import { demarrerSeul } from "./onglets.js";
 import { initialiserExportPdf } from "./export-pdf.js";
 import { initialiserHorsLigne } from "./hors-ligne.js";
+import { initialiserReperage } from "./reperage.js";
 
 // Numéro de version affiché dans « À propos »
-export const VERSION = "1.0.0";
+export const VERSION = "1.1.0";
 
 // Liste des pages (« vues ») de l'application
 const VUES = ["bibliotheque", "roman", "apropos"];
@@ -149,6 +150,7 @@ async function demarrer() {
   initialiserPlan();
   initialiserEditeur();
   initialiserPanneau();
+  initialiserReperage();
   initialiserRecherche();
   initialiserExportPdf();
   initialiserHorsLigne();

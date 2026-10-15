@@ -40,6 +40,7 @@ const FICHIERS = [
   "js/panneau.js",
   "js/plan.js",
   "js/recherche.js",
+  "js/reperage.js",
   "js/sauvegarde.js",
   "fonts/oxanium.woff2",
   "fonts/literata.woff2",

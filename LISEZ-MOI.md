@@ -3,7 +3,7 @@
 Application d'écriture de romans tirés des parties de l'Omni-système.
 Elle s'installe comme une application, fonctionne **sans connexion**, et garde tout sur l'ordinateur.
 
-**Version 1.0** — les sept étapes prévues sont terminées.
+**Version 1.1** — les sept étapes prévues sont terminées, plus l'étape 8 : les fiches repérées dans le texte.
 
 **En ligne : https://ferrusdantioch.github.io/atelier-romans/** — s'ouvre aussi sur téléphone,
 sans rien installer d'autre (voir « L'Atelier en ligne » plus bas).
@@ -17,6 +17,8 @@ sans rien installer d'autre (voir « L'Atelier en ligne » plus bas).
   Compteurs de mots, objectif de session, mode concentration.
 - **Fiches** à côté du texte : personnage principal (épinglé), PNJ, lieux, événements dans l'ordre.
 - **`Ctrl+K`** : on tape un nom, la fiche s'ouvre à côté, **le curseur ne bouge pas**.
+- **Dans cette scène** : les personnages et lieux nommés dans la scène s'affichent d'eux-mêmes
+  à côté du texte, prêts à être consultés d'un clic.
 - **Export PDF** d'une scène, d'un chapitre ou du roman, mis en page comme un livre.
 - **Sauvegarde automatique** permanente, copie de secours si l'onglet se ferme en pleine phrase,
   et **export / import** de toutes les données dans un fichier, avec un rappel doux.
@@ -158,9 +160,20 @@ Ouvrez un roman depuis la Bibliothèque. L'écran se divise en trois colonnes :
 - **4 onglets** : Principal (personnage principal), PNJ, Lieux, Événements.
   « + Nouveau… » crée une fiche ; « ✎ Modifier » ouvre le formulaire ; tout s'enregistre seul ;
   « Terminé » revient à la lecture.
-- **Champs** : personnages → apparence, caractère, background, relations ;
-  lieux → description, ambiance ; événements → date ou moment, résumé, personnages et lieux concernés.
+- **Champs** : personnages → autres noms, apparence, caractère, background, relations ;
+  lieux → autres noms, description, ambiance ; événements → date ou moment, résumé, personnages et lieux concernés.
   Chaque fiche a aussi un **type** libre (allié, taverne…) et des **notes libres**.
+- **Dans cette scène** (en haut du panneau) : les personnages et lieux de vos fiches qui sont nommés
+  dans la scène ouverte (notes et texte rédigé), dans l'ordre où ils apparaissent. La liste se met à
+  jour pendant que vous écrivez. Un clic ouvre la fiche, **le curseur reste dans le texte**.
+  Sur écran moyen ou petit, le bouton indique combien il y en a : « Fiches (3) ».
+  Une fiche est repérée par :
+  - son **nom complet** (« Mère Corbeau », même écrit « mère corbeau ») ;
+  - un de ses **autres noms** (champ « Autres noms », séparés par des virgules : « la Vieille, Corbeau ») ;
+  - un **mot de son nom écrit avec une majuscule** : « Corbeau » repère Mère Corbeau, mais pas « un corbeau ».
+    Les mots courants (Mère, Docteur, Taverne, Grand…) ne suffisent pas, car plusieurs fiches peuvent les partager.
+  Accents et majuscules sont ignorés, sauf la majuscule exigée pour un nom d'un seul mot.
+  Les événements, et une fiche pas encore renommée (« Nouveau PNJ »), ne sont pas repérés.
 - **Fiche épinglée** : elle reste affichée en haut du panneau, quel que soit l'onglet.
   Le premier personnage principal s'épingle tout seul ; « 📌 Épingler » en choisit une autre ;
   « Replier » la réduit à son nom.
@@ -176,8 +189,8 @@ En pleine écriture, besoin de vérifier la couleur des yeux d'un PNJ ?
 
 1. **`Ctrl+K`** (Mac : `Cmd+K`) : la recherche s'ouvre.
 2. Tapez quelques lettres du nom : « corb » trouve « Mère Corbeau ».
-   Accents et majuscules sont ignorés. On peut aussi chercher par type (« antagoniste »)
-   ou par un mot du contenu de la fiche (« néons »).
+   Accents et majuscules sont ignorés. On peut aussi chercher par un autre nom (« vieille »),
+   par type (« antagoniste ») ou par un mot du contenu de la fiche (« néons »).
 3. **`Entrée`** : la fiche s'ouvre dans le panneau, et **votre curseur reste exactement où il était**
    dans le texte (même sélection, même défilement). Vous continuez d'écrire aussitôt.
 4. **`Échap`** : la recherche se ferme, retour au texte sans rien changer.
@@ -265,7 +278,8 @@ puis la réinstaller la met à jour aussitôt ; les romans ne sont pas touchés)
 
 Prévu « pour plus tard » dès le départ (hors de la première version) :
 - une **frise chronologique visuelle** des événements ;
-- des **liens automatiques** entre le texte et les fiches (noms mis en surbrillance) ;
+- des **liens automatiques** entre le texte et les fiches : premier pas fait avec « Dans cette scène »
+  (étape 8) ; reste possible : les noms mis en surbrillance directement dans le texte ;
 - l'**import des fiches PDF** de JDR ;
 - la **synchronisation** entre plusieurs appareils.
 
@@ -322,6 +336,7 @@ js/plan.js          le plan : chapitres et scènes
 js/editeur.js       l'écriture : modes, mise en forme, enregistrement, session, concentration
 js/panneau.js       le panneau de consultation : onglets, fiches, épinglage, événements
 js/recherche.js     la recherche rapide Ctrl+K
+js/reperage.js      « Dans cette scène » : les fiches nommées dans le texte
 js/export-pdf.js    l'export PDF (le livre à imprimer)
 js/annulation.js    Ctrl+Z en toute sécurité (n'annule que là où l'on écrit)
 js/onglets.js       une seule page de l'Atelier ouverte à la fois

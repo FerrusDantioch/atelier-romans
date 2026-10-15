@@ -8,25 +8,28 @@
 import * as db from "./db.js";
 import { el, nouvelId } from "./outils.js";
 import { confirmer, informer } from "./dialogues.js";
-import { etat, trouverFiche, fichesDe } from "./etat.js";
+import { etat, trouverFiche, fichesDe, annoncer } from "./etat.js";
 import { revenirAuTexte } from "./editeur.js";
+
+// « Autres noms » : surnoms qui servent aussi à repérer la fiche dans le texte (voir reperage.js)
+const AUTRES_NOMS = ["autresNoms", "Autres noms"];
 
 // Les catégories de fiches et leurs champs (clé du champ, libellé)
 export const CATEGORIES = {
   principal: {
     onglet: "Principal", nom: "Personnage principal", nouveau: "Nouveau personnage principal",
     exempleType: "Héroïne, mercenaire, enquêteur…",
-    champs: [["apparence", "Apparence"], ["caractere", "Caractère"], ["background", "Background de départ"], ["relations", "Relations"]],
+    champs: [AUTRES_NOMS, ["apparence", "Apparence"], ["caractere", "Caractère"], ["background", "Background de départ"], ["relations", "Relations"]],
   },
   pnj: {
     onglet: "PNJ", nom: "PNJ", nouveau: "Nouveau PNJ",
     exempleType: "Allié, rival, marchand…",
-    champs: [["apparence", "Apparence"], ["caractere", "Caractère"], ["background", "Background"], ["relations", "Relations"]],
+    champs: [AUTRES_NOMS, ["apparence", "Apparence"], ["caractere", "Caractère"], ["background", "Background"], ["relations", "Relations"]],
   },
   lieu: {
     onglet: "Lieux", nom: "Lieu", nouveau: "Nouveau lieu",
     exempleType: "Ville, taverne, vaisseau…",
-    champs: [["description", "Description"], ["ambiance", "Ambiance"]],
+    champs: [AUTRES_NOMS, ["description", "Description"], ["ambiance", "Ambiance"]],
   },
   evenement: {
     onglet: "Événements", nom: "Événement", nouveau: "Nouvel événement",
@@ -35,7 +38,8 @@ export const CATEGORIES = {
   },
 };
 // Les champs d'une ligne (courts) ; les autres sont des zones de texte
-const CHAMPS_COURTS = ["quand"];
+const CHAMPS_COURTS = ["quand", "autresNoms"];
+const EXEMPLES = { autresNoms: "Surnoms, séparés par des virgules : la Vieille, Corbeau…" };
 const DELAI_SAUVEGARDE = 400;
 
 // Ce que montre le panneau en ce moment
@@ -398,7 +402,7 @@ function vueEdition(fiche) {
       el("input", { type: "text", name: "type", value: fiche.type || "", list: idListe, placeholder: cat.exempleType, autocomplete: "off" }),
       el("datalist", { id: idListe }, typesExistants.map((t) => el("option", { value: t }))),
     ),
-    cat.champs.map(([cle, libelle]) => champTexte(cle, libelle, fiche.champs[cle], { court: CHAMPS_COURTS.includes(cle) })),
+    cat.champs.map(([cle, libelle]) => champTexte(cle, libelle, fiche.champs[cle], { court: CHAMPS_COURTS.includes(cle), exemple: EXEMPLES[cle] })),
     fiche.categorie === "evenement" ? [
       choixLiens("personnages", "Personnages concernés", [...fichesDe("principal"), ...fichesDe("pnj")], fiche.champs.personnages),
       choixLiens("lieux", "Lieux concernés", fichesDe("lieu"), fiche.champs.lieux),
@@ -415,11 +419,11 @@ function vueEdition(fiche) {
   return form;
 }
 
-function champTexte(nom, libelle, valeur, { court = false } = {}) {
+function champTexte(nom, libelle, valeur, { court = false, exemple = null } = {}) {
   return el("label", { class: "champ" },
     el("span", { class: "etiquette" }, libelle),
     court
-      ? el("input", { type: "text", name: nom, value: valeur || "", autocomplete: "off", maxlength: 200 })
+      ? el("input", { type: "text", name: nom, value: valeur || "", autocomplete: "off", maxlength: 200, placeholder: exemple })
       : el("textarea", { name: nom, rows: 2, lang: "fr", spellcheck: "true" }, valeur || ""),
   );
 }
@@ -463,6 +467,7 @@ export async function sauverFiche() {
   try {
     await db.ecrire("fiches", { ...fiche, champs: { ...fiche.champs } });
     if (etat.roman && etat.roman.ficheEpinglee === fiche.id) afficherEpinglee(); // la fiche épinglée suit les changements
+    annoncer("fiches-changees"); // (nom changé : les fiches repérées dans le texte suivent)
     return true;
   } catch (erreur) {
     ficheModifiee = fiche;
@@ -497,6 +502,7 @@ export async function creerFiche(categorie, { titre = null, edition = true, focu
   // Le formulaire s'affiche tout de suite ; l'enregistrement suit (sans faire attendre).
   // Nom proposé par défaut (« Nouveau PNJ ») : il est sélectionné, pour être remplacé en tapant.
   ouvrirFiche(fiche.id, { edition, focus, selection: !titre });
+  annoncer("fiches-changees");
   await db.lot({ ecrire: aEcrire });
   return fiche;
 }
@@ -522,6 +528,7 @@ async function supprimerFiche(id) {
     if (e.champs.personnages.length + e.champs.lieux.length !== avant) evenementsModifies.push(e);
   }
   etat.fiches = etat.fiches.filter((f) => f.id !== id);
+  annoncer("fiches-changees");
   const aEcrire = { fiches: evenementsModifies };
   if (etat.roman.ficheEpinglee === id) {
     // Un autre personnage principal (s'il y en a) prend sa place

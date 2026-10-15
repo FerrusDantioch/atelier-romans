@@ -498,6 +498,14 @@ body.mode-ecriture main{ flex:1; min-height:0; }
   font-size:.75rem; color:var(--discret);
 }
 
+/* « Dans cette scène » : les fiches nommées dans le texte, en pastilles */
+.reperees{
+  flex:none; max-height:30%; overflow-y:auto;
+  display:grid; gap:6px;
+  margin:var(--esp-3) var(--esp-4) 0;
+}
+.reperees .pastille{ max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
 /* Fiche épinglée : carte avec liseré de l'univers, défile seule si elle est longue */
 .epinglee{
   flex:none; max-height:45%; overflow-y:auto;
