@@ -1,20 +1,33 @@
 # L'Atelier — Omni-système
 
 Application d'écriture de romans tirés des parties de l'Omni-système.
-Elle fonctionne dans le navigateur, hors ligne, et garde tout sur l'ordinateur.
+Elle s'installe comme une application, fonctionne **sans connexion**, et garde tout sur l'ordinateur.
 
-> 🚧 En construction — étape 6 sur 7 terminée (thème, bibliothèque, sauvegarde, écriture, fiches,
-> recherche Ctrl+K, export PDF). Reste l'étape 7 : installation comme application et fonctionnement hors ligne.
+**Version 1.0** — les sept étapes prévues sont terminées.
 
-## Lancer l'application sur son ordinateur
+## En bref : ce que fait l'Atelier
 
-L'application a besoin d'un petit « serveur » local pour fonctionner (c'est une règle des
-navigateurs pour le mode hors ligne). Il se lance avec une commande tapée dans un **terminal** :
-une fenêtre où l'on donne des instructions en tapant du texte au lieu de cliquer.
+- **Bibliothèque** de romans, chacun dans un univers (Cyberpunk, Fantasy, Space opéra,
+  Horreur / enquête, Autre) dont la couleur habille l'interface.
+- **Écriture** en chapitres et scènes, chaque scène en deux versions : *Notes* (fragments, puces)
+  et *Rédigé* (le texte du roman). Mise en forme `*italique*`, `**gras**`, séparateur `* * *`.
+  Compteurs de mots, objectif de session, mode concentration.
+- **Fiches** à côté du texte : personnage principal (épinglé), PNJ, lieux, événements dans l'ordre.
+- **`Ctrl+K`** : on tape un nom, la fiche s'ouvre à côté, **le curseur ne bouge pas**.
+- **Export PDF** d'une scène, d'un chapitre ou du roman, mis en page comme un livre.
+- **Sauvegarde automatique** permanente, copie de secours si l'onglet se ferme en pleine phrase,
+  et **export / import** de toutes les données dans un fichier, avec un rappel doux.
+
+## Première installation (une seule fois)
+
+L'Atelier a besoin, **la toute première fois**, d'un petit « serveur » sur l'ordinateur (c'est une
+règle des navigateurs). Il se lance avec une commande tapée dans un **terminal** : une fenêtre où
+l'on donne des instructions en tapant du texte au lieu de cliquer.
+Une fois l'application installée, **plus besoin du serveur** pour écrire.
 
 ### Étape A — Récupérer les fichiers (sans terminal)
 
-1. Aller sur https://github.com/FerrusDantioch/atelier-romans (connecté à son compte GitHub).
+1. Aller sur https://github.com/FerrusDantioch/atelier-romans
 2. Cliquer sur le bouton vert **« Code »**, puis **« Download ZIP »**.
 3. Décompresser le ZIP :
    - **Windows** : clic droit sur le fichier → **« Extraire tout… »**
@@ -54,33 +67,57 @@ une fenêtre où l'on donne des instructions en tapant du texte au lieu de cliqu
 
    Si le Mac propose d'installer des « outils de développement », accepter, puis relancer la commande.
 
-### Étape C — Ouvrir l'application
+### Étape C — Ouvrir l'Atelier
 
 - Le terminal affiche une ligne du type `Serving HTTP on … port 8000` : c'est bon signe.
-- Ouvrir le navigateur (Chrome ou Edge de préférence) à l'adresse **http://localhost:8000**
-- **Laisser la fenêtre du terminal ouverte** pendant qu'on utilise l'application (on peut la réduire).
-- Pour arrêter : cliquer dans le terminal et appuyer sur `Ctrl + C`, ou fermer la fenêtre.
+- Ouvrir **Chrome ou Edge** à l'adresse **http://localhost:8000**
+- Dans « À propos », la ligne **« Prête à fonctionner sans connexion ✓ »** confirme que l'application
+  s'est mise en réserve dans le navigateur.
 
-### Si quelque chose ne va pas
+### Étape D — Installer l'application
 
-- **« L'application n'a pas pu démarrer »** : la page a sans doute été ouverte par double-clic sur
-  `index.html`. Il faut passer par le petit serveur (étape B) et l'adresse **http://localhost:8000**.
+- Dans la Bibliothèque, cliquer sur **« Installer l'application »**. L'encart apparaît quand le
+  navigateur le permet, parfois seulement après quelques instants passés sur la page.
+  Autre possibilité : la petite icône d'installation à droite de la barre d'adresse, ou le menu du
+  navigateur (⋮) → **« Installer L'Atelier »** (Edge : « Applications » → « Installer ce site en tant qu'application »).
+- L'Atelier a maintenant **son icône** (bureau, menu Démarrer ou Launchpad) et **sa propre fenêtre**.
+- On peut alors arrêter le serveur (`Ctrl + C` dans la fenêtre noire, ou la fermer).
+
+## Au quotidien
+
+1. **Ouvrir l'Atelier** depuis son icône. Pas de serveur, pas de connexion nécessaires.
+2. **Écrire** : tout s'enregistre tout seul, en continu.
+3. **Consulter une fiche** sans perdre le fil : `Ctrl+K`, quelques lettres, `Entrée`… et on continue d'écrire.
+4. **Exporter ses données** quand le rappel apparaît (ou une fois par semaine) : bouton
+   « Exporter mes données » en bas de la Bibliothèque, puis ranger le fichier en lieu sûr
+   (clé USB, cloud…). **C'est la seule copie hors de cet ordinateur.**
+5. Pour lire ou faire relire : **Exporter en PDF** (`Ctrl+P`).
+
+## Mettre à jour l'Atelier (nouvelle version)
+
+1. Retélécharger le ZIP (étape A) et lancer le serveur **depuis le nouveau dossier** (étape B), avec le numéro `8000`.
+2. Ouvrir l'Atelier (son icône, ou http://localhost:8000) : il prend la nouvelle version tout seul,
+   et la met en réserve pour fonctionner ensuite sans connexion.
+3. Arrêter le serveur.
+
+Les romans ne sont pas dans le dossier mais dans le navigateur : une mise à jour n'y touche pas.
+*(Pour les habitués de git : `git clone https://github.com/FerrusDantioch/atelier-romans.git`, puis `git pull`.)*
+
+## Si quelque chose ne va pas
+
+- **« L'application n'a pas pu démarrer »** :
+  - la page a sans doute été ouverte par double-clic sur `index.html` : il faut passer par le
+    petit serveur (étape B) et l'adresse **http://localhost:8000** ;
+  - si le message apparaît alors que le serveur tourne (cela arrive sur certains Windows), arrêter le
+    serveur (`Ctrl + C`) et le relancer avec la solution de secours : `py serveur.py`
+    (Mac : `python3 serveur.py`).
 - **« L'Atelier est déjà ouvert ailleurs »** : l'application est ouverte dans un autre onglet ou une
-  autre fenêtre. Une seule page peut servir à la fois (sinon chacune effacerait le travail de l'autre).
-  Fermez l'autre page — celle-ci s'ouvre alors toute seule — ou cliquez sur
-  « Utiliser plutôt cette page » : l'autre enregistre tout et vous cède la place.
-
-### Deux points importants
-
-- **Toujours utiliser le numéro `8000`.** Le navigateur range les romans selon l'adresse exacte :
-  avec `localhost:8001`, on verrait une bibliothèque vide (les données ne seraient pas perdues,
-  juste rangées sous l'autre adresse).
-- **Pour récupérer une nouvelle version** : retélécharger le ZIP et lancer le serveur depuis le
-  nouveau dossier. Les romans ne sont pas dans le dossier mais dans le navigateur : ils restent
-  là tant qu'on utilise la même adresse `localhost:8000`.
-
-*Pour les habitués de git : `git clone https://github.com/FerrusDantioch/atelier-romans.git`,
-puis `git pull` pour les mises à jour.*
+  autre fenêtre (par exemple l'application installée **et** un onglet). Une seule page peut servir à
+  la fois, sinon chacune effacerait le travail de l'autre. Fermez l'autre page — celle-ci s'ouvre alors
+  toute seule — ou cliquez sur « Utiliser plutôt cette page » : l'autre enregistre tout et vous cède la place.
+- **Bibliothèque vide alors qu'on avait des romans** : vérifier l'adresse. Le navigateur range les
+  romans selon l'adresse exacte : **toujours `localhost:8000`** (avec `localhost:8001`, on verrait une
+  bibliothèque vide ; rien ne serait perdu, juste rangé sous l'autre adresse).
 
 ## Écrire
 
@@ -207,10 +244,40 @@ dans `assets/` (en gardant les mêmes noms) :
 | `icone-maskable-512.png` | icône carrée pleine (Android découpe lui-même la forme) |
 | `favicon.png` | petite icône de l'onglet |
 
+Après le remplacement : lancer le serveur et ouvrir l'Atelier une fois pour qu'il prenne les nouvelles
+images. L'icône de l'application déjà installée peut mettre un peu de temps à changer (la désinstaller
+puis la réinstaller la met à jour aussitôt ; les romans ne sont pas touchés).
+
+## Ce qui reste à faire, et idées pour plus tard
+
+Prévu « pour plus tard » dès le départ (hors de la première version) :
+- une **frise chronologique visuelle** des événements ;
+- des **liens automatiques** entre le texte et les fiches (noms mis en surbrillance) ;
+- l'**import des fiches PDF** de JDR ;
+- la **synchronisation** entre plusieurs appareils.
+
+À savoir :
+- **Remplacer les logos** par les vôtres (voir plus haut), si ceux repris du portfolio ne conviennent pas.
+- **Navigateur conseillé : Chrome ou Edge.** Firefox n'installe pas les applications de ce type et
+  n'imprime pas les numéros de page du PDF. Safari (Mac, iPad) n'a pas été testé.
+- La **coupure des mots** en fin de ligne dans le PDF dépend du navigateur (elle peut manquer).
+- L'Atelier n'est **pas publié sur Internet** (voir ci-dessous).
+
+## Publier l'Atelier sur Internet (facultatif, non fait)
+
+Le dossier est prêt pour **GitHub Pages**, qui donnerait une adresse du type
+`https://ferrusdantioch.github.io/atelier-romans/`, utilisable sans aucun serveur sur l'ordinateur.
+Rien n'a été publié : il suffira de le demander. Attention : à une nouvelle adresse correspond une
+nouvelle bibliothèque, vide. Pour y retrouver ses romans : « Exporter mes données » ici, puis
+« Importer mes données » là-bas.
+
 ## Organisation des fichiers
 
 ```
 index.html     la page de l'application
+manifest.json  la carte d'identité de l'application (nom, icônes, couleurs) pour l'installer
+sw.js          le « service worker » : la réserve qui permet de fonctionner sans connexion
+serveur.py     petit serveur de secours (voir « Si quelque chose ne va pas »)
 css/theme.css  toutes les couleurs et polices
 css/app.css    la mise en page
 css/impression.css  la mise en page de livre du PDF
@@ -225,6 +292,7 @@ js/recherche.js     la recherche rapide Ctrl+K
 js/export-pdf.js    l'export PDF (le livre à imprimer)
 js/annulation.js    Ctrl+Z en toute sécurité (n'annule que là où l'on écrit)
 js/onglets.js       une seule page de l'Atelier ouverte à la fois
+js/hors-ligne.js    le mode hors ligne et le bouton « Installer l'application »
 js/sauvegarde.js    les boutons d'export/import et le rappel
 js/dialogues.js     les fenêtres de confirmation et les petits messages
 js/outils.js        petites fonctions partagées (compteur de mots, dates…)

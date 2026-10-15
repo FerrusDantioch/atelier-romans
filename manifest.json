@@ -1,0 +1,19 @@
+{
+  "name": "L'Atelier — Omni-système",
+  "short_name": "L'Atelier",
+  "description": "Atelier d'écriture de romans tirés des parties de l'Omni-système. Fonctionne hors ligne.",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#14111d",
+  "theme_color": "#14111d",
+  "lang": "fr",
+  "dir": "ltr",
+  "categories": ["productivity", "books"],
+  "icons": [
+    { "src": "assets/icone-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icone-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icone-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

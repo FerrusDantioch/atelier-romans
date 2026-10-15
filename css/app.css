@@ -175,6 +175,14 @@ select:focus-visible, textarea:focus-visible, summary:focus-visible{
 .encart-sauvegarde h2{ font-size:1.15rem; }
 .encart-sauvegarde p, .encart-sauvegarde li{ font-size:.95rem; }
 
+/* Encart « Installer l'Atelier » (bibliothèque) */
+.encart-installation{
+  margin-top:var(--esp-5); padding:var(--esp-5) var(--esp-6);
+  border:var(--filet) solid var(--trait); border-radius:var(--arrondi-panneau);
+  background:var(--table); display:grid; gap:var(--esp-3); max-width:75ch;
+}
+.encart-installation h2{ font-size:1.15rem; }
+
 /* Message affiché si l'application ne peut pas démarrer (ex. ouverte par double-clic) */
 .alerte-demarrage{
   max-width:70ch; margin:var(--esp-7) auto; padding:var(--esp-5) var(--esp-6);
