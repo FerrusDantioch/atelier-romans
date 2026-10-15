@@ -5,6 +5,9 @@ Elle s'installe comme une application, fonctionne **sans connexion**, et garde t
 
 **Version 1.0** — les sept étapes prévues sont terminées.
 
+**En ligne : https://ferrusdantioch.github.io/atelier-romans/** — s'ouvre aussi sur téléphone,
+sans rien installer d'autre (voir « L'Atelier en ligne » plus bas).
+
 ## En bref : ce que fait l'Atelier
 
 - **Bibliothèque** de romans, chacun dans un univers (Cyberpunk, Fantasy, Space opéra,
@@ -19,6 +22,10 @@ Elle s'installe comme une application, fonctionne **sans connexion**, et garde t
   et **export / import** de toutes les données dans un fichier, avec un rappel doux.
 
 ## Première installation (une seule fois)
+
+*Plus simple : ouvrir l'adresse en ligne ci-dessus dans Chrome ou Edge, puis passer directement
+à l'étape D (installer). Les étapes A à C ne servent que pour faire tourner l'Atelier depuis
+ses fichiers, sur l'ordinateur.*
 
 L'Atelier a besoin, **la toute première fois**, d'un petit « serveur » sur l'ordinateur (c'est une
 règle des navigateurs). Il se lance avec une commande tapée dans un **terminal** : une fenêtre où
@@ -267,15 +274,34 @@ Prévu « pour plus tard » dès le départ (hors de la première version) :
 - **Navigateur conseillé : Chrome ou Edge.** Firefox n'installe pas les applications de ce type et
   n'imprime pas les numéros de page du PDF. Safari (Mac, iPad) n'a pas été testé.
 - La **coupure des mots** en fin de ligne dans le PDF dépend du navigateur (elle peut manquer).
-- L'Atelier n'est **pas publié sur Internet** (voir ci-dessous).
+- **Sur téléphone** : testé en simulation (Chrome Android) ; l'iPhone et l'iPad (Safari) n'ont pas été testés.
 
-## Publier l'Atelier sur Internet (facultatif, non fait)
+## L'Atelier en ligne (GitHub Pages)
 
-Le dossier est prêt pour **GitHub Pages**, qui donnerait une adresse du type
-`https://ferrusdantioch.github.io/atelier-romans/`, utilisable sans aucun serveur sur l'ordinateur.
-Rien n'a été publié : il suffira de le demander. Attention : à une nouvelle adresse correspond une
-nouvelle bibliothèque, vide. Pour y retrouver ses romans : « Exporter mes données » ici, puis
-« Importer mes données » là-bas.
+L'Atelier est publié à l'adresse **https://ferrusdantioch.github.io/atelier-romans/**.
+C'est la même application : elle s'installe, fonctionne sans connexion, et **les romans restent
+sur l'appareil** (rien n'est envoyé sur Internet). Quelqu'un d'autre qui ouvrirait l'adresse
+trouverait un Atelier vide. L'adresse est signalée aux moteurs de recherche comme à ne pas référencer.
+
+**Sur un téléphone Android** :
+1. Ouvrir l'adresse dans **Chrome**.
+2. Installer : l'encart « Installer l'Atelier » dans la Bibliothèque, ou le menu **⋮** →
+   **« Installer l'application »** (ou « Ajouter à l'écran d'accueil »).
+3. Dans « À propos », attendre la ligne **« Prête à fonctionner sans connexion ✓ »**.
+4. L'Atelier s'ouvre ensuite depuis son icône, même en mode avion.
+- Sans clavier, `Ctrl+K` est remplacé par le bouton **⌕** (barre d'outils ou panneau des fiches).
+- **PDF** : « Exporter en PDF » ouvre la fenêtre d'impression d'Android ; choisir
+  **« Enregistrer au format PDF »** en haut, puis le bouton PDF.
+
+**Mises à jour** : chaque nouvelle version envoyée sur GitHub est prise automatiquement à la
+prochaine ouverture avec une connexion (quelques minutes après l'envoi).
+
+**À savoir** : chaque adresse a sa propre bibliothèque. Les romans écrits sur `localhost:8000`
+n'apparaissent pas à l'adresse en ligne, ni ceux du téléphone sur l'ordinateur. Pour passer de
+l'un à l'autre : « Exporter mes données » d'un côté, puis « Importer mes données » de l'autre.
+
+**Retirer la publication** : sur GitHub, dans le dépôt, **Settings → Pages → « Unpublish site »**
+(ou le demander). Les romans déjà écrits restent sur l'appareil, mais pensez à les exporter avant.
 
 ## Organisation des fichiers
 
@@ -284,6 +310,7 @@ index.html     la page de l'application
 manifest.json  la carte d'identité de l'application (nom, icônes, couleurs) pour l'installer
 sw.js          le « service worker » : la réserve qui permet de fonctionner sans connexion
 serveur.py     petit serveur de secours (voir « Si quelque chose ne va pas »)
+.nojekyll      (fichier vide, caché) : GitHub Pages publie les fichiers tels quels
 css/theme.css  toutes les couleurs et polices
 css/app.css    la mise en page
 css/impression.css  la mise en page de livre du PDF
