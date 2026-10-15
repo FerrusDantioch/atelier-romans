@@ -173,6 +173,14 @@ select:focus-visible, textarea:focus-visible, summary:focus-visible{
 .encart-sauvegarde h2{ font-size:1.15rem; }
 .encart-sauvegarde p, .encart-sauvegarde li{ font-size:.95rem; }
 
+/* Message affiché si l'application ne peut pas démarrer (ex. ouverte par double-clic) */
+.alerte-demarrage{
+  max-width:70ch; margin:var(--esp-7) auto; padding:var(--esp-5) var(--esp-6);
+  background:var(--table); border:var(--filet) solid var(--trait); border-top:var(--liseré) solid var(--omni);
+  border-radius:var(--arrondi-carte); display:grid; gap:var(--esp-3);
+}
+.alerte-demarrage h1{ font-size:1.4rem; }
+
 /* Bandeau de rappel d'export (discret, sans animation) */
 .rappel{
   display:flex; align-items:center; justify-content:space-between; gap:var(--esp-3); flex-wrap:wrap;

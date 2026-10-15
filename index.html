@@ -33,6 +33,13 @@
   </div>
 </header>
 
+<!-- ============ ALERTE : l'application n'a pas pu démarrer (cachée normalement) ============ -->
+<section class="alerte-demarrage" id="alerte-demarrage" role="alert" hidden>
+  <h1>L'application n'a pas pu démarrer</h1>
+  <p id="alerte-raison"></p>
+  <p class="discret">Vos romans ne sont pas touchés : ils sont rangés dans le navigateur.</p>
+</section>
+
 <!-- ============ RAPPEL DOUX D'EXPORTER (caché si tout est à jour) ============ -->
 <div class="rappel" id="rappel-export" role="status" hidden>
   <p id="rappel-texte"></p>
@@ -220,7 +227,20 @@
   </p>
 </dialog>
 
+<!-- Si l'application ne peut pas démarrer, on l'explique au lieu d'afficher des boutons qui ne répondent pas.
+     Cas le plus fréquent : index.html ouvert par double-clic, sans le petit serveur. -->
+<script>
+  function alerteDemarrage(detail) {
+    var raison = location.protocol === "file:"
+      ? "La page a été ouverte directement (double-clic sur index.html). Elle doit passer par le petit serveur : "
+        + "suivez l'étape B du fichier LISEZ-MOI.md, puis ouvrez l'adresse http://localhost:8000"
+      : "Rechargez la page. Si le problème continue, utilisez une version à jour de Chrome ou d'Edge.";
+    document.getElementById("alerte-raison").textContent = raison + (detail ? " (détail : " + detail + ")" : "");
+    document.getElementById("alerte-demarrage").hidden = false;
+    document.querySelector("main").hidden = true;
+  }
+</script>
 <!-- Le script principal (type="module" = découpé proprement en fichiers) -->
-<script type="module" src="js/app.js"></script>
+<script type="module" src="js/app.js" onerror="alerteDemarrage()"></script>
 </body>
 </html>

@@ -17,21 +17,21 @@
 @font-face{
   font-family:"Literata";
   src:url("../fonts/literata.woff2") format("woff2");
-  font-weight:200 900;
+  font-weight:400 900;
   font-style:normal;
   font-display:swap;
 }
 @font-face{
   font-family:"Literata";
   src:url("../fonts/literata-italique.woff2") format("woff2");
-  font-weight:200 900;
+  font-weight:400 900;
   font-style:italic;
   font-display:swap;
 }
 @font-face{
   font-family:"JetBrains Mono";
   src:url("../fonts/jetbrains-mono.woff2") format("woff2");
-  font-weight:100 800;
+  font-weight:400 800;
   font-style:normal;
   font-display:swap;
 }
