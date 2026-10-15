@@ -271,16 +271,48 @@ function typographie(t) {
     .replace(/ +([—–]) /g, "\u00A0$1 ");
 }
 
-// *italique*, **gras**, ***les deux*** → mise en forme. Une étoile isolée reste telle quelle.
+// *italique*, **gras**, ***les deux*** → mise en forme, y compris l'un dans l'autre
+// (« **Arrête, *maintenant*** », « ***Non**, dit-elle.* »). Une étoile isolée reste telle quelle.
 function enLigne(texte) {
-  const motif = /\*\*\*(?=\S)(.+?)(?<=\S)\*\*\*|\*\*(?=\S)(.+?)(?<=\S)\*\*|\*(?=[^\s*])((?:\*\*.+?\*\*|[^*])+?)(?<=\S)\*/;
-  const r = motif.exec(texte);
-  if (!r) return texte ? [texte] : [];
-  const avant = texte.slice(0, r.index);
-  const apres = texte.slice(r.index + r[0].length);
-  let forme;
-  if (r[1] !== undefined) forme = el("strong", {}, el("em", {}, enLigne(r[1])));
-  else if (r[2] !== undefined) forme = el("strong", {}, enLigne(r[2]));
-  else forme = el("em", {}, enLigne(r[3]));
-  return [...(avant ? [avant] : []), forme, ...enLigne(apres)];
+  // 1. Découpage : morceaux de texte et paquets d'étoiles.
+  //    Un paquet peut ouvrir s'il est collé au mot qui suit, fermer s'il est collé au mot qui précède.
+  const morceaux = [];
+  const etoiles = /\*+/g;
+  let fin = 0;
+  for (let r; (r = etoiles.exec(texte));) {
+    if (r.index > fin) morceaux.push(texte.slice(fin, r.index));
+    const avant = texte[r.index - 1];
+    const apres = texte[r.index + r[0].length];
+    morceaux.push({ etoiles: r[0].length, ouvre: !!apres && !/\s/.test(apres), ferme: !!avant && !/\s/.test(avant) });
+    fin = r.index + r[0].length;
+  }
+  if (fin < texte.length) morceaux.push(texte.slice(fin));
+
+  // 2. Chaque paquet qui ferme s'associe au plus proche paquet ouvrant qui le précède :
+  //    deux étoiles de chaque côté → gras, une seule → italique. Ce qui est entre les deux est mis en forme.
+  const estPaquet = (m, sens) => m.etoiles > 0 && m[sens];
+  for (let j = 0; j < morceaux.length; j++) {
+    const fermant = morceaux[j];
+    if (!estPaquet(fermant, "ferme")) continue;
+    let i = j - 1;
+    while (fermant.etoiles > 0) {
+      while (i >= 0 && !estPaquet(morceaux[i], "ouvre")) i--;
+      if (i < 0) break;
+      const ouvrant = morceaux[i];
+      const n = ouvrant.etoiles >= 2 && fermant.etoiles >= 2 ? 2 : 1;
+      const contenu = morceaux.splice(i + 1, j - i - 1, null);
+      morceaux[i + 1] = el(n === 2 ? "strong" : "em", {}, enNoeuds(contenu));
+      j = i + 2;
+      ouvrant.etoiles -= n; // les étoiles en trop restent à l'extérieur
+      fermant.etoiles -= n;
+    }
+  }
+  return enNoeuds(morceaux);
+}
+
+// Les étoiles restées sans partenaire redeviennent du texte
+function enNoeuds(morceaux) {
+  return morceaux
+    .map((m) => (typeof m === "string" || m instanceof Node ? m : "*".repeat(m.etoiles)))
+    .filter((m) => m !== "");
 }

@@ -29,20 +29,43 @@ export function initialiserHorsLigne() {
   majInstallation();
 }
 
-// Active le mode hors ligne et l'indique dans « À propos »
+// Active le mode hors ligne, rafraîchit la copie en réserve, et dit dans « À propos » où l'on en est
 async function activer() {
   const ecrire = (texte) => { $("etat-hors-ligne").textContent = texte; };
   if (!("serviceWorker" in navigator) || !/^https?:$/.test(location.protocol)) {
     ecrire("Mode hors ligne indisponible ici.");
     return;
   }
+  ecrire("Mise en réserve pour le mode hors ligne…");
   try {
     await navigator.serviceWorker.register("sw.js");
-    await navigator.serviceWorker.ready;
-    ecrire("Prête à fonctionner sans connexion ✓");
+    const inscription = await sansTropAttendre(navigator.serviceWorker.ready, 30000);
+    const { complete, erreur } = await sansTropAttendre(demander(inscription.active, "actualiser"), 60000);
+    if (!complete) {
+      ecrire("⚠ Pas encore prête à fonctionner sans connexion : " + erreur
+        + ". Gardez le serveur lancé et rouvrez l'Atelier (voir LISEZ-MOI.md).");
+    } else if (erreur && erreur !== "le serveur ne répond pas") {
+      ecrire("Prête à fonctionner sans connexion ✓ (avec la copie précédente : la nouvelle n'a pas pu être "
+        + "mise en réserve, " + erreur + ")");
+    } else {
+      ecrire("Prête à fonctionner sans connexion ✓");
+    }
   } catch (erreur) {
-    ecrire("Le mode hors ligne n'a pas pu s'activer : " + erreur.message);
+    ecrire("⚠ Le mode hors ligne n'a pas pu s'activer (" + erreur.message + "). Rouvrez l'Atelier pour réessayer.");
   }
+}
+
+// Envoie une demande au service worker et attend sa réponse
+function demander(travailleur, message) {
+  return new Promise((ok) => {
+    const canal = new MessageChannel();
+    canal.port1.onmessage = (e) => ok(e.data);
+    travailleur.postMessage(message, [canal.port2]);
+  });
+}
+
+function sansTropAttendre(promesse, ms) {
+  return Promise.race([promesse, new Promise((_, echec) => setTimeout(() => echec(new Error("pas de réponse")), ms))]);
 }
 
 // Affiche le bouton « Installer » seulement si c'est possible (et pas déjà fait)
@@ -53,9 +76,14 @@ function majInstallation() {
 
 async function installer() {
   if (!invitation) return;
-  invitation.prompt();                       // la fenêtre d'installation du navigateur
-  const { outcome } = await invitation.userChoice;
-  if (outcome !== "accepted") return;        // « Annuler » : le bouton reste là pour plus tard
+  // Une proposition du navigateur ne sert qu'une fois : l'encart disparaît, et reviendra
+  // de lui-même si le navigateur la propose à nouveau plus tard
+  const proposition = invitation;
   invitation = null;
   majInstallation();
+  try {
+    await proposition.prompt();              // la fenêtre d'installation du navigateur
+  } catch {
+    informer("Utilisez plutôt le menu du navigateur (⋮) → « Installer L'Atelier ».");
+  }
 }

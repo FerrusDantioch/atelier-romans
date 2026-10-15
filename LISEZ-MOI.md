@@ -72,7 +72,10 @@ Une fois l'application installée, **plus besoin du serveur** pour écrire.
 - Le terminal affiche une ligne du type `Serving HTTP on … port 8000` : c'est bon signe.
 - Ouvrir **Chrome ou Edge** à l'adresse **http://localhost:8000**
 - Dans « À propos », la ligne **« Prête à fonctionner sans connexion ✓ »** confirme que l'application
-  s'est mise en réserve dans le navigateur.
+  s'est mise en réserve dans le navigateur. **Attendez de la voir avant d'arrêter le serveur.**
+  Si elle commence par **⚠**, elle dit ce qui manque : le plus souvent, le serveur a été lancé depuis
+  un autre dossier (refaire l'étape B depuis le dossier qui contient `index.html`), ou le dossier est
+  incomplet (refaire l'étape A). Puis rouvrir http://localhost:8000.
 
 ### Étape D — Installer l'application
 
@@ -91,14 +94,15 @@ Une fois l'application installée, **plus besoin du serveur** pour écrire.
 4. **Exporter ses données** quand le rappel apparaît (ou une fois par semaine) : bouton
    « Exporter mes données » en bas de la Bibliothèque, puis ranger le fichier en lieu sûr
    (clé USB, cloud…). **C'est la seule copie hors de cet ordinateur.**
-5. Pour lire ou faire relire : **Exporter en PDF** (`Ctrl+P`).
+5. Pour lire ou faire relire : **Exporter en PDF**, depuis la page d'écriture du roman (`Ctrl+P`).
 
 ## Mettre à jour l'Atelier (nouvelle version)
 
-1. Retélécharger le ZIP (étape A) et lancer le serveur **depuis le nouveau dossier** (étape B), avec le numéro `8000`.
+1. Retélécharger le ZIP (étape A) et lancer le serveur **depuis le nouveau dossier**, avec la même
+   commande que d'habitude (étape B, ou `py serveur.py` si c'est elle qui marche chez vous), et le numéro `8000`.
 2. Ouvrir l'Atelier (son icône, ou http://localhost:8000) : il prend la nouvelle version tout seul,
    et la met en réserve pour fonctionner ensuite sans connexion.
-3. Arrêter le serveur.
+3. Attendre la ligne **« Prête à fonctionner sans connexion ✓ »** dans « À propos », puis arrêter le serveur.
 
 Les romans ne sont pas dans le dossier mais dans le navigateur : une mise à jour n'y touche pas.
 *(Pour les habitués de git : `git clone https://github.com/FerrusDantioch/atelier-romans.git`, puis `git pull`.)*
@@ -245,7 +249,7 @@ dans `assets/` (en gardant les mêmes noms) :
 | `favicon.png` | petite icône de l'onglet |
 
 Après le remplacement : lancer le serveur et ouvrir l'Atelier une fois pour qu'il prenne les nouvelles
-images. L'icône de l'application déjà installée peut mettre un peu de temps à changer (la désinstaller
+images (attendre la ligne ✓ dans « À propos » avant d'arrêter le serveur). L'icône de l'application déjà installée peut mettre un peu de temps à changer (la désinstaller
 puis la réinstaller la met à jour aussitôt ; les romans ne sont pas touchés).
 
 ## Ce qui reste à faire, et idées pour plus tard
