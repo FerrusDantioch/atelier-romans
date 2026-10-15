@@ -307,7 +307,8 @@ body.mode-ecriture main{ flex:1; min-height:0; }
 .retour:hover{ color:var(--texte); }
 .plan-roman{ display:grid; gap:6px; justify-items:start; }
 .plan-roman h1{ font-size:1.3rem; }
-.plan-roman .lien-discret{ font-size:.82rem; } /* « Exporter en PDF » */
+.plan-roman .lien-discret{ font-size:.82rem; } /* « Frise des événements », « Exporter en PDF » */
+.plan-liens{ display:flex; flex-wrap:wrap; gap:2px var(--esp-3); }
 .plan .pointilles{ margin:0; }
 /* La liste défile seule : le titre, les compteurs et la session restent toujours visibles */
 #plan-liste{ flex:1 1 auto; min-height:0; overflow-y:auto; margin:0 calc(-1 * var(--esp-2)); padding:2px var(--esp-2); }
@@ -604,6 +605,7 @@ body.mode-ecriture main{ flex:1; min-height:0; }
   padding:3px 10px;
 }
 .pastille:hover{ background:color-mix(in srgb, var(--c) 14%, transparent); }
+.suivre-frise{ justify-self:start; font-size:.8rem; }
 .fiche-actions{ display:flex; flex-wrap:wrap; gap:var(--esp-2); }
 .fiche.compacte .fiche-actions .petit-bouton{ font-size:.78rem; padding:4px 10px; }
 
@@ -692,6 +694,131 @@ body.concentration .sortie-concentration:focus-visible{ opacity:1; }
 @media (hover:none) and (pointer:coarse){
   .bouton-recherche kbd, .recherche-champ kbd, .recherche-aide, .aide-panneau{ display:none; }
 }
+
+/* =====================================================================
+   FRISE DES ÉVÉNEMENTS (page à part : #roman/…/frise)
+   ===================================================================== */
+.vue-frise{ height:100%; overflow-y:auto; }
+.frise-page{
+  max-width:1180px; margin:0 auto;
+  padding:var(--esp-5) var(--esp-4) var(--esp-7);
+  display:grid; gap:var(--esp-5);
+}
+.frise-tete{ display:grid; gap:var(--esp-3); }
+.frise-tete-ligne{ display:flex; align-items:flex-end; justify-content:space-between; gap:var(--esp-3) var(--esp-4); flex-wrap:wrap; }
+.frise-titres{ display:grid; gap:4px; min-width:0; }
+.frise-titres h1{ font-size:clamp(1.5rem,3.5vw,2rem); overflow-wrap:anywhere; }
+.frise-titres h1:focus{ outline:none; }
+.frise-vide{ max-width:64ch; }
+
+/* Grand écran : la frise à gauche, « Qui apparaît où » à droite (reste visible en défilant) */
+.frise-corps{ display:grid; grid-template-columns:minmax(0,1fr); gap:var(--esp-5); align-items:start; }
+@media (min-width:1000px){
+  .frise-corps{ grid-template-columns:minmax(0,1fr) 340px; }
+  .frise-colonne{ grid-column:1; grid-row:1; }
+  .presences{ grid-column:2; grid-row:1; position:sticky; top:var(--esp-4); max-height:calc(100dvh - 120px); overflow-y:auto; }
+}
+
+/* Le personnage ou le lieu suivi : bandeau qui reste en haut en défilant */
+.frise-suivi{
+  position:sticky; top:0; z-index:2;
+  display:flex; align-items:center; justify-content:space-between; gap:var(--esp-2) var(--esp-3); flex-wrap:wrap;
+  margin-bottom:var(--esp-4); padding:var(--esp-2) var(--esp-3);
+  background:color-mix(in srgb, var(--univers) 12%, var(--nuit));
+  border:var(--filet) solid color-mix(in srgb, var(--univers) 45%, transparent); border-radius:var(--arrondi-petit);
+  font-size:.92rem;
+}
+.frise-suivi strong{ color:var(--c-texte, var(--univers)); }
+.frise-suivi .petit-bouton{ font-size:.78rem; padding:4px 10px; }
+
+/* La ligne du temps : un losange numéroté par événement, reliés par des pointillés */
+.ligne-temps{ list-style:none; margin:0; padding:0; display:grid; }
+.evt{
+  display:grid; column-gap:var(--esp-3);
+  grid-template-columns:30px minmax(0,1fr);
+  grid-template-areas:"repere quand" "repere carte";
+  padding-bottom:var(--esp-4);
+}
+.evt-repere{ grid-area:repere; position:relative; }
+.evt-repere::before{ /* le trait jusqu'au losange suivant */
+  content:""; position:absolute; left:calc(50% - 1px); top:13px; bottom:-13px;
+  border-left:2px dashed var(--trait);
+}
+.evt:last-child .evt-repere::before{ display:none; }
+.evt-losange{
+  position:relative; display:grid; place-items:center;
+  width:22px; height:22px; margin:2px auto 0;
+  transform:rotate(45deg);
+  background:var(--nuit); border:2px solid var(--univers); border-radius:3px;
+}
+.evt-losange b{ transform:rotate(-45deg); font:600 .62rem var(--f-des); color:var(--texte); }
+.evt-quand{ grid-area:quand; font-size:.78rem; color:var(--halo); padding:3px 0 6px; overflow-wrap:anywhere; }
+.evt-carte{
+  grid-area:carte; min-width:0;
+  display:grid; gap:var(--esp-2); justify-items:start;
+  background:var(--table);
+  border:var(--filet) solid var(--trait); border-radius:var(--arrondi-petit);
+  padding:var(--esp-3) var(--esp-3) var(--esp-3) var(--esp-4);
+  transition:opacity var(--duree);
+}
+.evt-entete{ display:flex; align-items:flex-start; gap:var(--esp-2); width:100%; }
+.evt-titre{ flex:1; min-width:0; font-size:1.05rem; }
+.evt-titre button{
+  background:none; border:0; padding:0; cursor:pointer; text-align:left;
+  font:inherit; color:var(--texte); overflow-wrap:anywhere;
+}
+.evt-titre button:hover{ color:var(--halo); text-decoration:underline dotted; text-underline-offset:4px; }
+.evt-actions{ flex:none; display:flex; gap:2px; margin:-4px -4px 0 0; }
+.evt-type{ font-size:.66rem; }
+.evt-resume{ font-size:.95rem; line-height:1.55; color:var(--ecriture-texte); white-space:pre-wrap; overflow-wrap:anywhere; }
+/* Écran assez large : la date ou le moment passe à gauche de la ligne */
+@media (min-width:700px){
+  .evt{ grid-template-columns:9rem 30px minmax(0,1fr); grid-template-areas:"quand repere carte"; }
+  .evt-quand{ text-align:right; padding-top:var(--esp-3); }
+}
+
+/* Un lieu se distingue d'un personnage par son contour en pointillés */
+.pastille.lieu{ border-style:dashed; }
+.pastille[aria-pressed="true"]{ background:color-mix(in srgb, var(--c) 28%, transparent); border-color:var(--c); }
+
+/* Suivi d'un personnage ou d'un lieu : ses événements ressortent, les autres s'effacent un peu */
+.ligne-temps.avec-suivi .evt:not(.concerne) .evt-carte,
+.ligne-temps.avec-suivi .evt:not(.concerne) .evt-quand{ opacity:.42; }
+.ligne-temps.avec-suivi .evt:not(.concerne):is(:hover, :focus-within) .evt-carte{ opacity:1; }
+.ligne-temps.avec-suivi .evt:not(.concerne) .evt-losange{ border-color:var(--trait); }
+.evt.concerne .evt-losange{ background:var(--univers); box-shadow:var(--lueur-douce); }
+.evt.concerne .evt-losange b{ color:var(--sur-accent); }
+.evt.concerne .evt-carte{ border-color:color-mix(in srgb, var(--univers) 60%, transparent); box-shadow:inset 3px 0 0 var(--univers); }
+
+/* Qui apparaît où : une ligne par personnage ou lieu, une case par événement */
+.presences{
+  background:var(--table);
+  border:var(--filet) solid var(--trait); border-top:var(--liseré) solid var(--univers);
+  border-radius:var(--arrondi-carte);
+  padding:var(--esp-3) var(--esp-4);
+}
+.presences summary{ cursor:pointer; }
+.presences[open] summary{ margin-bottom:var(--esp-3); }
+.presences > p{ margin-top:var(--esp-2); }
+.presences-groupe{ display:grid; gap:1px; }
+.presences-groupe + .presences-groupe{ margin-top:var(--esp-3); }
+.presences-groupe > .etiquette{ font-size:.7rem; margin-bottom:2px; }
+.presence{
+  width:100%; display:grid; grid-template-columns:minmax(0,7.5rem) minmax(0,1fr) 2.5ch; align-items:center; gap:var(--esp-2);
+  background:none; border:0; border-radius:6px; cursor:pointer;
+  padding:5px 6px; text-align:left; color:var(--texte); font:inherit;
+}
+.presence:hover{ background:var(--table-haute); }
+.presence[aria-pressed="true"]{ background:color-mix(in srgb, var(--univers) 16%, transparent); box-shadow:inset 3px 0 0 var(--univers); }
+.presence-nom{ font:600 .85rem var(--f-texte); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.presence-cases{ display:flex; gap:2px; min-width:0; overflow:hidden; }
+.presence-cases.serrees{ gap:0; } /* beaucoup d'événements : une barre continue, comme un code-barres */
+.presence-cases.serrees{ background:var(--trait); border-radius:2px; }
+.presence-cases.serrees i{ border-radius:0; background:none; }
+.presence-cases i{ flex:1 1 0; min-width:1px; max-width:12px; height:12px; border-radius:2px; background:var(--trait); }
+.presence-cases i.plein{ background:var(--univers); }
+.presence.lieu .presence-cases i.plein{ background:color-mix(in srgb, var(--univers) 55%, var(--texte)); }
+.presence-nombre{ font-size:.72rem; color:var(--discret); text-align:right; }
 
 /* =====================================================================
    RECHERCHE RAPIDE (Ctrl+K)

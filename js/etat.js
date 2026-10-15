@@ -75,6 +75,25 @@ export function fichesDe(categorie) {
   return liste.sort((a, b) => (a.titre || "").localeCompare(b.titre || "", "fr", { sensitivity: "base" }));
 }
 
+// Avance ou recule un événement d'un cran dans la chronologie (sens -1 : plus tôt, +1 : plus tard).
+// Utilisé par le panneau et par la frise. Renvoie false s'il est déjà au bout.
+export async function deplacerEvenement(id, sens) {
+  const liste = fichesDe("evenement");
+  const i = liste.findIndex((f) => f.id === id);
+  const j = i + sens;
+  if (i < 0 || j < 0 || j >= liste.length) return false;
+  [liste[i], liste[j]] = [liste[j], liste[i]];
+  liste.forEach((f, k) => { f.ordre = k; });
+  await db.lot({ ecrire: { fiches: liste } });
+  return true;
+}
+
+// Les événements où apparaît une fiche (personnage ou lieu), dans l'ordre
+export function evenementsDe(ficheId) {
+  return fichesDe("evenement").filter((e) =>
+    (e.champs?.personnages || []).includes(ficheId) || (e.champs?.lieux || []).includes(ficheId));
+}
+
 // ---------- Compteurs de mots ----------
 
 export function recompterScene(id) {

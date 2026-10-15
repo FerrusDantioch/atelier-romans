@@ -111,7 +111,10 @@
         <span class="statut" id="univers-roman"></span>
         <h1 id="titre-roman"></h1>
         <p class="discret petit" id="mots-roman"></p>
-        <button class="lien-discret" type="button" id="bouton-pdf" title="Exporter en PDF (Ctrl+P)">Exporter en PDF</button>
+        <span class="plan-liens">
+          <button class="lien-discret" type="button" id="bouton-frise">Frise des événements</button>
+          <button class="lien-discret" type="button" id="bouton-pdf" title="Exporter en PDF (Ctrl+P)">Exporter en PDF</button>
+        </span>
       </div>
 
       <!-- Objectif de la session d'écriture -->
@@ -200,6 +203,9 @@
     </aside>
   </section>
 
+  <!-- ============ FRISE DES ÉVÉNEMENTS (page à part, remplie par js/frise.js) ============ -->
+  <section class="vue-frise" id="vue-frise" aria-labelledby="titre-frise" hidden></section>
+
   <!-- ============ À PROPOS ============ -->
   <section class="vue" id="vue-apropos" aria-labelledby="titre-apropos" hidden>
     <div class="apropos">
@@ -232,6 +238,7 @@
         <li>Écrire en mode <em>Notes</em> ou <em>Rédigé</em></li>
         <li>Consulter une fiche sans quitter le texte (<span class="mono">Ctrl+K</span>)</li>
         <li>Voir d'un coup d'œil les personnages et lieux nommés dans la scène</li>
+        <li>Suivre les événements sur une frise, et voir qui apparaît où</li>
         <li>Écrire sur deux appareils : exporter sur l'un, fusionner sur l'autre</li>
         <li>Exporter en PDF, mise en page de livre (<span class="mono">Ctrl+P</span>)</li>
       </ul>

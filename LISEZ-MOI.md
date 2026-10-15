@@ -3,8 +3,8 @@
 Application d'écriture de romans tirés des parties de l'Omni-système.
 Elle s'installe comme une application, fonctionne **sans connexion**, et garde tout sur l'ordinateur.
 
-**Version 1.2** — les sept étapes prévues sont terminées, plus l'étape 8 (les fiches repérées dans le texte)
-et l'étape 9 (écrire sur deux appareils : la fusion).
+**Version 1.3** — les sept étapes prévues sont terminées, plus l'étape 8 (les fiches repérées dans le texte),
+l'étape 9 (écrire sur deux appareils : la fusion) et l'étape 10 (la frise des événements).
 
 **En ligne : https://ferrusdantioch.github.io/atelier-romans/** — s'ouvre aussi sur téléphone,
 sans rien installer d'autre (voir « L'Atelier en ligne » plus bas).
@@ -17,6 +17,7 @@ sans rien installer d'autre (voir « L'Atelier en ligne » plus bas).
   et *Rédigé* (le texte du roman). Mise en forme `*italique*`, `**gras**`, séparateur `* * *`.
   Compteurs de mots, objectif de session, mode concentration.
 - **Fiches** à côté du texte : personnage principal (épinglé), PNJ, lieux, événements dans l'ordre.
+- **Frise des événements** : toute la partie sur une ligne du temps, et d'un coup d'œil, qui apparaît où.
 - **`Ctrl+K`** : on tape un nom, la fiche s'ouvre à côté, **le curseur ne bouge pas**.
 - **Dans cette scène** : les personnages et lieux nommés dans la scène s'affichent d'eux-mêmes
   à côté du texte, prêts à être consultés d'un clic.
@@ -182,9 +183,33 @@ Ouvrez un roman depuis la Bibliothèque. L'écran se divise en trois colonnes :
   « Replier » la réduit à son nom.
 - **Événements** : listés dans l'ordre, avec le moment et le début du résumé. ↑ ↓ pour les réordonner.
   Les personnages et lieux cochés deviennent des étiquettes cliquables ; chaque fiche indique
-  en retour « Apparaît dans » ses événements.
+  en retour « Apparaît dans » ses événements, et « Suivre sur la frise » (voir ci-dessous).
+  « Voir la frise » ouvre la frise des événements.
 - **`Échap`** dans le panneau : retour au texte, le curseur exactement où il était.
 - **Écran moyen ou petit** : le panneau devient un volet, ouvert par le bouton « Fiches ».
+
+## La frise des événements
+
+Pour voir toute la partie d'un coup : **« Frise des événements »**, sous le titre du roman (à gauche ;
+sur téléphone, dans le volet « ☰ Plan »), ou **« Voir la frise »** dans l'onglet Événements.
+
+- **La ligne du temps** : chaque événement est un losange numéroté (1, 2, 3…) suivi de sa carte :
+  la date ou le moment, le nom, le type, le résumé, et les personnages et lieux concernés
+  (les lieux ont un contour en pointillés). **↑ ↓** changent l'ordre, ici aussi.
+- **Qui apparaît où** : une ligne par personnage ou lieu, une case par événement, dans l'ordre.
+  Les cases pleines montrent où il apparaît : on voit tout de suite qu'un PNJ a disparu depuis
+  longtemps, ou qu'un lieu revient souvent. Seuls les personnages et lieux reliés à au moins un
+  événement sont listés (ceux cochés dans « Personnages concernés » et « Lieux concernés »).
+  Sur téléphone, ce tableau est replié : le toucher pour l'ouvrir.
+- **Suivre** un personnage ou un lieu : touchez son nom (dans « Qui apparaît où » ou sur une carte).
+  Ses événements ressortent, les autres s'effacent un peu, et un bandeau indique
+  « Vous suivez Mira : 3 événements sur 7 ». Retouchez le nom, ou « Tout afficher », pour arrêter.
+  Depuis la fiche d'un personnage, « Suivre sur la frise » ouvre la frise en le suivant déjà.
+- **Ouvrir une fiche** : touchez le nom d'un événement (ou « Ouvrir sa fiche » pour le personnage suivi) :
+  on revient au texte, la fiche ouverte à côté, prête à être lue ou modifiée.
+  « + Nouvel événement » fait de même avec une nouvelle fiche.
+- **Revenir au texte** : « ← Retour au texte », `Échap`, ou le bouton « retour » du téléphone.
+  Le curseur et le défilement du texte sont exactement comme avant.
 
 ## La recherche rapide : `Ctrl+K`
 
@@ -233,7 +258,7 @@ Utilisez **Chrome ou Edge** : Firefox n'imprime pas encore les numéros de page 
 | `Ctrl+K` | recherche rapide d'une fiche (le curseur reste en place) |
 | `Ctrl+Maj+F` | mode concentration (seul le texte reste) |
 | `Ctrl+P` | exporter en PDF (scène, chapitre ou roman) |
-| `Échap` | quitter le mode concentration, ou revenir au texte depuis le panneau |
+| `Échap` | quitter le mode concentration, ou revenir au texte depuis le panneau ou la frise |
 | `←` `→` sur les onglets du panneau | changer d'onglet |
 | `Ctrl+Z` | annuler (dans le texte : n'annule jamais, par erreur, une modification faite dans une fiche) |
 | `Ctrl+Y` ou `Ctrl+Maj+Z` | rétablir |
@@ -311,7 +336,7 @@ puis la réinstaller la met à jour aussitôt ; les romans ne sont pas touchés)
 ## Ce qui reste à faire, et idées pour plus tard
 
 Prévu « pour plus tard » dès le départ (hors de la première version) :
-- une **frise chronologique visuelle** des événements ;
+- une **frise chronologique visuelle** des événements : faite à l'étape 10 ;
 - des **liens automatiques** entre le texte et les fiches : premier pas fait avec « Dans cette scène »
   (étape 8) ; reste possible : les noms mis en surbrillance directement dans le texte ;
 - l'**import des fiches PDF** de JDR ;
@@ -372,6 +397,7 @@ js/editeur.js       l'écriture : modes, mise en forme, enregistrement, session,
 js/panneau.js       le panneau de consultation : onglets, fiches, épinglage, événements
 js/recherche.js     la recherche rapide Ctrl+K
 js/reperage.js      « Dans cette scène » : les fiches nommées dans le texte
+js/frise.js         la frise des événements et « Qui apparaît où »
 js/export-pdf.js    l'export PDF (le livre à imprimer)
 js/fusion.js        la fusion des données de deux appareils
 js/annulation.js    Ctrl+Z en toute sécurité (n'annule que là où l'on écrit)

@@ -130,6 +130,15 @@ export function revenirAuTexte() {
   if (scene && !$("vue-roman").hidden) zoneActive().focus({ preventScroll: true });
 }
 
+// La page d'écriture va être cachée (frise des événements) : on retient où en était le texte…
+export function retenirPosition() {
+  memoriserCurseur();
+}
+// …et, à son retour, on remet le curseur et le défilement exactement au même endroit
+export function retrouverPosition() {
+  if (scene && !$("vue-roman").hidden) restaurerCurseur();
+}
+
 function zoneActive() {
   return scene && scene.mode === "redige" ? zones.redige : zones.notes;
 }

@@ -21,12 +21,13 @@ import { demarrerSeul } from "./onglets.js";
 import { initialiserExportPdf } from "./export-pdf.js";
 import { initialiserHorsLigne } from "./hors-ligne.js";
 import { initialiserReperage } from "./reperage.js";
+import { initialiserFrise, montrerFrise, revenirDeLaFrise, oublierFrise, friseAffichee } from "./frise.js";
 
 // Numéro de version affiché dans « À propos »
-export const VERSION = "1.2.0";
+export const VERSION = "1.3.0";
 
 // Liste des pages (« vues ») de l'application
-const VUES = ["bibliotheque", "roman", "apropos"];
+const VUES = ["bibliotheque", "roman", "frise", "apropos"];
 
 // Affiche une page et cache les autres
 function montrer(nom) {
@@ -54,35 +55,25 @@ function enOrdre(action) {
 }
 const suivreAdresseEnOrdre = () => enOrdre(suivreAdresse);
 
-// Lit l'adresse (#bibliotheque, #apropos, #roman/identifiant) et affiche la bonne page
+// Lit l'adresse (#bibliotheque, #apropos, #roman/identifiant, #roman/identifiant/frise)
+// et affiche la bonne page
 async function suivreAdresse() {
-  const [page, id] = location.hash.slice(1).split("/");
+  const [page, id, sousPage] = location.hash.slice(1).split("/");
   fermerRecherche();
 
   if (page === "roman" && id) {
     const romanId = decodeURIComponent(id);
-    if (etat.roman && etat.roman.id === romanId && !document.getElementById("vue-roman").hidden) return;
-    await fermerPanneau();
-    await fermerEditeur();
-    await recupererSecours(); // frappes restées en secours (enregistrement qui avait échoué) : on les remet d'abord
-    const roman = await chargerRoman(romanId);
-    if (!roman) {
-      informer("Ce roman n'existe plus.", { erreur: true });
-      location.hash = "bibliotheque";
-      return;
-    }
-    colorerUnivers(roman.univers);
-    document.title = roman.titre + " — L'Atelier";
-    document.body.classList.add("mode-ecriture");
-    montrer("roman");
-    afficherPlan();
-    await preparerEditeur();
-    await preparerPanneau();
-    await db.ecrireReglage("dernierRoman", roman.id);
+    const dejaOuvert = etat.roman && etat.roman.id === romanId
+      && (!document.getElementById("vue-roman").hidden || friseAffichee());
+    if (!dejaOuvert && !await ouvrirRoman(romanId)) return;
+    // Le texte, ou la frise des événements de ce roman
+    if (sousPage === "frise") await montrerFrise();
+    else await revenirDeLaFrise();
     return;
   }
 
   // On quitte la page d'écriture : on enregistre tout avant
+  oublierFrise();
   await fermerPanneau();
   await fermerEditeur();
   fermerRoman();
@@ -96,6 +87,29 @@ async function suivreAdresse() {
     montrer("bibliotheque");
     await mettreAJourEtat();
   }
+}
+
+// Charge un roman et affiche sa page d'écriture. Renvoie false s'il n'existe plus.
+async function ouvrirRoman(romanId) {
+  oublierFrise();
+  await fermerPanneau();
+  await fermerEditeur();
+  await recupererSecours(); // frappes restées en secours (enregistrement qui avait échoué) : on les remet d'abord
+  const roman = await chargerRoman(romanId);
+  if (!roman) {
+    informer("Ce roman n'existe plus.", { erreur: true });
+    location.hash = "bibliotheque";
+    return false;
+  }
+  colorerUnivers(roman.univers);
+  document.title = roman.titre + " — L'Atelier";
+  document.body.classList.add("mode-ecriture");
+  montrer("roman");
+  afficherPlan();
+  await preparerEditeur();
+  await preparerPanneau();
+  await db.ecrireReglage("dernierRoman", roman.id);
+  return true;
 }
 
 // Tout problème inattendu est signalé (au lieu de laisser l'application bloquée en silence)
@@ -153,6 +167,7 @@ async function demarrer() {
   initialiserEditeur();
   initialiserPanneau();
   initialiserReperage();
+  initialiserFrise({ montrer });
   initialiserRecherche();
   initialiserExportPdf();
   initialiserHorsLigne();

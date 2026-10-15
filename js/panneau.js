@@ -8,7 +8,7 @@
 import * as db from "./db.js";
 import { el, nouvelId } from "./outils.js";
 import { confirmer, informer } from "./dialogues.js";
-import { etat, trouverFiche, fichesDe, annoncer } from "./etat.js";
+import { etat, trouverFiche, fichesDe, annoncer, deplacerEvenement, evenementsDe } from "./etat.js";
 import { revenirAuTexte } from "./editeur.js";
 
 // « Autres noms » : surnoms qui servent aussi à repérer la fiche dans le texte (voir reperage.js)
@@ -90,8 +90,9 @@ export function initialiserPanneau() {
     else if (action === "epingler") epingler(id);
     else if (action === "desepingler") epingler(null);
     else if (action === "replier") replierEpinglee();
-    else if (action === "monter") deplacerEvenement(id, -1);
-    else if (action === "descendre") deplacerEvenement(id, +1);
+    else if (action === "monter") deplacer(id, -1);
+    else if (action === "descendre") deplacer(id, +1);
+    else if (action === "voir-frise") annoncer("voir-frise", id || null); // (la frise suit cette fiche, s'il y en a une)
   });
 
   // Échap dans le panneau : retour au texte, curseur à sa place
@@ -270,7 +271,10 @@ function vueListe(categorie) {
   }
   if (categorie === "evenement") {
     return el("div", { class: "liste-fiches" },
-      bouton,
+      el("div", { class: "ligne" },
+        bouton,
+        el("button", { type: "button", class: "petit-bouton", "data-action": "voir-frise" }, "Voir la frise"),
+      ),
       el("ol", { class: "frise", "aria-label": "Événements dans l'ordre" },
         fiches.map((f, i) => el("li", { class: "frise-item" },
           el("button", { type: "button", class: "frise-ouvrir", "data-action": "ouvrir-fiche", "data-id": f.id },
@@ -357,8 +361,7 @@ function vueConcernes(fiche) {
 
 // Personnage ou lieu : les événements où il apparaît
 function vueEvenementsLies(fiche) {
-  const evenements = fichesDe("evenement").filter((e) =>
-    (e.champs?.personnages || []).includes(fiche.id) || (e.champs?.lieux || []).includes(fiche.id));
+  const evenements = evenementsDe(fiche.id);
   if (!evenements.length) return null;
   return el("div", { class: "fiche-liens" },
     el("p", { class: "etiquette" }, "Apparaît dans"),
@@ -368,6 +371,8 @@ function vueEvenementsLies(fiche) {
           (e.champs?.quand ? e.champs.quand + " — " : "") + (e.titre || "Sans titre")),
       )),
     ),
+    el("button", { type: "button", class: "lien-discret petit suivre-frise", "data-action": "voir-frise", "data-id": fiche.id },
+      "Suivre sur la frise"),
   );
 }
 
@@ -565,14 +570,8 @@ async function epingler(id) {
   await db.ecrire("romans", etat.roman);
 }
 
-async function deplacerEvenement(id, sens) {
-  const liste = fichesDe("evenement");
-  const i = liste.findIndex((f) => f.id === id);
-  const j = i + sens;
-  if (i < 0 || j < 0 || j >= liste.length) return;
-  [liste[i], liste[j]] = [liste[j], liste[i]];
-  liste.forEach((f, k) => { f.ordre = k; });
-  await db.lot({ ecrire: { fiches: liste } });
+async function deplacer(id, sens) {
+  if (!await deplacerEvenement(id, sens)) return;
   afficherContenu();
   // Le clavier reste sur la même flèche (ou sur l'autre, si l'événement est arrivé en haut ou en bas)
   const fleche = (a) => `#contenu-panneau [data-action="${a}"][data-id="${CSS.escape(id)}"]`;
