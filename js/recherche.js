@@ -41,6 +41,7 @@ export function initialiserRecherche() {
     if (!(e.ctrlKey || e.metaKey) || e.shiftKey || e.altKey || e.key.toLowerCase() !== "k") return;
     if ($("vue-roman").hidden) return;
     e.preventDefault();               // empêche aussi le navigateur d'utiliser Ctrl+K
+    if (e.repeat) return;             // touche maintenue enfoncée : on n'ouvre/ferme pas en boucle (clignotement)
     if (dialogue.open) fermer();      // Ctrl+K une seconde fois : on referme
     else if (!document.querySelector("dialog[open]")) ouvrir();
   }, true); // « true » : on passe avant les autres raccourcis
@@ -83,6 +84,11 @@ export function ouvrir() {
   chercher();
   dialogue.showModal();
   saisie.focus();
+}
+
+// Ferme la recherche sans rien choisir (ex. quand on quitte la page d'écriture)
+export function fermerRecherche() {
+  if (dialogue && dialogue.open) { memo = null; dialogue.close(); }
 }
 
 // Ferme la fenêtre et remet le curseur IMMÉDIATEMENT à sa place.
@@ -144,6 +150,7 @@ function noteMot(mot, f) {
 }
 
 function chercher() {
+  if (!etat.roman) return;
   const fiches = etat.fiches.map((f) => ({
     fiche: f,
     _titre: normaliser(f.titre),
@@ -261,7 +268,7 @@ function surTouche(e) {
 
 async function choisir(index, { modifier = false } = {}) {
   const r = resultats[index];
-  if (!r) return;
+  if (!r || !etat.roman) return;
   const position = memo;   // copie : la fermeture efface « memo »
   if (modifier) memo = null; // en modification, le clavier ira dans la fiche, pas dans le texte
   fermer();

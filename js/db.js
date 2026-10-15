@@ -62,6 +62,8 @@ export function ouvrirBase() {
       base = demande.result;
       // Si une autre version de l'application s'ouvre dans un autre onglet, on se retire proprement
       base.onversionchange = () => { base.close(); base = null; };
+      // Connexion coupée par le navigateur (rare) : elle sera rouverte à la prochaine écriture
+      base.onclose = () => { base = null; };
       ok(base);
     };
     demande.onerror = () => echec(demande.error);
@@ -154,6 +156,8 @@ export async function supprimerRoman(romanId) {
       for (const cle of demande.result) tx.objectStore(nom).delete(cle);
     };
   }
+  // Ses réglages (dernière scène ouverte, session, état du panneau) n'ont plus lieu d'être
+  for (const prefixe of ["derniereScene:", "session:", "panneau:"]) tx.objectStore("reglages").delete(prefixe + romanId);
   noterModification(tx);
   return finTransaction(tx);
 }
@@ -176,25 +180,71 @@ export async function ecrireReglage(cle, valeur) {
 // ---------- Export / import (sauvegarde de sécurité) ----------
 
 // Rassemble TOUTES les données dans un seul objet, prêt à devenir un fichier JSON.
-// On note d'abord la date de l'export, pour qu'un fichier réimporté plus tard
-// ne déclenche pas de rappel inutile.
-export async function exporterTout() {
-  const maintenant = Date.now();
-  await ecrireReglage("derniereExport", maintenant);
-  await ecrireReglage("nonExporteDepuis", null);
-
+// Dans le fichier, l'export est déjà noté comme fait : réimporté plus tard,
+// il ne déclenchera pas de rappel inutile.
+export async function exporterTout(maintenant = Date.now()) {
   const db = await ouvrirBase();
   const tx = db.transaction(MAGASINS);
   const donnees = {};
   await Promise.all(MAGASINS.map(async (nom) => {
     donnees[nom] = await attendre(tx.objectStore(nom).getAll());
   }));
+  donnees.reglages = donnees.reglages.filter((r) => r.cle !== "derniereExport" && r.cle !== "nonExporteDepuis");
+  donnees.reglages.push({ cle: "derniereExport", valeur: maintenant }, { cle: "nonExporteDepuis", valeur: null });
   return {
     format: FORMAT_EXPORT,
     version: VERSION_EXPORT,
     exporteLe: new Date(maintenant).toISOString(),
     donnees,
   };
+}
+
+// Note que l'export a réussi (seulement une fois le fichier créé)
+export async function noterExport(maintenant) {
+  const db = await ouvrirBase();
+  const tx = db.transaction("reglages", "readwrite");
+  tx.objectStore("reglages").put({ cle: "derniereExport", valeur: maintenant });
+  tx.objectStore("reglages").put({ cle: "nonExporteDepuis", valeur: null });
+  return finTransaction(tx);
+}
+
+// Ce que doit contenir chaque élément d'une sauvegarde :
+//   ids     : identifiants obligatoires (du texte non vide)
+//   textes  : champs facultatifs qui, s'ils sont là, doivent être du texte
+//   nombres : champs facultatifs qui, s'ils sont là, doivent être des nombres
+const REGLES = {
+  romans:    { ids: ["id"], textes: ["titre", "univers", "ficheEpinglee"], nombres: ["cree", "modifie", "objectifSession"] },
+  chapitres: { ids: ["id", "romanId"], textes: ["titre"], nombres: ["ordre"] },
+  scenes:    { ids: ["id", "romanId", "chapitreId"], textes: ["titre", "notes", "texte", "mode"], nombres: ["ordre", "modifie"] },
+  fiches:    { ids: ["id", "romanId", "categorie"], textes: ["titre", "type", "notes"], nombres: ["ordre", "modifie"] },
+  reglages:  { ids: ["cle"], textes: [], nombres: [] },
+};
+const CATEGORIES_FICHES = ["principal", "pnj", "lieu", "evenement"];
+
+// Renvoie ce qui ne va pas dans un élément, ou null s'il est correct
+function defautElement(nom, e) {
+  if (!e || typeof e !== "object" || Array.isArray(e)) return "un élément illisible";
+  const regle = REGLES[nom];
+  for (const champ of regle.ids) {
+    if (typeof e[champ] !== "string" || e[champ] === "") return `un élément sans « ${champ} » valable`;
+  }
+  for (const champ of regle.textes) {
+    if (e[champ] != null && typeof e[champ] !== "string") return `« ${champ} » n'est pas du texte`;
+  }
+  for (const champ of regle.nombres) {
+    if (e[champ] != null && !Number.isFinite(e[champ])) return `« ${champ} » n'est pas un nombre`;
+  }
+  if (nom === "fiches") {
+    if (!CATEGORIES_FICHES.includes(e.categorie)) return `une fiche de catégorie inconnue (« ${e.categorie} »)`;
+    if (e.champs != null) {
+      if (typeof e.champs !== "object" || Array.isArray(e.champs)) return "des champs de fiche illisibles";
+      for (const v of Object.values(e.champs)) {
+        const ok = v == null || typeof v === "string" || (Array.isArray(v) && v.every((x) => typeof x === "string"));
+        if (!ok) return "un champ de fiche illisible";
+      }
+    }
+  }
+  return null;
 }
 
 // Vérifie qu'un objet lu dans un fichier est bien une sauvegarde de l'Atelier.
@@ -210,9 +260,13 @@ export function verifierSauvegarde(objet) {
   for (const nom of MAGASINS) {
     if (d[nom] === undefined) continue; // un tiroir absent = vide
     if (!Array.isArray(d[nom])) return `La sauvegarde est abîmée (partie « ${nom} »).`;
-    const cle = nom === "reglages" ? "cle" : "id";
-    if (d[nom].some((e) => !e || typeof e !== "object" || e[cle] == null)) {
-      return `La sauvegarde est abîmée (un élément de « ${nom} » n'a pas d'identifiant).`;
+    const vus = new Set();
+    for (const e of d[nom]) {
+      const defaut = defautElement(nom, e);
+      if (defaut) return `La sauvegarde est abîmée (partie « ${nom} » : ${defaut}).`;
+      const cle = nom === "reglages" ? e.cle : e.id;
+      if (vus.has(cle)) return `La sauvegarde est abîmée (partie « ${nom} » : identifiant en double).`;
+      vus.add(cle);
     }
   }
   return null;
@@ -225,12 +279,20 @@ export async function importerTout(objet) {
   if (erreur) throw new Error(erreur);
   const db = await ouvrirBase();
   const tx = db.transaction(MAGASINS, "readwrite");
-  for (const nom of MAGASINS) {
-    const magasin = tx.objectStore(nom);
-    magasin.clear();
-    for (const e of objet.donnees[nom] || []) magasin.put(e);
+  const fin = finTransaction(tx);
+  try {
+    for (const nom of MAGASINS) {
+      const magasin = tx.objectStore(nom);
+      magasin.clear();
+      for (const e of objet.donnees[nom] || []) magasin.put(e);
+    }
+  } catch (probleme) {
+    // Une écriture a été refusée : on annule TOUT (y compris l'effacement), puis on prévient
+    try { tx.abort(); } catch { /* déjà annulée */ }
+    fin.catch(() => {});
+    throw probleme;
   }
-  return finTransaction(tx);
+  return fin;
 }
 
 // Nombre d'éléments, pour afficher un résumé avant import

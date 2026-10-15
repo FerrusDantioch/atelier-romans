@@ -3,7 +3,8 @@
 Application d'écriture de romans tirés des parties de l'Omni-système.
 Elle fonctionne dans le navigateur, hors ligne, et garde tout sur l'ordinateur.
 
-> 🚧 En construction — étape 5 sur 7 terminée (thème, bibliothèque, sauvegarde, écriture, fiches, recherche Ctrl+K).
+> 🚧 En construction — étape 5 sur 7 terminée (thème, bibliothèque, sauvegarde, écriture, fiches, recherche Ctrl+K),
+> suivie d'une vérification complète de tout ce qui existe.
 
 ## Lancer l'application sur son ordinateur
 
@@ -60,6 +61,15 @@ une fenêtre où l'on donne des instructions en tapant du texte au lieu de cliqu
 - **Laisser la fenêtre du terminal ouverte** pendant qu'on utilise l'application (on peut la réduire).
 - Pour arrêter : cliquer dans le terminal et appuyer sur `Ctrl + C`, ou fermer la fenêtre.
 
+### Si quelque chose ne va pas
+
+- **« L'application n'a pas pu démarrer »** : la page a sans doute été ouverte par double-clic sur
+  `index.html`. Il faut passer par le petit serveur (étape B) et l'adresse **http://localhost:8000**.
+- **« L'Atelier est déjà ouvert ailleurs »** : l'application est ouverte dans un autre onglet ou une
+  autre fenêtre. Une seule page peut servir à la fois (sinon chacune effacerait le travail de l'autre).
+  Fermez l'autre page — celle-ci s'ouvre alors toute seule — ou cliquez sur
+  « Utiliser plutôt cette page » : l'autre enregistre tout et vous cède la place.
+
 ### Deux points importants
 
 - **Toujours utiliser le numéro `8000`.** Le navigateur range les romans selon l'adresse exacte :
@@ -90,6 +100,8 @@ Ouvrez un roman depuis la Bibliothèque. L'écran se divise en trois colonnes :
   avec « Changer l'objectif ».
 - **Enregistrement** : automatique, en continu (« Enregistré ✓ » en bas à droite).
   Même si l'onglet se ferme en pleine phrase, le texte est récupéré à la réouverture.
+  Si « Non enregistré ! » s'affiche (disque plein…), le texte est gardé en secours dans le navigateur
+  et remis dans le roman dès que possible : ne videz pas les données du navigateur à ce moment-là.
 
 ## Consulter et modifier les fiches (colonne de droite)
 
@@ -138,7 +150,8 @@ Les boutons « ⌕ Chercher » (panneau) et « ⌕ » (barre d'outils, sur écra
 | `Ctrl+Maj+F` | mode concentration (seul le texte reste) |
 | `Échap` | quitter le mode concentration, ou revenir au texte depuis le panneau |
 | `←` `→` sur les onglets du panneau | changer d'onglet |
-| `Ctrl+Z` | annuler |
+| `Ctrl+Z` | annuler (dans le texte : n'annule jamais, par erreur, une modification faite dans une fiche) |
+| `Ctrl+Y` ou `Ctrl+Maj+Z` | rétablir |
 | `Ctrl+S` | inutile : tout est déjà enregistré (un message le rappelle) |
 
 Sur Mac, `Cmd` remplace `Ctrl`.
@@ -189,6 +202,8 @@ js/plan.js          le plan : chapitres et scènes
 js/editeur.js       l'écriture : modes, mise en forme, enregistrement, session, concentration
 js/panneau.js       le panneau de consultation : onglets, fiches, épinglage, événements
 js/recherche.js     la recherche rapide Ctrl+K
+js/annulation.js    Ctrl+Z en toute sécurité (n'annule que là où l'on écrit)
+js/onglets.js       une seule page de l'Atelier ouverte à la fois
 js/sauvegarde.js    les boutons d'export/import et le rappel
 js/dialogues.js     les fenêtres de confirmation et les petits messages
 js/outils.js        petites fonctions partagées (compteur de mots, dates…)

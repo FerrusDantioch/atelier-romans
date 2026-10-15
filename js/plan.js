@@ -7,9 +7,11 @@ import * as db from "./db.js";
 import { el, nouvelId, nombre, pluriel, UNIVERS } from "./outils.js";
 import { ouvrirDialogue, confirmer, informer } from "./dialogues.js";
 import {
-  etat, chapitresTries, scenesDe, trouverScene, trouverChapitre,
+  etat, chapitresTries, scenesDe, trouverScene, trouverChapitre, scenesDansLOrdre,
   motsScene, motsChapitre, motsRoman, oublierScene, annoncer,
 } from "./etat.js";
+
+let ajoutEnCours = false; // évite deux scènes identiques sur un double-clic
 
 export function initialiserPlan() {
   document.getElementById("bouton-ajout-chapitre").addEventListener("click", ajouterChapitre);
@@ -170,13 +172,19 @@ export async function ajouterChapitre() {
 }
 
 export async function ajouterScene(chapitreId) {
-  const soeurs = scenesDe(chapitreId);
-  const scene = nouvelleScene(chapitreId, "Scène " + (soeurs.length + 1), prochainOrdre(soeurs));
-  await db.ecrire("scenes", scene);
-  etat.scenes.push(scene);
-  await apresChangement();
-  await annoncer("ouvrir-scene", scene.id);
-  annoncer("scene-creee", scene.id);
+  if (ajoutEnCours) return;
+  ajoutEnCours = true;
+  try {
+    const soeurs = scenesDe(chapitreId);
+    const scene = nouvelleScene(chapitreId, "Scène " + (soeurs.length + 1), prochainOrdre(soeurs));
+    await db.ecrire("scenes", scene);
+    etat.scenes.push(scene);
+    await apresChangement();
+    await annoncer("ouvrir-scene", scene.id);
+    annoncer("scene-creee", scene.id);
+  } finally {
+    ajoutEnCours = false;
+  }
 }
 
 function nouvelleScene(chapitreId, titre, ordre) {
@@ -197,6 +205,15 @@ async function renommer(type, id) {
   await db.ecrire(type === "chapitre" ? "chapitres" : "scenes", objet);
   await apresChangement();
   if (type === "scene") annoncer("scene-renommee", id);
+  remettreLeClavier(id, "renommer");
+}
+
+// Après une action, le clavier revient sur le même bouton (le plan a été redessiné)
+// ou, s'il est devenu inactif (scène arrivée en haut), sur son voisin.
+function remettreLeClavier(id, action, secours) {
+  const bouton = (a) => document.querySelector(`.plan-action[data-id="${CSS.escape(id)}"][data-action="${a}"]`);
+  const cible = [bouton(action), secours && bouton(secours)].find((b) => b && !b.disabled);
+  if (cible) cible.focus();
 }
 
 // ---------- Réordonner ----------
@@ -241,13 +258,23 @@ async function deplacer(type, id, sens) {
   }
   await apresChangement();
   // Garde le clavier sur le même bouton, pour pouvoir appuyer plusieurs fois de suite
-  const memeBouton = document.querySelector(`.plan-action[data-id="${CSS.escape(id)}"][data-action="${sens < 0 ? "monter" : "descendre"}"]`);
-  if (memeBouton && !memeBouton.disabled) memeBouton.focus();
+  remettreLeClavier(id, sens < 0 ? "monter" : "descendre", sens < 0 ? "descendre" : "monter");
+}
+
+// La scène à ouvrir si celles de « ids » disparaissent : la suivante, sinon la précédente
+function voisineDe(ids) {
+  const ordre = scenesDansLOrdre();
+  const indices = ordre.map((s, i) => (ids.includes(s.id) ? i : -1)).filter((i) => i >= 0);
+  if (!indices.length) return null;
+  const apres = ordre[Math.max(...indices) + 1];
+  const avant = ordre[Math.min(...indices) - 1];
+  return (apres || avant || null)?.id ?? null;
 }
 
 // ---------- Supprimer ----------
 
 async function supprimer(type, id) {
+  let voisine = null;
   if (type === "chapitre") {
     const chapitre = trouverChapitre(id);
     const scenes = scenesDe(id);
@@ -261,6 +288,7 @@ async function supprimer(type, id) {
       danger: true,
     });
     if (!ok) return;
+    voisine = voisineDe(scenes.map((s) => s.id));
     // D'abord on retire de la mémoire (une sauvegarde automatique en cours ne pourra plus les réécrire),
     // ensuite on efface de la base
     etat.chapitres = etat.chapitres.filter((c) => c.id !== id);
@@ -280,13 +308,14 @@ async function supprimer(type, id) {
       danger: true,
     });
     if (!ok) return;
+    voisine = voisineDe([id]);
     oublierScene(id);
     etat.scenes = etat.scenes.filter((s) => s.id !== id);
     await db.supprimer("scenes", id);
     informer(`« ${scene.titre} » a été supprimée.`);
   }
   await apresChangement();
-  annoncer("scene-supprimee");
+  annoncer("scene-supprimee", { voisine });
 }
 
 // Après chaque changement de structure : date de modification du roman + nouvel affichage

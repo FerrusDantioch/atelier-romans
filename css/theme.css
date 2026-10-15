@@ -55,6 +55,7 @@
   --fantasy:#c9a24a;     /* Fantasy : or */
   --space:#5fb4ff;       /* Space opéra : bleu */
   --horreur:#c2412f;     /* Horreur / enquête : rouge */
+  --horreur-texte:#e46a55; /* le même rouge, un peu plus clair, quand il colore du TEXTE (sinon peu lisible) */
   --autre:var(--omni);   /* Autre : violet de l'Omni-système */
 
   /* Couleur d'accent de l'univers en cours (changée automatiquement plus bas) */
@@ -112,7 +113,7 @@
 [data-univers="cyber"]{   --univers:var(--cyber); }
 [data-univers="fantasy"]{ --univers:var(--fantasy); }
 [data-univers="space"]{   --univers:var(--space); }
-[data-univers="horreur"]{ --univers:var(--horreur); }
+[data-univers="horreur"]{ --univers:var(--horreur); --c-texte:var(--horreur-texte); }
 [data-univers="autre"]{   --univers:var(--autre); }
 
 /* ---------- 4. Confort visuel : moins de mouvement si demandé ---------- */

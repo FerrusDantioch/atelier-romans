@@ -17,6 +17,7 @@ import {
   etat, trouverScene, scenesDansLOrdre, recompterScene, motsScene, motsChapitre, motsRoman, ecouter,
 } from "./etat.js";
 import { afficherPlan, majComptes, marquerActive, ajouterChapitre } from "./plan.js";
+import { oublierHistorique } from "./annulation.js";
 
 // Les deux zones de texte : une par mode (chacune garde son curseur et son « Ctrl+Z »)
 const zones = {};
@@ -145,6 +146,12 @@ async function ouvrirScene(id) {
   scene = cible;
   etat.sceneId = id;
   modifiee = false;
+  // Du texte non enregistré attend encore dans la copie de secours ? On le reprend.
+  const reprise = reprendreSecours(scene);
+  // Nouvelle scène = nouvel historique d'annulation
+  // (sinon Ctrl+Z / Ctrl+Y pourraient ramener ici le texte de la scène précédente)
+  oublierHistorique(zones.notes);
+  oublierHistorique(zones.redige);
   zones.notes.value = scene.notes || "";
   zones.redige.value = scene.texte || "";
   $("titre-scene").value = scene.titre || "";
@@ -155,6 +162,7 @@ async function ouvrirScene(id) {
   majCompteurs();
   marquerActive(id);
   indiquerEnregistrement("enregistre");
+  if (reprise) { afficherPlan(); marquerModifiee(); } // le texte repris sera enregistré dans un instant
   db.ecrireReglage("derniereScene:" + etat.roman.id, id);
 }
 
@@ -166,14 +174,14 @@ function afficherAucuneScene() {
   majCompteurs();
 }
 
-// Une scène vient d'être supprimée : si c'était la scène ouverte, on en ouvre une autre
-async function surSuppression() {
+// Une scène vient d'être supprimée : si c'était la scène ouverte, on ouvre sa voisine
+async function surSuppression({ voisine = null } = {}) {
   if (scene && !trouverScene(scene.id)) {
     effacerSecours(scene.id);
     scene = null;
     modifiee = false;
-    const premiere = scenesDansLOrdre()[0];
-    if (premiere) await ouvrirScene(premiere.id);
+    const suivante = trouverScene(voisine) || scenesDansLOrdre()[0];
+    if (suivante) await ouvrirScene(suivante.id);
     else afficherAucuneScene();
   }
   majCompteurs();
@@ -238,30 +246,64 @@ function inserer(zone, texte) {
   }
 }
 
-// Compte les étoiles collées juste avant et juste après la sélection
-function etoilesAutour(zone) {
-  const v = zone.value;
-  let avant = 0, apres = 0;
-  while (v[zone.selectionStart - 1 - avant] === "*") avant++;
-  while (v[zone.selectionEnd + apres] === "*") apres++;
-  return Math.min(avant, apres);
+// Avec n étoiles de chaque côté, le texte est-il déjà dans ce style ?
+// (* = italique, ** = gras, *** = les deux)
+function dejaEnForme(n, symbole) {
+  return symbole === "*" ? (n === 1 || n === 3) : n >= 2;
 }
 
 // Entoure la sélection de symboles (ou les retire s'ils y sont déjà)
 function entourer(zone, symbole) {
-  const debut = zone.selectionStart, fin = zone.selectionEnd;
-  const choisi = zone.value.slice(debut, fin);
-  const n = etoilesAutour(zone);
-  const dejaLa = symbole === "*" ? (n === 1 || n === 3) : n >= 2;
+  const v = zone.value;
   const L = symbole.length;
-  if (dejaLa) {
+  let debut = zone.selectionStart, fin = zone.selectionEnd;
+  // Les espaces et retours à la ligne au bord de la sélection restent dehors (« *mot* » et non « *mot * »)
+  while (debut < fin && /\s/.test(v[debut])) debut++;
+  while (fin > debut && /\s/.test(v[fin - 1])) fin--;
+  // Sélection de plusieurs paragraphes : chacun est mis en forme séparément
+  if (v.slice(debut, fin).includes("\n")) { entourerLignes(zone, symbole, debut, fin); return; }
+  // Les étoiles sélectionnées avec le mot (« *mot* » en entier) comptent comme étant autour
+  while (fin - debut >= 2 && v[debut] === "*" && v[fin - 1] === "*") { debut++; fin--; }
+  const choisi = v.slice(debut, fin);
+  let avant = 0, apres = 0;
+  while (v[debut - 1 - avant] === "*") avant++;
+  while (v[fin + apres] === "*") apres++;
+  if (dejaEnForme(Math.min(avant, apres), symbole)) {
     zone.setSelectionRange(debut - L, fin + L);
     inserer(zone, choisi);
     zone.setSelectionRange(debut - L, fin - L);
   } else {
+    zone.setSelectionRange(debut, fin);
     inserer(zone, symbole + choisi + symbole);
     zone.setSelectionRange(debut + L, fin + L); // garde le mot sélectionné (ou le curseur entre les symboles)
   }
+}
+
+// Mise en forme d'une sélection sur plusieurs lignes : chaque ligne de texte est entourée
+// (ou libérée, si toutes l'étaient déjà). Les lignes vides et les « * * * » ne bougent pas.
+function entourerLignes(zone, symbole, debut, fin) {
+  const L = symbole.length;
+  const etoiles = (t) => Math.min(t.match(/^\**/)[0].length, t.match(/\**$/)[0].length);
+  const lignes = zone.value.slice(debut, fin).split("\n").map((ligne) => {
+    const [, avant, coeur, apres] = ligne.match(/^(\s*)(.*?)(\s*)$/);
+    const aMettre = coeur !== "" && !/^\*(\s*\*)*$/.test(coeur); // ni vide, ni séparateur
+    return { avant, coeur, apres, aMettre };
+  });
+  const aTraiter = lignes.filter((l) => l.aMettre);
+  if (!aTraiter.length) return;
+  const retirer = aTraiter.every((l) => l.coeur.length > 2 * L && dejaEnForme(etoiles(l.coeur), symbole));
+  const nouveau = lignes.map((l) => {
+    if (!l.aMettre) return l.avant + l.coeur + l.apres;
+    return l.avant + (retirer ? l.coeur.slice(L, -L) : symbole + l.coeur + symbole) + l.apres;
+  }).join("\n");
+  zone.setSelectionRange(debut, fin);
+  inserer(zone, nouveau);
+  zone.setSelectionRange(debut, debut + nouveau.length);
+}
+
+// Début de la ligne où se trouve la position « pos »
+function debutDeLigne(texte, pos) {
+  return pos === 0 ? 0 : texte.lastIndexOf("\n", pos - 1) + 1;
 }
 
 // Insère le séparateur de scène « * * * » sur sa propre ligne, entouré de lignes vides
@@ -273,8 +315,8 @@ function insererSeparateur(zone) {
 
 // Ajoute (ou retire) une puce « - » au début de la ligne du curseur
 function basculerPuce(zone) {
-  const debutLigne = zone.value.lastIndexOf("\n", zone.selectionStart - 1) + 1;
   const curseur = zone.selectionStart;
+  const debutLigne = debutDeLigne(zone.value, curseur);
   if (zone.value.startsWith("- ", debutLigne)) {
     zone.setSelectionRange(debutLigne, debutLigne + 2);
     inserer(zone, "");
@@ -308,12 +350,15 @@ function raccourcisDansLeTexte(e, mode) {
   // Mode Notes : « Entrée » sur une ligne à puce crée une nouvelle puce
   if (mode === "notes" && e.key === "Enter" && !ctrl && !e.shiftKey && !e.altKey && !e.isComposing
       && zone.selectionStart === zone.selectionEnd) {
-    const debutLigne = zone.value.lastIndexOf("\n", zone.selectionStart - 1) + 1;
+    const debutLigne = debutDeLigne(zone.value, zone.selectionStart);
     const ligne = zone.value.slice(debutLigne, zone.selectionStart);
     const puce = ligne.match(/^(\s*)([-•])\s(.*)$/);
     if (!puce) return;
     e.preventDefault();
-    if (puce[3].trim() === "") {
+    let finLigne = zone.value.indexOf("\n", zone.selectionStart);
+    if (finLigne < 0) finLigne = zone.value.length;
+    const reste = zone.value.slice(zone.selectionStart, finLigne);
+    if (puce[3].trim() === "" && reste.trim() === "") {
       // Puce vide + Entrée : on retire la puce (fin de la liste)
       zone.setSelectionRange(debutLigne, zone.selectionStart);
       inserer(zone, "");
@@ -353,6 +398,11 @@ export function quitterConcentration() {
 
 function basculerConcentration(forcer) {
   const actif = document.body.classList.toggle("concentration", forcer);
+  // Les volets (plan, fiches) se referment : sinon leur voile sombre resterait sur le texte
+  if (actif) {
+    $("vue-roman").classList.remove("plan-ouvert", "panneau-ouvert");
+    $("bouton-fiches").setAttribute("aria-expanded", "false");
+  }
   if (scene) zoneActive().focus({ preventScroll: true });
   $("bouton-concentration").setAttribute("aria-pressed", String(actif));
 }
@@ -442,27 +492,62 @@ function clesSecours() {
   return cles;
 }
 
-// Au démarrage : récupère les frappes qui n'avaient pas eu le temps d'être enregistrées
-// (onglet fermé en pleine phrase, panne de courant…)
+// Lit la copie de secours d'une scène (ou null)
+function lireSecours(id) {
+  try {
+    const secours = JSON.parse(localStorage.getItem(PREFIXE_SECOURS + id));
+    return secours && typeof secours === "object" && typeof secours.sceneId === "string" ? secours : null;
+  } catch {
+    return null;
+  }
+}
+
+// La copie de secours contient-elle du texte plus récent que la scène ?
+function secoursPlusRecent(secours, s) {
+  const differente = s.texte !== secours.texte || s.notes !== secours.notes
+    || s.titre !== secours.titre || s.mode !== secours.mode;
+  return differente && (s.modifie || 0) <= secours.t;
+}
+
+// À l'ouverture d'une scène : si une copie de secours plus récente attend encore
+// (enregistrement qui avait échoué), on la reprend. Renvoie true si c'est le cas.
+function reprendreSecours(s) {
+  const secours = lireSecours(s.id);
+  if (!secours || !secoursPlusRecent(secours, s)) return false;
+  Object.assign(s, { titre: secours.titre, notes: secours.notes, texte: secours.texte, mode: secours.mode });
+  recompterScene(s.id);
+  return true;
+}
+
+// Au démarrage et à l'ouverture d'un roman : remet dans la base les frappes qui
+// n'avaient pas eu le temps d'être enregistrées (onglet fermé en pleine phrase, panne…).
+// Une copie de secours n'est effacée que lorsqu'on est SÛR de ne plus en avoir besoin.
 export async function recupererSecours() {
-  let recuperees = 0;
+  let recuperees = 0, gardees = 0;
   for (const cle of clesSecours()) {
+    const secours = lireSecours(cle.slice(PREFIXE_SECOURS.length));
+    if (!secours) { effacerCle(cle); continue; } // copie illisible : inutilisable
     try {
-      const secours = JSON.parse(localStorage.getItem(cle));
       const enBase = await db.lire("scenes", secours.sceneId);
-      const differente = enBase && (enBase.texte !== secours.texte || enBase.notes !== secours.notes
-        || enBase.titre !== secours.titre || enBase.mode !== secours.mode);
-      // On ne récupère que si la copie de secours est plus récente que la base
-      if (differente && (enBase.modifie || 0) <= secours.t) {
+      if (enBase && secoursPlusRecent(secours, enBase)) {
         await db.ecrire("scenes", {
           ...enBase, titre: secours.titre, notes: secours.notes, texte: secours.texte, mode: secours.mode, modifie: secours.t,
         });
         recuperees++;
       }
-    } catch { /* copie illisible : ignorée */ }
-    try { localStorage.removeItem(cle); } catch { /* rien */ }
+      effacerCle(cle); // remise dans la base, ou plus utile (scène supprimée, base déjà à jour)
+    } catch {
+      gardees++;       // la base refuse pour l'instant : on GARDE la copie pour un prochain essai
+    }
   }
   if (recuperees) informer(`Texte récupéré : ${pluriel(recuperees, "scène")} n'avai${recuperees > 1 ? "en" : ""}t pas fini d'être enregistrée${recuperees > 1 ? "s" : ""}.`);
+  if (gardees) {
+    informer("Du texte non enregistré est gardé en secours, mais n'a pas encore pu être remis dans le roman. "
+      + "Il sera repris à l'ouverture de la scène. N'effacez pas les données du navigateur.", { erreur: true, duree: 15000 });
+  }
+}
+function effacerCle(cle) {
+  try { localStorage.removeItem(cle); } catch { /* rien */ }
 }
 
 // Après un import, les anciennes copies de secours n'ont plus de sens
@@ -490,24 +575,37 @@ function majCompteurs() {
 }
 
 // La session redémarre chaque jour (ou à la demande).
-// Elle compte les mots ajoutés au roman depuis son début.
+// Elle note le nombre de mots de chaque scène au départ, et compte ce qui a été ajouté
+// depuis. Ainsi, supprimer une ancienne scène n'efface pas le travail du jour.
 async function demarrerSession({ forcer = false } = {}) {
-  const cle = "session:" + etat.roman.id;
+  const romanId = etat.roman.id;
+  const cle = "session:" + romanId;
   const jour = dateFichier();
   let s = await db.lireReglage(cle);
-  if (forcer || !s || s.jour !== jour) {
-    s = { jour, motsDepart: motsRoman() };
-    await db.ecrireReglage(cle, s);
+  if (forcer || !s || s.jour !== jour || !s.depart) {
+    s = { jour, depart: Object.fromEntries(etat.scenes.map((x) => [x.id, motsScene(x.id)])) };
+    session = s;
+    majSession();
     if (forcer) informer("Nouvelle session : le compteur repart de zéro.");
+    try { await db.ecrireReglage(cle, s); } catch { /* le compteur marche quand même pour aujourd'hui */ }
   }
-  session = s;
+  if (etat.roman && etat.roman.id === romanId) session = s;
   majSession();
+}
+
+// Mots ajoutés depuis le début de la session (une scène créée aujourd'hui part de 0)
+function motsDeLaSession() {
+  let total = 0;
+  for (const s of etat.scenes) total += motsScene(s.id) - (session.depart[s.id] || 0);
+  return Math.max(0, total);
 }
 
 function majSession() {
   if (!session || !etat.roman) return;
+  // L'application est restée ouverte après minuit : nouvelle journée, nouvelle session
+  if (session.jour !== dateFichier()) { session = null; demarrerSession(); return; }
   const objectif = etat.roman.objectifSession || OBJECTIF_PAR_DEFAUT;
-  const ecrits = Math.max(0, motsRoman() - session.motsDepart);
+  const ecrits = motsDeLaSession();
   const pourcentage = Math.min(100, Math.round((ecrits / objectif) * 100));
   $("mots-session").textContent = nombre(ecrits);
   $("objectif-session").textContent = nombre(objectif);

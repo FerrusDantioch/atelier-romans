@@ -11,13 +11,15 @@ import { initialiserSauvegarde, mettreAJourEtat } from "./sauvegarde.js";
 import { chargerRoman, fermerRoman, etat } from "./etat.js";
 import { initialiserPlan, afficherPlan } from "./plan.js";
 import {
-  initialiserEditeur, preparerEditeur, fermerEditeur, recupererSecours, effacerTousLesSecours,
+  initialiserEditeur, preparerEditeur, fermerEditeur, recupererSecours, effacerTousLesSecours, sauverMaintenant,
 } from "./editeur.js";
-import { initialiserPanneau, preparerPanneau, fermerPanneau } from "./panneau.js";
-import { initialiserRecherche } from "./recherche.js";
+import { initialiserPanneau, preparerPanneau, fermerPanneau, sauverFiche } from "./panneau.js";
+import { initialiserRecherche, fermerRecherche } from "./recherche.js";
+import { initialiserAnnulation } from "./annulation.js";
+import { demarrerSeul } from "./onglets.js";
 
 // Numéro de version affiché dans « À propos »
-export const VERSION = "0.5.0";
+export const VERSION = "0.5.1";
 
 // Liste des pages (« vues ») de l'application
 const VUES = ["bibliotheque", "roman", "apropos"];
@@ -39,15 +41,26 @@ function colorerUnivers(univers) {
   document.documentElement.dataset.univers = UNIVERS[univers] ? univers : "autre";
 }
 
+// Les changements de page se font l'un après l'autre, jamais deux en même temps
+// (sinon deux clics rapides sur « Précédent » pourraient s'emmêler)
+let fileDAttente = Promise.resolve();
+function enOrdre(action) {
+  fileDAttente = fileDAttente.then(action).catch(signalerErreur);
+  return fileDAttente;
+}
+const suivreAdresseEnOrdre = () => enOrdre(suivreAdresse);
+
 // Lit l'adresse (#bibliotheque, #apropos, #roman/identifiant) et affiche la bonne page
 async function suivreAdresse() {
   const [page, id] = location.hash.slice(1).split("/");
+  fermerRecherche();
 
   if (page === "roman" && id) {
     const romanId = decodeURIComponent(id);
     if (etat.roman && etat.roman.id === romanId && !document.getElementById("vue-roman").hidden) return;
     await fermerPanneau();
     await fermerEditeur();
+    await recupererSecours(); // frappes restées en secours (enregistrement qui avait échoué) : on les remet d'abord
     const roman = await chargerRoman(romanId);
     if (!roman) {
       informer("Ce roman n'existe plus.", { erreur: true });
@@ -81,6 +94,16 @@ async function suivreAdresse() {
   }
 }
 
+// Tout problème inattendu est signalé (au lieu de laisser l'application bloquée en silence)
+function signalerErreur(erreur) {
+  console.error(erreur);
+  const message = (erreur && erreur.message) || String(erreur);
+  informer(`Un problème est survenu : ${message}. Si cela se répète, exportez vos données puis rechargez la page.`,
+    { erreur: true, duree: 12000 });
+}
+window.addEventListener("unhandledrejection", (e) => signalerErreur(e.reason));
+window.addEventListener("error", (e) => signalerErreur(e.error || e.message));
+
 // Démarrage
 async function demarrer() {
   document.getElementById("numero-version").textContent = VERSION;
@@ -91,12 +114,12 @@ async function demarrer() {
     // On change l'adresse (#apropos…) : le bouton « retour » du navigateur fonctionne
     if (bouton) location.hash = bouton.dataset.aller;
   });
-  window.addEventListener("hashchange", suivreAdresse);
+  window.addEventListener("hashchange", suivreAdresseEnOrdre);
 
   try {
     await db.ouvrirBase();
   } catch (erreur) {
-    informer("Impossible d'ouvrir le stockage : " + erreur.message, { erreur: true, duree: 30000 });
+    window.alerteDemarrage("le stockage du navigateur est indisponible : " + erreur.message);
     return;
   }
   // Demande au navigateur de protéger nos données (sans bloquer le démarrage)
@@ -107,19 +130,31 @@ async function demarrer() {
 
   initialiserBibliotheque({ quandCaChange: mettreAJourEtat });
   initialiserSauvegarde({
-    quandImporte: async () => {
+    quandImporte: () => enOrdre(async () => {
       effacerTousLesSecours();
       fermerRoman();               // force le rechargement du roman affiché
       await suivreAdresse();
+    }),
+    // Avant un export : on enregistre les toutes dernières frappes (texte et fiche)
+    avantExporter: async () => {
+      await sauverMaintenant();
+      await sauverFiche();
     },
   });
   initialiserPlan();
   initialiserEditeur();
   initialiserPanneau();
   initialiserRecherche();
+  // Ctrl+Z dans le texte du roman ne défait jamais une modification faite ailleurs
+  initialiserAnnulation((champ) => champ.id === "texte-notes" || champ.id === "texte-redige");
 
-  await suivreAdresse();
+  await suivreAdresseEnOrdre();
   await mettreAJourEtat();
 }
 
-demarrer();
+// On démarre dès que cette page est la seule ouverte (voir onglets.js).
+// Si une autre page demande la main, on enregistre tout avant de la lui céder.
+demarrerSeul(
+  () => demarrer().catch((erreur) => window.alerteDemarrage(erreur.message)),
+  async () => { await sauverMaintenant(); await sauverFiche(); },
+);

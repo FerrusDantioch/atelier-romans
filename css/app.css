@@ -98,14 +98,14 @@ select:focus-visible, textarea:focus-visible, summary:focus-visible{
 .carte.cyber{ --c:var(--cyber); }
 .carte.fantasy{ --c:var(--fantasy); }
 .carte.space{ --c:var(--space); }
-.carte.horreur{ --c:var(--horreur); }
+.carte.horreur{ --c:var(--horreur); --c-texte:var(--horreur-texte); }
 .carte.autre{ --c:var(--autre); }
 
 /* Étiquette arrondie à contour fin (« JOUABLE », « EN TEST »…) */
 .statut{
   --c:var(--univers);
   font:600 .72rem var(--f-titre); letter-spacing:.08em; text-transform:uppercase;
-  color:var(--c);
+  color:var(--c-texte, var(--c));
   border:var(--filet) solid color-mix(in srgb, var(--c) 55%, transparent);
   border-radius:var(--arrondi-pilule);
   padding:3px 10px; white-space:nowrap;
@@ -158,7 +158,7 @@ select:focus-visible, textarea:focus-visible, summary:focus-visible{
 /* ---------- Bibliothèque ---------- */
 .grille-romans{ display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr)); gap:var(--esp-5); }
 .carte-tete{ display:flex; justify-content:space-between; align-items:baseline; gap:var(--esp-3); flex-wrap:wrap; }
-.roman-carte .statut{ --c:inherit; color:var(--c); border-color:color-mix(in srgb, var(--c) 55%, transparent); }
+.roman-carte .statut{ --c:inherit; color:var(--c-texte, var(--c)); border-color:color-mix(in srgb, var(--c) 55%, transparent); }
 .titre-roman{ color:var(--texte); text-decoration:none; }
 .titre-roman:hover{ color:var(--halo); }
 .vide{ grid-column:1 / -1; display:grid; gap:var(--esp-3); justify-items:start;
@@ -279,7 +279,7 @@ body.mode-ecriture main{ flex:1; min-height:0; }
 
 /* ---------- Colonne de gauche : le plan ---------- */
 .plan{
-  overflow-y:auto; min-height:0;
+  overflow:hidden; min-height:0;   /* seule la liste des chapitres défile (voir #plan-liste) */
   background:var(--table);
   border-right:var(--filet) solid var(--trait);
   padding:var(--esp-4);
@@ -290,6 +290,13 @@ body.mode-ecriture main{ flex:1; min-height:0; }
 .plan-roman{ display:grid; gap:6px; justify-items:start; }
 .plan-roman h1{ font-size:1.3rem; }
 .plan .pointilles{ margin:0; }
+/* La liste défile seule : le titre, les compteurs et la session restent toujours visibles */
+#plan-liste{ flex:1 1 auto; min-height:0; overflow-y:auto; margin:0 calc(-1 * var(--esp-2)); padding:2px var(--esp-2); }
+/* Fenêtre très basse : tout le plan défile d'un bloc (sinon la liste n'aurait plus de place) */
+@media (max-height:560px){
+  .plan{ overflow-y:auto; }
+  #plan-liste{ flex:none; overflow:visible; }
+}
 
 /* Objectif de session */
 .session{
@@ -316,7 +323,7 @@ body.mode-ecriture main{ flex:1; min-height:0; }
 
 /* Liste des chapitres et scènes */
 .plan-chapitres, .plan-scenes{ list-style:none; margin:0; padding:0; }
-.plan-chapitres{ display:grid; gap:var(--esp-3); }
+.plan-chapitres{ display:grid; grid-template-columns:minmax(0,1fr); gap:var(--esp-3); } /* un titre long est coupé « … » au lieu de tout pousser */
 .plan-ligne, .plan-scene{ position:relative; display:flex; align-items:center; gap:6px; min-width:0; }
 .chapitre-ligne{ font:700 .92rem var(--f-titre); padding:2px 0; }
 .chapitre-ligne::before{ /* puce en losange, couleur de l'univers */
@@ -327,7 +334,7 @@ body.mode-ecriture main{ flex:1; min-height:0; }
 .plan-scenes{
   margin:4px 0 2px 3px; padding-left:var(--esp-3);
   border-left:var(--filet) dashed var(--trait);
-  display:grid; gap:1px;
+  display:grid; grid-template-columns:minmax(0,1fr); gap:1px;
 }
 .plan-scene{ border-radius:6px; padding:1px 6px 1px 0; }
 .plan-scene:hover{ background:var(--table-haute); }
@@ -646,6 +653,7 @@ body.concentration .sortie-concentration:focus-visible{ opacity:1; }
 /* Écrans tactiles : les boutons ↑ ↓ ✎ ✕ restent visibles (pas de survol possible) */
 @media (hover:none){
   .plan-actions{ opacity:1; pointer-events:auto; position:static; transform:none; }
+  .frise-actions{ opacity:1; } /* flèches des événements : bien visibles sans survol */
 }
 
 /* =====================================================================
@@ -689,7 +697,7 @@ kbd{
   font:600 1.1rem var(--f-titre); color:var(--texte);
 }
 .recherche-champ input:focus{ outline:none; box-shadow:none; }
-.recherche-resultats{ list-style:none; margin:0; padding:var(--esp-2); overflow-y:auto; display:grid; gap:2px; }
+.recherche-resultats{ list-style:none; margin:0; padding:var(--esp-2); overflow-y:auto; display:grid; grid-template-columns:minmax(0,1fr); gap:2px; }
 .resultat{
   display:flex; align-items:baseline; gap:var(--esp-3);
   padding:9px var(--esp-3); border-radius:var(--arrondi-petit); cursor:pointer;
@@ -703,7 +711,7 @@ kbd{
   font:600 .68rem var(--f-titre); letter-spacing:.08em; text-transform:uppercase; color:var(--discret);
 }
 .resultat-titre{ flex:1; min-width:0; font:600 1rem var(--f-texte); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.resultat-titre mark{ background:none; color:var(--univers); text-decoration:underline; text-underline-offset:3px; }
+.resultat-titre mark{ background:none; color:var(--c-texte, var(--univers)); text-decoration:underline; text-underline-offset:3px; }
 .resultat-detail{ flex:none; max-width:35%; font-size:.82rem; color:var(--discret); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .resultat-creer .resultat-categorie{ color:var(--halo); }
 .resultat-creer .resultat-titre{ font-weight:400; color:var(--discret); }

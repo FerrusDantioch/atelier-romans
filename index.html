@@ -40,6 +40,17 @@
   <p class="discret">Vos romans ne sont pas touchés : ils sont rangés dans le navigateur.</p>
 </section>
 
+<!-- ============ ALERTE : l'Atelier est déjà ouvert dans une autre page (cachée normalement) ============ -->
+<section class="alerte-demarrage" id="alerte-onglet" role="alert" hidden>
+  <h1>L'Atelier est déjà ouvert ailleurs</h1>
+  <p>Il est ouvert dans un autre onglet ou une autre fenêtre. Une seule page peut servir à la fois :
+    sinon, chacune enregistrerait sa version et effacerait le travail de l'autre.</p>
+  <p class="discret">Cette page s'ouvrira d'elle-même dès que l'autre sera fermée.</p>
+  <div class="ligne">
+    <button class="bouton" type="button" id="bouton-utiliser-ici">Utiliser plutôt cette page</button>
+  </div>
+</section>
+
 <!-- ============ RAPPEL DOUX D'EXPORTER (caché si tout est à jour) ============ -->
 <div class="rappel" id="rappel-export" role="status" hidden>
   <p id="rappel-texte"></p>
@@ -193,7 +204,7 @@
           <div class="carte cyber"><h3>Cyberpunk</h3><span class="statut" style="--c:var(--cyber);justify-self:start">Néons</span></div>
           <div class="carte fantasy"><h3>Fantasy</h3><span class="statut" style="--c:var(--fantasy);justify-self:start">Légendes</span></div>
           <div class="carte space"><h3>Space opéra</h3><span class="statut" style="--c:var(--space);justify-self:start">Étoiles</span></div>
-          <div class="carte horreur"><h3>Horreur / enquête</h3><span class="statut" style="--c:var(--horreur);justify-self:start">Ombres</span></div>
+          <div class="carte horreur"><h3>Horreur / enquête</h3><span class="statut" style="--c:var(--horreur);--c-texte:var(--horreur-texte);justify-self:start">Ombres</span></div>
         </div>
       </div>
 

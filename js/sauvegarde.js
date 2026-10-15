@@ -15,9 +15,11 @@ const JOURS_DE_REPORT = 2;
 const JOUR = 86400000;
 
 let apresImport = async () => {};
+let avantExport = async () => {};
 
-export function initialiserSauvegarde({ quandImporte }) {
+export function initialiserSauvegarde({ quandImporte, avantExporter }) {
   apresImport = quandImporte;
+  avantExport = avantExporter;
   document.querySelectorAll("[data-action=exporter]").forEach((b) => b.addEventListener("click", exporter));
   document.getElementById("bouton-importer").addEventListener("click", () => document.getElementById("fichier-import").click());
   document.getElementById("fichier-import").addEventListener("change", (e) => {
@@ -35,7 +37,9 @@ export function initialiserSauvegarde({ quandImporte }) {
 
 export async function exporter() {
   try {
-    const sauvegarde = await db.exporterTout();
+    await avantExport(); // les toutes dernières frappes d'abord
+    const maintenant = Date.now();
+    const sauvegarde = await db.exporterTout(maintenant);
     const texte = JSON.stringify(sauvegarde, null, 2); // indenté : lisible si on l'ouvre
     const fichier = new Blob([texte], { type: "application/json" });
     const lien = el("a", { href: URL.createObjectURL(fichier), download: `atelier-romans-sauvegarde-${dateFichier()}.json` });
@@ -43,6 +47,7 @@ export async function exporter() {
     lien.click();      // déclenche le téléchargement
     lien.remove();
     setTimeout(() => URL.revokeObjectURL(lien.href), 10000);
+    await db.noterExport(maintenant);
     informer("Sauvegarde exportée. Rangez le fichier en lieu sûr (clé USB, cloud…).");
   } catch (erreur) {
     informer("L'export a échoué : " + erreur.message, { erreur: true });
@@ -90,11 +95,13 @@ export async function importer(fichier) {
   // 3. Remplacer les données
   try {
     await db.importerTout(sauvegarde);
-    informer("Sauvegarde importée : vos données ont été restaurées.");
-    await apresImport();
   } catch (e) {
     informer("L'import a échoué, rien n'a été modifié : " + e.message, { erreur: true });
+    mettreAJourEtat();
+    return;
   }
+  informer("Sauvegarde importée : vos données ont été restaurées.");
+  await apresImport();
   mettreAJourEtat();
 }
 

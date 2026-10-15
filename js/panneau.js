@@ -95,7 +95,8 @@ export function initialiserPanneau() {
     if (e.key !== "Escape" || $("vue-roman").hidden || document.querySelector("dialog[open]")) return;
     const dansPanneau = panneau.contains(document.activeElement);
     const voletOuvert = $("vue-roman").classList.contains("panneau-ouvert");
-    if (!dansPanneau && !voletOuvert) return;
+    const clavierPerdu = document.activeElement === document.body || document.activeElement === null;
+    if (!dansPanneau && !voletOuvert && !clavierPerdu) return;
     e.preventDefault();
     sauverFiche();
     $("vue-roman").classList.remove("panneau-ouvert");
@@ -158,7 +159,8 @@ function changerOnglet(onglet) {
 }
 
 // Ouvre une fiche dans le panneau (utilisé aussi par la recherche Ctrl+K)
-export function ouvrirFiche(id, { edition = false, focus = true } = {}) {
+// « selection » : en modification, sélectionne tout le nom (pour le remplacer en tapant)
+export function ouvrirFiche(id, { edition = false, focus = true, selection = false } = {}) {
   const fiche = trouverFiche(id);
   if (!fiche) return;
   sauverFiche();
@@ -171,7 +173,10 @@ export function ouvrirFiche(id, { edition = false, focus = true } = {}) {
     // En lecture : le titre de la fiche ; en modification : le premier champ
     const cible = edition ? $("contenu-panneau").querySelector("input, textarea") : $("contenu-panneau").querySelector(".fiche-titre");
     if (cible) cible.focus({ preventScroll: true });
-    if (edition && cible && cible.select) cible.select();
+    if (edition && cible && cible.setSelectionRange) {
+      if (selection) cible.select();
+      else cible.setSelectionRange(cible.value.length, cible.value.length);
+    }
   }
 }
 
@@ -486,8 +491,9 @@ export async function creerFiche(categorie, { titre = null, edition = true, focu
     etat.roman.ficheEpinglee = fiche.id;
     aEcrire.romans = [etat.roman];
   }
-  // Le formulaire s'affiche tout de suite ; l'enregistrement suit (sans faire attendre)
-  ouvrirFiche(fiche.id, { edition, focus });
+  // Le formulaire s'affiche tout de suite ; l'enregistrement suit (sans faire attendre).
+  // Nom proposé par défaut (« Nouveau PNJ ») : il est sélectionné, pour être remplacé en tapant.
+  ouvrirFiche(fiche.id, { edition, focus, selection: !titre });
   await db.lot({ ecrire: aEcrire });
   return fiche;
 }
@@ -515,7 +521,8 @@ async function supprimerFiche(id) {
   etat.fiches = etat.fiches.filter((f) => f.id !== id);
   const aEcrire = { fiches: evenementsModifies };
   if (etat.roman.ficheEpinglee === id) {
-    etat.roman.ficheEpinglee = null;
+    // Un autre personnage principal (s'il y en a) prend sa place
+    etat.roman.ficheEpinglee = fichesDe("principal")[0]?.id || null;
     aEcrire.romans = [etat.roman];
   }
   await db.lot({ ecrire: aEcrire, supprimer: { fiches: [id] } });
@@ -523,6 +530,18 @@ async function supprimerFiche(id) {
   vue.ficheId = null;
   vue.edition = false;
   afficherPanneau();
+  garderLeClavier('[data-action="nouvelle"]');
+}
+
+// Après une action qui redessine le panneau, le clavier reste dans le panneau
+// (sinon il se perdrait sur la page, et Tab repartirait du haut)
+function garderLeClavier(...selecteurs) {
+  for (const s of selecteurs) {
+    const b = $("panneau").querySelector(s);
+    if (b && !b.disabled && b.getClientRects().length) { b.focus({ preventScroll: true }); return; }
+  }
+  const onglet = $("panneau").querySelector('[role="tab"][aria-selected="true"]');
+  if (onglet) onglet.focus({ preventScroll: true });
 }
 
 async function epingler(id) {
@@ -531,8 +550,8 @@ async function epingler(id) {
   vue.epingleeRepliee = false;
   // L'écran change tout de suite ; l'enregistrement suit
   afficherPanneau();
-  const b = $("contenu-panneau").querySelector('[data-action="epingler"], [data-action="desepingler"]');
-  if (b) b.focus({ preventScroll: true });
+  garderLeClavier('#contenu-panneau [data-action="epingler"]', '#contenu-panneau [data-action="desepingler"]',
+    '#epinglee [data-action="desepingler"]');
   await db.ecrire("romans", etat.roman);
 }
 
@@ -545,6 +564,7 @@ async function deplacerEvenement(id, sens) {
   liste.forEach((f, k) => { f.ordre = k; });
   await db.lot({ ecrire: { fiches: liste } });
   afficherContenu();
-  const b = $("contenu-panneau").querySelector(`[data-action="${sens < 0 ? "monter" : "descendre"}"][data-id="${CSS.escape(id)}"]`);
-  if (b && !b.disabled) b.focus();
+  // Le clavier reste sur la même flèche (ou sur l'autre, si l'événement est arrivé en haut ou en bas)
+  const fleche = (a) => `#contenu-panneau [data-action="${a}"][data-id="${CSS.escape(id)}"]`;
+  garderLeClavier(fleche(sens < 0 ? "monter" : "descendre"), fleche(sens < 0 ? "descendre" : "monter"));
 }

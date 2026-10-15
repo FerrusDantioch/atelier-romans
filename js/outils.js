@@ -41,16 +41,20 @@ export function el(balise, attributs = {}, ...enfants) {
 
 // Compte les mots d'un texte (les symboles de mise en forme * ne comptent pas)
 export function compterMots(texte) {
-  if (!texte) return 0;
+  if (typeof texte !== "string" || !texte) return 0; // rien (ou pas du texte) : 0 mot
   const mots = texte
-    .replace(/\*/g, " ")                 // retire les * de *italique* et **gras**
-    .match(/[\p{L}\p{N}]+(?:['’-][\p{L}\p{N}]+)*/gu); // « aujourd'hui » = 1 mot
+    .replace(/\*/g, "")    // retire les * de *italique* et **gras** (« * * * » = 0 mot)
+    // Un mot = lettres, chiffres et accents, éventuellement reliés par une apostrophe ou un trait
+    // d'union (« aujourd'hui », « peut-être » = 1 mot), ou un nombre écrit « 12,5 » ou « 10 000 »
+    // (avec espace insécable).
+    .match(/[\p{L}\p{N}\p{M}]+(?:(?:['’‘\u2011-]|(?<=\p{N})[.,\u00A0\u202F](?=\p{N}))[\p{L}\p{N}\p{M}]+)*/gu);
   return mots ? mots.length : 0;
 }
 
 // Écrit un nombre à la française : 12 345
 export function nombre(n) {
-  return n.toLocaleString("fr-FR");
+  // 136 668 : espace insécable normale (l'espace « fine » du navigateur est presque invisible en petit)
+  return n.toLocaleString("fr-FR").replace(/\u202F/g, "\u00A0");
 }
 
 // Accorde un mot au pluriel : pluriel(3, "scène") → « 3 scènes »
