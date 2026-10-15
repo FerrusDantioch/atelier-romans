@@ -467,13 +467,15 @@ export async function sauverFiche() {
 // Créer, supprimer, épingler, réordonner
 // =====================================================================
 
-async function creerFiche(categorie) {
+// Crée une fiche. Par défaut, elle s'ouvre en modification avec le curseur dans son nom.
+// (La recherche Ctrl+K l'utilise avec un nom déjà tapé, sans quitter le texte.)
+export async function creerFiche(categorie, { titre = null, edition = true, focus = true } = {}) {
   await sauverFiche();
   const cat = CATEGORIES[categorie];
   const memes = etat.fiches.filter((f) => f.categorie === categorie);
   const fiche = {
     id: nouvelId(), romanId: etat.roman.id, categorie,
-    titre: cat.nouveau, type: "", champs: {}, notes: "",
+    titre: titre || cat.nouveau, type: "", champs: {}, notes: "",
     ordre: memes.length ? Math.max(...memes.map((f) => f.ordre || 0)) + 1 : 0,
     modifie: Date.now(),
   };
@@ -485,8 +487,9 @@ async function creerFiche(categorie) {
     aEcrire.romans = [etat.roman];
   }
   // Le formulaire s'affiche tout de suite ; l'enregistrement suit (sans faire attendre)
-  ouvrirFiche(fiche.id, { edition: true });
+  ouvrirFiche(fiche.id, { edition, focus });
   await db.lot({ ecrire: aEcrire });
+  return fiche;
 }
 
 async function supprimerFiche(id) {

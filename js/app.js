@@ -14,9 +14,10 @@ import {
   initialiserEditeur, preparerEditeur, fermerEditeur, recupererSecours, effacerTousLesSecours,
 } from "./editeur.js";
 import { initialiserPanneau, preparerPanneau, fermerPanneau } from "./panneau.js";
+import { initialiserRecherche } from "./recherche.js";
 
 // Numéro de version affiché dans « À propos »
-export const VERSION = "0.4.0";
+export const VERSION = "0.5.0";
 
 // Liste des pages (« vues ») de l'application
 const VUES = ["bibliotheque", "roman", "apropos"];
@@ -115,6 +116,7 @@ async function demarrer() {
   initialiserPlan();
   initialiserEditeur();
   initialiserPanneau();
+  initialiserRecherche();
 
   await suivreAdresse();
   await mettreAJourEtat();

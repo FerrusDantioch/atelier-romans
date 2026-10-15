@@ -122,6 +122,7 @@
           </div>
           <button class="petit-bouton" type="button" id="bouton-concentration" aria-pressed="false" title="Mode concentration (Ctrl+Maj+F)">Concentration</button>
           <button class="petit-bouton seulement-moyen-ecran" type="button" id="bouton-fiches" aria-controls="panneau" aria-expanded="false">Fiches</button>
+          <button class="petit-bouton seulement-moyen-ecran" type="button" id="bouton-recherche-outils" title="Recherche rapide (Ctrl+K)" aria-label="Chercher une fiche">⌕</button>
         </div>
 
         <div class="zone-ecriture">
@@ -144,6 +145,7 @@
     <aside class="panneau" id="panneau" aria-label="Consultation des fiches">
       <div class="panneau-tete">
         <p class="etiquette">Consultation</p>
+        <button class="bouton-recherche" type="button" id="bouton-recherche" title="Recherche rapide">⌕ Chercher <kbd>Ctrl K</kbd></button>
         <button class="petit-bouton seulement-moyen-ecran" type="button" id="fermer-panneau">Fermer</button>
       </div>
 
@@ -199,6 +201,24 @@
     </div>
   </section>
 </main>
+
+<!-- ============ RECHERCHE RAPIDE (Ctrl+K) ============ -->
+<dialog class="recherche" id="recherche" aria-label="Recherche rapide de fiches">
+  <div class="recherche-champ">
+    <span class="recherche-icone" aria-hidden="true">⌕</span>
+    <input id="recherche-saisie" type="text" role="combobox" aria-expanded="true" aria-controls="recherche-resultats"
+      aria-autocomplete="list" autocomplete="off" spellcheck="false" lang="fr"
+      placeholder="Chercher une fiche : nom, type, lieu…" aria-label="Chercher une fiche">
+    <kbd>Échap</kbd>
+  </div>
+  <ul class="recherche-resultats" id="recherche-resultats" role="listbox" aria-label="Fiches trouvées"></ul>
+  <p class="recherche-aide">
+    <span><kbd>↑</kbd> <kbd>↓</kbd> choisir</span>
+    <span><kbd>Entrée</kbd> ouvrir</span>
+    <span><kbd>Ctrl</kbd>+<kbd>Entrée</kbd> modifier</span>
+    <span><kbd>Échap</kbd> retour au texte</span>
+  </p>
+</dialog>
 
 <!-- Le script principal (type="module" = découpé proprement en fichiers) -->
 <script type="module" src="js/app.js"></script>

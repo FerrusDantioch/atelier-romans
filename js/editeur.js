@@ -347,6 +347,10 @@ function raccourcisGeneraux(e) {
 // Mode concentration : seul le texte reste visible
 // =====================================================================
 
+export function quitterConcentration() {
+  if (document.body.classList.contains("concentration")) basculerConcentration(false);
+}
+
 function basculerConcentration(forcer) {
   const actif = document.body.classList.toggle("concentration", forcer);
   if (scene) zoneActive().focus({ preventScroll: true });

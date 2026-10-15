@@ -3,7 +3,7 @@
 Application d'écriture de romans tirés des parties de l'Omni-système.
 Elle fonctionne dans le navigateur, hors ligne, et garde tout sur l'ordinateur.
 
-> 🚧 En construction — étape 4 sur 7 terminée (thème, bibliothèque, sauvegarde, écriture, fiches).
+> 🚧 En construction — étape 5 sur 7 terminée (thème, bibliothèque, sauvegarde, écriture, fiches, recherche Ctrl+K).
 
 ## Lancer l'application sur son ordinateur
 
@@ -108,6 +108,25 @@ Ouvrez un roman depuis la Bibliothèque. L'écran se divise en trois colonnes :
 - **`Échap`** dans le panneau : retour au texte, le curseur exactement où il était.
 - **Écran moyen ou petit** : le panneau devient un volet, ouvert par le bouton « Fiches ».
 
+## La recherche rapide : `Ctrl+K`
+
+En pleine écriture, besoin de vérifier la couleur des yeux d'un PNJ ?
+
+1. **`Ctrl+K`** (Mac : `Cmd+K`) : la recherche s'ouvre.
+2. Tapez quelques lettres du nom : « corb » trouve « Mère Corbeau ».
+   Accents et majuscules sont ignorés. On peut aussi chercher par type (« antagoniste »)
+   ou par un mot du contenu de la fiche (« néons »).
+3. **`Entrée`** : la fiche s'ouvre dans le panneau, et **votre curseur reste exactement où il était**
+   dans le texte (même sélection, même défilement). Vous continuez d'écrire aussitôt.
+4. **`Échap`** : la recherche se ferme, retour au texte sans rien changer.
+
+Autres possibilités : `↑` `↓` pour choisir parmi les résultats ; **`Ctrl+Entrée`** pour ouvrir la fiche
+en modification ; un clic sur un résultat. Si le nom n'existe pas encore, la recherche propose
+**« Créer un PNJ »** ou **« Créer un lieu »** avec ce nom, sans quitter le texte.
+Sans rien taper, la recherche propose les dernières fiches consultées.
+
+Les boutons « ⌕ Chercher » (panneau) et « ⌕ » (barre d'outils, sur écran moyen) font la même chose à la souris.
+
 ### Raccourcis clavier
 
 | Raccourci | Effet |
@@ -115,6 +134,7 @@ Ouvrez un roman depuis la Bibliothèque. L'écran se divise en trois colonnes :
 | `Ctrl+I` | italique `*…*` (une 2e fois : le retire) |
 | `Ctrl+B` | gras `**…**` |
 | `Entrée` sur une ligne `- …` (mode Notes) | nouvelle puce ; sur une puce vide : fin de la liste |
+| `Ctrl+K` | recherche rapide d'une fiche (le curseur reste en place) |
 | `Ctrl+Maj+F` | mode concentration (seul le texte reste) |
 | `Échap` | quitter le mode concentration, ou revenir au texte depuis le panneau |
 | `←` `→` sur les onglets du panneau | changer d'onglet |
@@ -168,6 +188,7 @@ js/etat.js          le roman ouvert, en mémoire (chapitres, scènes, compteurs)
 js/plan.js          le plan : chapitres et scènes
 js/editeur.js       l'écriture : modes, mise en forme, enregistrement, session, concentration
 js/panneau.js       le panneau de consultation : onglets, fiches, épinglage, événements
+js/recherche.js     la recherche rapide Ctrl+K
 js/sauvegarde.js    les boutons d'export/import et le rappel
 js/dialogues.js     les fenêtres de confirmation et les petits messages
 js/outils.js        petites fonctions partagées (compteur de mots, dates…)
