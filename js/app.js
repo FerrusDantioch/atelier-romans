@@ -18,9 +18,10 @@ import { initialiserPanneau, preparerPanneau, fermerPanneau, sauverFiche } from 
 import { initialiserRecherche, fermerRecherche } from "./recherche.js";
 import { initialiserAnnulation } from "./annulation.js";
 import { demarrerSeul } from "./onglets.js";
+import { initialiserExportPdf } from "./export-pdf.js";
 
 // Numéro de version affiché dans « À propos »
-export const VERSION = "0.5.1";
+export const VERSION = "0.6.0";
 
 // Liste des pages (« vues ») de l'application
 const VUES = ["bibliotheque", "roman", "apropos"];
@@ -148,6 +149,7 @@ async function demarrer() {
   initialiserEditeur();
   initialiserPanneau();
   initialiserRecherche();
+  initialiserExportPdf();
   // Ctrl+Z dans le texte du roman ne défait jamais une modification faite ailleurs
   initialiserAnnulation((champ) => champ.id === "texte-notes" || champ.id === "texte-redige");
 

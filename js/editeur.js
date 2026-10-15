@@ -419,6 +419,11 @@ function relire() {
   aRelire.clear();
 }
 
+// Recopie tout de suite les zones de texte dans la scène (utilisé par l'export PDF)
+export function relireMaintenant() {
+  relire();
+}
+
 function marquerModifiee() {
   scene.modifie = Date.now();
   modifiee = true;

@@ -16,6 +16,7 @@
 <!-- Styles : theme.css d'abord (les variables), puis la mise en page -->
 <link rel="stylesheet" href="css/theme.css">
 <link rel="stylesheet" href="css/app.css">
+<link rel="stylesheet" href="css/impression.css">
 </head>
 <body>
 
@@ -96,6 +97,7 @@
         <span class="statut" id="univers-roman"></span>
         <h1 id="titre-roman"></h1>
         <p class="discret petit" id="mots-roman"></p>
+        <button class="lien-discret" type="button" id="bouton-pdf" title="Exporter en PDF (Ctrl+P)">Exporter en PDF</button>
       </div>
 
       <!-- Objectif de la session d'écriture -->
@@ -211,7 +213,7 @@
       <ul class="losanges" style="--c:var(--omni)">
         <li>Écrire en mode <em>Notes</em> ou <em>Rédigé</em></li>
         <li>Consulter une fiche sans quitter le texte (<span class="mono">Ctrl+K</span>)</li>
-        <li>Exporter en PDF, mise en page de livre <span class="discret">(bientôt)</span></li>
+        <li>Exporter en PDF, mise en page de livre (<span class="mono">Ctrl+P</span>)</li>
       </ul>
 
       <hr class="pointilles">
@@ -246,6 +248,9 @@
     <span><kbd>Échap</kbd> retour au texte</span>
   </p>
 </dialog>
+
+<!-- ============ LIVRE À IMPRIMER (invisible à l'écran, rempli au moment de l'export PDF) ============ -->
+<div id="impression" lang="fr"></div>
 
 <!-- Si l'application ne peut pas démarrer, on l'explique au lieu d'afficher des boutons qui ne répondent pas.
      Cas le plus fréquent : index.html ouvert par double-clic, sans le petit serveur. -->

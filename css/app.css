@@ -222,6 +222,13 @@ select:focus-visible, textarea:focus-visible, summary:focus-visible{
 }
 
 /* Choix de l'univers : petites cartes avec liseré de couleur */
+/* Fenêtre « Exporter en PDF » */
+.groupe-export{ border:0; padding:0; margin:0; display:grid; gap:6px; }
+.groupe-export legend{ margin-bottom:var(--esp-2); padding:0; }
+.option-export{ display:flex; align-items:center; gap:var(--esp-2); cursor:pointer; }
+.option-export input{ accent-color:var(--univers); margin:0; }
+.option-export-chapitre{ display:flex; align-items:center; gap:var(--esp-2); flex-wrap:wrap; }
+.option-export-chapitre select{ flex:1 1 12em; min-width:0; }
 .choix-univers{ border:0; padding:0; margin:0; display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:var(--esp-2); }
 .choix-univers legend{ margin-bottom:var(--esp-2); padding:0; }
 .option-univers{
@@ -291,6 +298,7 @@ body.mode-ecriture main{ flex:1; min-height:0; }
 .retour:hover{ color:var(--texte); }
 .plan-roman{ display:grid; gap:6px; justify-items:start; }
 .plan-roman h1{ font-size:1.3rem; }
+.plan-roman .lien-discret{ font-size:.82rem; } /* « Exporter en PDF » */
 .plan .pointilles{ margin:0; }
 /* La liste défile seule : le titre, les compteurs et la session restent toujours visibles */
 #plan-liste{ flex:1 1 auto; min-height:0; overflow-y:auto; margin:0 calc(-1 * var(--esp-2)); padding:2px var(--esp-2); }

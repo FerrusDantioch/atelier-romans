@@ -3,8 +3,8 @@
 Application d'écriture de romans tirés des parties de l'Omni-système.
 Elle fonctionne dans le navigateur, hors ligne, et garde tout sur l'ordinateur.
 
-> 🚧 En construction — étape 5 sur 7 terminée (thème, bibliothèque, sauvegarde, écriture, fiches, recherche Ctrl+K),
-> suivie d'une vérification complète de tout ce qui existe.
+> 🚧 En construction — étape 6 sur 7 terminée (thème, bibliothèque, sauvegarde, écriture, fiches,
+> recherche Ctrl+K, export PDF). Reste l'étape 7 : installation comme application et fonctionnement hors ligne.
 
 ## Lancer l'application sur son ordinateur
 
@@ -139,6 +139,24 @@ Sans rien taper, la recherche propose les dernières fiches consultées.
 
 Les boutons « ⌕ Chercher » (panneau) et « ⌕ » (barre d'outils, sur écran moyen) font la même chose à la souris.
 
+## Exporter en PDF (mise en page de livre)
+
+1. Dans la page d'écriture, cliquez sur **« Exporter en PDF »** (sous le titre du roman, à gauche),
+   ou appuyez sur **`Ctrl+P`**.
+2. Choisissez : **le roman entier**, **un chapitre** (dans la liste) ou **la scène ouverte** ;
+   le **format** (*Livre A5*, le format d'un roman, ou *Page A4*) ; avec ou sans **page de titre**.
+3. Cliquez sur **« Préparer le PDF »** : la fenêtre d'impression du navigateur s'ouvre.
+4. Dans **« Destination »**, choisissez **« Enregistrer au format PDF »**, puis **« Enregistrer »**.
+   Si la case **« En-têtes et pieds de page »** apparaît (dans « Plus de paramètres »), **décochez-la** :
+   sinon le navigateur ajoute sa propre date et l'adresse de la page.
+
+Ce que contient le PDF : le **texte rédigé** seulement (jamais les notes ni les fiches), un chapitre
+par page, les `* * *` centrés (un séparateur est aussi placé entre deux scènes), l'*italique* et le
+**gras** mis en forme, les numéros de page, et la mention discrète **« Réalisé par Ferrus Dantioch »**
+sur la page de titre et en pied de page — c'est le seul nom qui y figure.
+Pour un roman entier, l'aperçu peut mettre quelques secondes à apparaître.
+Utilisez **Chrome ou Edge** : Firefox n'imprime pas encore les numéros de page ni la mention en pied de page.
+
 ### Raccourcis clavier
 
 | Raccourci | Effet |
@@ -148,6 +166,7 @@ Les boutons « ⌕ Chercher » (panneau) et « ⌕ » (barre d'outils, sur écra
 | `Entrée` sur une ligne `- …` (mode Notes) | nouvelle puce ; sur une puce vide : fin de la liste |
 | `Ctrl+K` | recherche rapide d'une fiche (le curseur reste en place) |
 | `Ctrl+Maj+F` | mode concentration (seul le texte reste) |
+| `Ctrl+P` | exporter en PDF (scène, chapitre ou roman) |
 | `Échap` | quitter le mode concentration, ou revenir au texte depuis le panneau |
 | `←` `→` sur les onglets du panneau | changer d'onglet |
 | `Ctrl+Z` | annuler (dans le texte : n'annule jamais, par erreur, une modification faite dans une fiche) |
@@ -194,6 +213,7 @@ dans `assets/` (en gardant les mêmes noms) :
 index.html     la page de l'application
 css/theme.css  toutes les couleurs et polices
 css/app.css    la mise en page
+css/impression.css  la mise en page de livre du PDF
 js/app.js           le chef d'orchestre (navigation entre les pages)
 js/db.js            le stockage des données (IndexedDB) + export/import
 js/bibliotheque.js  la liste des romans
@@ -202,6 +222,7 @@ js/plan.js          le plan : chapitres et scènes
 js/editeur.js       l'écriture : modes, mise en forme, enregistrement, session, concentration
 js/panneau.js       le panneau de consultation : onglets, fiches, épinglage, événements
 js/recherche.js     la recherche rapide Ctrl+K
+js/export-pdf.js    l'export PDF (le livre à imprimer)
 js/annulation.js    Ctrl+Z en toute sécurité (n'annule que là où l'on écrit)
 js/onglets.js       une seule page de l'Atelier ouverte à la fois
 js/sauvegarde.js    les boutons d'export/import et le rappel

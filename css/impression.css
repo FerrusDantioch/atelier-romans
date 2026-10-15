@@ -1,0 +1,88 @@
+/* =====================================================================
+   IMPRESSION / EXPORT PDF — mise en page de livre
+   Fond blanc, texte noir, police à empattements (Literata), alinéas,
+   un chapitre par page, séparateurs « * * * » centrés.
+   Le format (A5 ou A4), les marges, le numéro de page et la mention en pied
+   de page sont réglés au moment de l'export (voir js/export-pdf.js).
+   ===================================================================== */
+
+/* À l'écran, le livre préparé reste invisible */
+#impression{ display:none; }
+
+@media print{
+  /* Seul le livre est imprimé : l'interface (sombre) disparaît */
+  html.impression-livre,
+  html.impression-livre body{
+    background:#fff !important; color:#000 !important;
+    height:auto !important; overflow:visible !important; display:block !important;
+    color-scheme:light;
+  }
+  html.impression-livre body > :not(#impression){ display:none !important; }
+
+  html.impression-livre #impression{
+    display:block;
+    font-family:"Literata", Georgia, "Times New Roman", serif;
+    font-size:var(--livre-police, 10.5pt);
+    line-height:1.45;
+    color:#000;
+    text-align:justify;
+    hyphens:auto;            /* coupure des mots en fin de ligne, si le navigateur sait le faire */
+    font-kerning:normal;
+    orphans:2; widows:2;     /* jamais une ligne seule en haut ou en bas de page */
+  }
+
+  /* Titres dans la même police que le texte (comme dans un livre), pas celle de l'interface */
+  #impression h1, #impression h2{
+    font-family:inherit; color:#000;
+    letter-spacing:normal; text-transform:none;
+  }
+
+  /* ---------- Page de titre ---------- */
+  .livre-page-titre{
+    height:var(--livre-hauteur, 166mm);
+    display:flex; flex-direction:column; align-items:center;
+    text-align:center;
+    break-after:page;
+  }
+  .livre-titre{
+    margin:30% 0 0;
+    font-size:2.1em; font-weight:600; line-height:1.2;
+    letter-spacing:.01em; hyphens:none;
+  }
+  .livre-sous-titre{
+    margin:1em 0 0;
+    font-size:1.05em; font-style:italic; hyphens:none;
+  }
+  .livre-filet{
+    width:18%; margin:2.2em auto 0;
+    border:0; border-top:.6pt solid #000;
+  }
+  .livre-signature{
+    margin-top:auto;          /* tout en bas de la page */
+    font-size:.8em; font-style:italic; color:#555;
+  }
+
+  /* ---------- Chapitres ---------- */
+  .livre-chapitre{ break-before:page; }   /* chaque chapitre commence sur une nouvelle page */
+  .livre-titre-chapitre{
+    margin:var(--livre-haut-chapitre, 28mm) 0 2.4em;
+    font-size:1.55em; font-weight:600; line-height:1.25;
+    text-align:center; hyphens:none;
+    break-after:avoid;
+  }
+
+  /* ---------- Paragraphes ---------- */
+  .livre-chapitre p{ margin:0; text-indent:1.5em; text-wrap:pretty; } /* pretty : évite un mot seul en fin de paragraphe */
+  /* Pas d'alinéa juste après un titre ou un séparateur (usage des livres) */
+  .livre-chapitre .livre-titre-chapitre + p,
+  .livre-chapitre .livre-separateur + p{ text-indent:0; }
+  #impression em{ font-style:italic; }
+  #impression strong{ font-weight:700; }
+
+  /* Séparateur de scène « * * * » : centré, aéré, jamais seul en bas de page */
+  .livre-chapitre .livre-separateur{
+    text-indent:0; text-align:center;
+    margin:.9em 0;
+    break-after:avoid; break-inside:avoid;
+  }
+}
