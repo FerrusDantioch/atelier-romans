@@ -453,18 +453,21 @@ function planifierSauvegarde(fiche) {
   minuterie = setTimeout(sauverFiche, DELAI_SAUVEGARDE);
 }
 
+// Renvoie false si l'enregistrement a échoué
 export async function sauverFiche() {
   clearTimeout(minuterie);
   const fiche = ficheModifiee;
-  if (!fiche) return;
+  if (!fiche) return true;
   ficheModifiee = null;
-  if (!trouverFiche(fiche.id)) return; // supprimée entre-temps
+  if (!trouverFiche(fiche.id)) return true; // supprimée entre-temps
   try {
     await db.ecrire("fiches", { ...fiche, champs: { ...fiche.champs } });
     if (etat.roman && etat.roman.ficheEpinglee === fiche.id) afficherEpinglee(); // la fiche épinglée suit les changements
+    return true;
   } catch (erreur) {
     ficheModifiee = fiche;
     informer("La fiche n'a pas pu être enregistrée : " + erreur.message, { erreur: true });
+    return false;
   }
 }
 

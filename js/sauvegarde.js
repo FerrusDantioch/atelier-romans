@@ -37,7 +37,7 @@ export function initialiserSauvegarde({ quandImporte, avantExporter }) {
 
 export async function exporter() {
   try {
-    await avantExport(); // les toutes dernières frappes d'abord
+    const complet = await avantExport(); // les toutes dernières frappes d'abord
     const maintenant = Date.now();
     const sauvegarde = await db.exporterTout(maintenant);
     const texte = JSON.stringify(sauvegarde, null, 2); // indenté : lisible si on l'ouvre
@@ -47,8 +47,14 @@ export async function exporter() {
     lien.click();      // déclenche le téléchargement
     lien.remove();
     setTimeout(() => URL.revokeObjectURL(lien.href), 10000);
-    await db.noterExport(maintenant);
-    informer("Sauvegarde exportée. Rangez le fichier en lieu sûr (clé USB, cloud…).");
+    if (complet === false) {
+      // Le fichier est créé quand même (mieux que rien), mais on ne prétend pas que tout est exporté
+      informer("Export fait, mais du texte récent n'a pas pu être enregistré et ne figure PAS dans ce fichier. "
+        + "Réessayez l'export dans un moment.", { erreur: true, duree: 15000 });
+    } else {
+      await db.noterExport(maintenant);
+      informer("Sauvegarde exportée. Rangez le fichier en lieu sûr (clé USB, cloud…).");
+    }
   } catch (erreur) {
     informer("L'export a échoué : " + erreur.message, { erreur: true });
   }

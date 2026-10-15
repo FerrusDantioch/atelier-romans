@@ -12,6 +12,7 @@ import { chargerRoman, fermerRoman, etat } from "./etat.js";
 import { initialiserPlan, afficherPlan } from "./plan.js";
 import {
   initialiserEditeur, preparerEditeur, fermerEditeur, recupererSecours, effacerTousLesSecours, sauverMaintenant,
+  toutEnregistrer,
 } from "./editeur.js";
 import { initialiserPanneau, preparerPanneau, fermerPanneau, sauverFiche } from "./panneau.js";
 import { initialiserRecherche, fermerRecherche } from "./recherche.js";
@@ -135,10 +136,12 @@ async function demarrer() {
       fermerRoman();               // force le rechargement du roman affiché
       await suivreAdresse();
     }),
-    // Avant un export : on enregistre les toutes dernières frappes (texte et fiche)
+    // Avant un export : on enregistre les toutes dernières frappes (texte et fiche).
+    // Renvoie false si quelque chose n'a pas pu être enregistré.
     avantExporter: async () => {
-      await sauverMaintenant();
-      await sauverFiche();
+      const texteOk = await toutEnregistrer();
+      const ficheOk = await sauverFiche();
+      return texteOk && ficheOk;
     },
   });
   initialiserPlan();

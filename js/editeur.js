@@ -36,6 +36,7 @@ let modifiee = false;      // true = des changements ne sont pas encore dans la 
 let minuterieSauvegarde = null;
 let minuterieCompteurs = null;
 let minuterieSecours = null;
+let echecEnAttente = false; // un enregistrement a échoué : sa copie de secours attend d'être remise dans la base
 const aRelire = new Set();  // modes dont le texte a changé depuis la dernière relecture
 let session = null;        // { jour, motsDepart }
 const curseurs = new Map(); // position du curseur de chaque scène déjà ouverte
@@ -449,7 +450,13 @@ export async function sauverMaintenant() {
       effacerSecours(copie.id);
       indiquerEnregistrement("enregistre");
     }
+    // La base fonctionne de nouveau : on y remet aussi les scènes dont l'enregistrement avait échoué
+    if (echecEnAttente) {
+      echecEnAttente = false;
+      await recupererSecours({ sauf: scene && scene.id });
+    }
   } catch (erreur) {
+    echecEnAttente = true;
     if (scene === objet) modifiee = true;
     indiquerEnregistrement("erreur");
     informer("L'enregistrement a échoué : " + erreur.message + ". Votre texte est gardé en secours.", { erreur: true });
@@ -509,22 +516,27 @@ function secoursPlusRecent(secours, s) {
   return differente && (s.modifie || 0) <= secours.t;
 }
 
-// À l'ouverture d'une scène : si une copie de secours plus récente attend encore
-// (enregistrement qui avait échoué), on la reprend. Renvoie true si c'est le cas.
+// À l'ouverture d'une scène : une copie de secours qui attend encore veut dire que son
+// texte n'a jamais été confirmé dans la base (enregistrement qui avait échoué).
+// On reprend son texte s'il est plus récent, et on renvoie true : la scène sera réenregistrée.
 function reprendreSecours(s) {
   const secours = lireSecours(s.id);
-  if (!secours || !secoursPlusRecent(secours, s)) return false;
-  Object.assign(s, { titre: secours.titre, notes: secours.notes, texte: secours.texte, mode: secours.mode });
-  recompterScene(s.id);
+  if (!secours || (s.modifie || 0) > secours.t) return false; // pas de copie, ou copie dépassée
+  if (secoursPlusRecent(secours, s)) {
+    Object.assign(s, { titre: secours.titre, notes: secours.notes, texte: secours.texte, mode: secours.mode });
+    recompterScene(s.id);
+  }
   return true;
 }
 
 // Au démarrage et à l'ouverture d'un roman : remet dans la base les frappes qui
 // n'avaient pas eu le temps d'être enregistrées (onglet fermé en pleine phrase, panne…).
 // Une copie de secours n'est effacée que lorsqu'on est SÛR de ne plus en avoir besoin.
-export async function recupererSecours() {
+// « sauf » : la scène ouverte, dont l'éditeur s'occupe lui-même.
+export async function recupererSecours({ sauf = null } = {}) {
   let recuperees = 0, gardees = 0;
   for (const cle of clesSecours()) {
+    if (sauf && cle === PREFIXE_SECOURS + sauf) continue;
     const secours = lireSecours(cle.slice(PREFIXE_SECOURS.length));
     if (!secours) { effacerCle(cle); continue; } // copie illisible : inutilisable
     try {
@@ -542,12 +554,22 @@ export async function recupererSecours() {
   }
   if (recuperees) informer(`Texte récupéré : ${pluriel(recuperees, "scène")} n'avai${recuperees > 1 ? "en" : ""}t pas fini d'être enregistrée${recuperees > 1 ? "s" : ""}.`);
   if (gardees) {
+    echecEnAttente = true;
     informer("Du texte non enregistré est gardé en secours, mais n'a pas encore pu être remis dans le roman. "
       + "Il sera repris à l'ouverture de la scène. N'effacez pas les données du navigateur.", { erreur: true, duree: 15000 });
   }
 }
 function effacerCle(cle) {
   try { localStorage.removeItem(cle); } catch { /* rien */ }
+}
+
+// Avant un export : tout ce qui attend (frappes récentes, copies de secours) va dans la base.
+// Renvoie false si du texte n'a pas pu y être mis (il manquerait alors dans le fichier).
+export async function toutEnregistrer() {
+  await sauverMaintenant();
+  // (la scène ouverte, si elle a encore des frappes en attente, est laissée à l'éditeur)
+  await recupererSecours({ sauf: scene && modifiee ? scene.id : null });
+  return !modifiee && clesSecours().length === 0;
 }
 
 // Après un import, les anciennes copies de secours n'ont plus de sens
