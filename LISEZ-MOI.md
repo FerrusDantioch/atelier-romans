@@ -130,6 +130,8 @@ Ouvrez un roman depuis la Bibliothèque. L'écran se divise en trois colonnes :
 
 - **Plan** : « + Chapitre » et « + Scène » pour ajouter. Au survol d'une ligne apparaissent
   ↑ ↓ (déplacer), ✎ (renommer) et ✕ (supprimer, avec confirmation).
+  Sur écran tactile, ils restent affichés pour les chapitres et pour la scène ouverte
+  (pour une autre scène : la toucher d'abord, ce qui l'ouvre).
   Une scène qu'on monte depuis le haut de son chapitre passe à la fin du chapitre précédent.
 - **Notes / Rédigé** : chaque scène a deux textes. *Notes* pour les fragments et les puces,
   *Rédigé* pour le texte du roman. On bascule à tout moment ; chacun garde son curseur.

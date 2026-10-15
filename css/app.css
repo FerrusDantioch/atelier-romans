@@ -666,13 +666,23 @@ body.concentration .sortie-concentration:focus-visible{ opacity:1; }
     content:""; position:fixed; inset:0; z-index:25;
     background:rgba(8,6,14,.6);
   }
-  .plan-actions{ opacity:1; pointer-events:auto; position:static; transform:none; }
   .texte{ padding-top:var(--esp-4); }
 }
-/* Écrans tactiles : les boutons ↑ ↓ ✎ ✕ restent visibles (pas de survol possible) */
+/* Écrans tactiles (pas de survol possible) : les boutons ↑ ↓ ✎ ✕ restent visibles pour les chapitres
+   et pour la scène ouverte (pour une autre scène : la toucher d'abord, ce qui l'ouvre) */
 @media (hover:none){
-  .plan-actions{ opacity:1; pointer-events:auto; position:static; transform:none; }
+  .chapitre-ligne > .plan-actions,
+  .plan-scene.active > .plan-actions{ opacity:1; pointer-events:auto; position:static; transform:none; }
+  /* Titre long : les boutons passent à la ligne au lieu de le réduire à « S… » */
+  .chapitre-ligne, .plan-scene.active{ flex-wrap:wrap; justify-content:flex-end; row-gap:2px; }
+  .chapitre-ligne > .plan-titre{ flex:1 0 auto; max-width:calc(100% - 14px); }
+  .plan-scene.active > .plan-ouvrir{ flex:1 0 auto; max-width:100%; }
+  .plan-action{ width:34px; height:32px; } /* assez grands pour le doigt */
   .frise-actions{ opacity:1; } /* flèches des événements : bien visibles sans survol */
+}
+/* Écrans tactiles sans clavier : pas d'indications de touches (Ctrl K, Échap…) */
+@media (hover:none) and (pointer:coarse){
+  .bouton-recherche kbd, .recherche-champ kbd, .recherche-aide, .aide-panneau{ display:none; }
 }
 
 /* =====================================================================
