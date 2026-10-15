@@ -135,8 +135,9 @@ export function retenirPosition() {
   memoriserCurseur();
 }
 // …et, à son retour, on remet le curseur et le défilement exactement au même endroit
-export function retrouverPosition() {
-  if (scene && !$("vue-roman").hidden) restaurerCurseur();
+// (focus : false = sans y mettre le clavier, quand il doit aller ailleurs, par exemple dans une fiche)
+export function retrouverPosition({ focus = true } = {}) {
+  if (scene && !$("vue-roman").hidden) restaurerCurseur({ focus });
 }
 
 function zoneActive() {
@@ -205,7 +206,7 @@ function memoriserCurseur() {
   const position = (z) => ({ debut: z.selectionStart, fin: z.selectionEnd, defilement: z.scrollTop });
   curseurs.set(scene.id, { notes: position(zones.notes), redige: position(zones.redige) });
 }
-function restaurerCurseur() {
+function restaurerCurseur({ focus = true } = {}) {
   const memo = curseurs.get(scene.id);
   for (const [mode, zone] of Object.entries(zones)) {
     if (memo) {
@@ -217,7 +218,7 @@ function restaurerCurseur() {
       zone.scrollTop = zone.scrollHeight;
     }
   }
-  zoneActive().focus({ preventScroll: true });
+  if (focus) zoneActive().focus({ preventScroll: true });
 }
 
 // =====================================================================

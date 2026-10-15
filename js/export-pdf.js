@@ -29,6 +29,8 @@ let fenetreOuverte = false; // la fenêtre « Exporter en PDF » est en train de
 let titreAvant = "";    // titre de l'onglet, remis après l'impression
 
 const $ = (id) => document.getElementById(id);
+// Un roman est ouvert, sur sa page d'écriture ou sur sa frise des événements
+const pageDuRoman = () => !!etat.roman && (!$("vue-roman").hidden || !$("vue-frise").hidden);
 
 // =====================================================================
 // Mise en place
@@ -37,17 +39,17 @@ const $ = (id) => document.getElementById(id);
 export function initialiserExportPdf() {
   $("bouton-pdf").addEventListener("click", ouvrirExport);
 
-  // Ctrl+P dans la page d'écriture : notre export (au lieu d'imprimer l'écran tel quel)
+  // Ctrl+P dans la page d'écriture (ou sur la frise) : notre export (au lieu d'imprimer l'écran tel quel)
   document.addEventListener("keydown", (e) => {
     if (!(e.ctrlKey || e.metaKey) || e.shiftKey || e.altKey || e.key.toLowerCase() !== "p") return;
-    if ($("vue-roman").hidden || !etat.roman) return;
+    if (!pageDuRoman()) return;
     e.preventDefault();
     if (!document.querySelector("dialog[open]")) ouvrirExport();
   }, true);
 
   // Impression lancée par le menu du navigateur : on imprime le roman entier, au format livre
   window.addEventListener("beforeprint", () => {
-    if (!pret && etat.roman && !$("vue-roman").hidden) preparer({ portee: "roman", format: "A5", pageDeTitre: true });
+    if (!pret && pageDuRoman()) preparer({ portee: "roman", format: "A5", pageDeTitre: true });
   });
   window.addEventListener("afterprint", nettoyer);
 }

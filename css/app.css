@@ -652,7 +652,8 @@ body.concentration .sortie-concentration:focus-visible{ opacity:1; }
     visibility:hidden; transform:translateX(100%);
     transition:transform var(--duree), visibility var(--duree);
   }
-  .vue-ecriture.panneau-ouvert .panneau{ visibility:visible; transform:none; }
+  /* (à l'ouverture, visible tout de suite : le clavier peut aussitôt aller dans une fiche) */
+  .vue-ecriture.panneau-ouvert .panneau{ visibility:visible; transform:none; transition:transform var(--duree), visibility 0s; }
   /* Voile sombre derrière le volet : le toucher referme le volet */
   .vue-ecriture.panneau-ouvert::after{
     content:""; position:fixed; inset:0; z-index:25;
@@ -670,7 +671,7 @@ body.concentration .sortie-concentration:focus-visible{ opacity:1; }
     visibility:hidden; transform:translateX(-100%);
     transition:transform var(--duree), visibility var(--duree);
   }
-  .vue-ecriture.plan-ouvert .plan{ visibility:visible; transform:none; }
+  .vue-ecriture.plan-ouvert .plan{ visibility:visible; transform:none; transition:transform var(--duree), visibility 0s; }
   /* Voile sombre derrière le volet : le toucher referme le plan */
   .vue-ecriture.plan-ouvert::after{
     content:""; position:fixed; inset:0; z-index:25;
@@ -755,7 +756,7 @@ body.concentration .sortie-concentration:focus-visible{ opacity:1; }
 .evt-quand{ grid-area:quand; font-size:.78rem; color:var(--halo); padding:3px 0 6px; overflow-wrap:anywhere; }
 .evt-carte{
   grid-area:carte; min-width:0;
-  display:grid; gap:var(--esp-2); justify-items:start;
+  display:grid; grid-template-columns:minmax(0,1fr); gap:var(--esp-2); justify-items:start;
   background:var(--table);
   border:var(--filet) solid var(--trait); border-radius:var(--arrondi-petit);
   padding:var(--esp-3) var(--esp-3) var(--esp-3) var(--esp-4);
@@ -769,7 +770,9 @@ body.concentration .sortie-concentration:focus-visible{ opacity:1; }
 }
 .evt-titre button:hover{ color:var(--halo); text-decoration:underline dotted; text-underline-offset:4px; }
 .evt-actions{ flex:none; display:flex; gap:2px; margin:-4px -4px 0 0; }
-.evt-type{ font-size:.66rem; }
+.evt-type{ font-size:.66rem; max-width:100%; overflow:hidden; text-overflow:ellipsis; } /* type très long : coupé « … » */
+.evt-carte .pastille{ max-width:100%; overflow-wrap:anywhere; text-align:left; }
+.frise-suivi p{ min-width:0; overflow-wrap:anywhere; }
 .evt-resume{ font-size:.95rem; line-height:1.55; color:var(--ecriture-texte); white-space:pre-wrap; overflow-wrap:anywhere; }
 /* Écran assez large : la date ou le moment passe à gauche de la ligne */
 @media (min-width:700px){

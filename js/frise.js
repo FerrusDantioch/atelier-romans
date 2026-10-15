@@ -11,6 +11,7 @@
 // =====================================================================
 
 import { el, pluriel } from "./outils.js";
+import { informer } from "./dialogues.js";
 import { etat, fichesDe, trouverFiche, deplacerEvenement, ecouter } from "./etat.js";
 import { sauverMaintenant, retenirPosition, retrouverPosition, quitterConcentration } from "./editeur.js";
 import { sauverFiche, afficherPanneau, ouvrirFiche, creerFiche, basculerVolet } from "./panneau.js";
@@ -19,7 +20,7 @@ const $ = (id) => document.getElementById(id);
 
 const suivis = new Map();        // pour chaque roman : la fiche suivie (ou rien)
 let presencesOuvertes = null;    // « Qui apparaît où » ouvert ou replié (null : selon la largeur de l'écran)
-let ouverteParLeBouton = false;  // ouverte depuis le texte : « retour » = revenir en arrière dans l'historique
+let ouverteParLeBouton = false;  // on vient de l'ouvrir depuis le texte (voir montrerFrise)
 let enDepart = false;            // retour au texte déjà demandé (un double appui ne recule pas deux fois)
 let ensuite = null;              // ce qu'il faut faire une fois revenu au texte (ouvrir une fiche…)
 let montrerVue = null;           // (fourni par app.js : affiche une page et cache les autres)
@@ -50,11 +51,16 @@ export function initialiserFrise({ montrer }) {
   vue.addEventListener("toggle", (e) => {
     if (e.target.classList && e.target.classList.contains("presences")) presencesOuvertes = e.target.open;
   }, true);
-  // Échap : retour au texte
+  // Échap : retour au texte. Ctrl+S : par habitude… tout est déjà enregistré.
+  // (Ctrl+P ouvre l'export PDF, comme dans le texte : voir export-pdf.js)
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && friseAffichee() && !document.querySelector("dialog[open]")) {
+    if (!friseAffichee() || document.querySelector("dialog[open]")) return;
+    if (e.key === "Escape") {
       e.preventDefault();
       quitter();
+    } else if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase() === "s") {
+      e.preventDefault();
+      informer("Tout est déjà enregistré : l'ordre des événements comme le reste.");
     }
   });
 }
@@ -76,8 +82,9 @@ function quitter(puis = null) {
   if (!etat.roman || enDepart) return;
   enDepart = true;
   ensuite = puis;
-  // Ouverte depuis le texte : on recule d'un pas (le bouton « retour » ne ramènera pas à la frise)
-  if (ouverteParLeBouton) history.back();
+  // Ouverte depuis le texte : on recule d'un pas (le bouton « retour » ne ramènera pas à la frise).
+  // Sinon (adresse tapée, favori…), on remplace la frise par le texte dans l'historique.
+  if (history.state?.friseDepuisLeTexte) history.back();
   else location.replace(`#roman/${encodeURIComponent(etat.roman.id)}`);
 }
 
@@ -87,6 +94,12 @@ function quitter(puis = null) {
 
 export async function montrerFrise() {
   enDepart = false;
+  // Ouverte depuis le texte : on le note dans l'historique lui-même (la marque survit à un
+  // rechargement de la page, et aux allers-retours « précédent » / « suivant »)
+  if (ouverteParLeBouton && location.hash.endsWith("/frise")) {
+    history.replaceState({ ...(history.state || {}), friseDepuisLeTexte: true }, "");
+  }
+  ouverteParLeBouton = false;
   if (!friseAffichee()) {
     // Tout est enregistré, et l'on retient où en était le texte
     await sauverMaintenant();
@@ -110,7 +123,8 @@ export async function revenirDeLaFrise() {
   montrerVue("roman");
   document.title = etat.roman.titre + " — L'Atelier";
   afficherPanneau();      // l'ordre des événements a pu changer
-  retrouverPosition();    // curseur et défilement du texte, comme avant
+  // Curseur et défilement du texte, comme avant ; le clavier y retourne, sauf s'il doit aller dans une fiche
+  retrouverPosition({ focus: !action });
   if (action) await action();
 }
 
@@ -147,7 +161,9 @@ const concerne = (evenement, ficheId) =>
 
 function afficherFrise() {
   const vue = $("vue-frise");
+  // (la page, et « Qui apparaît où » qui défile seul sur grand écran, restent où ils étaient)
   const defilement = vue.scrollTop;
+  const defilementPresences = vue.querySelector(".presences")?.scrollTop || 0;
   const evenements = fichesDe("evenement");
   const suivi = ficheSuivie();
   const nombreSuivi = suivi ? evenements.filter((e) => concerne(e, suivi.id)).length : 0;
@@ -166,6 +182,8 @@ function afficherFrise() {
       : vueVide(),
   ));
   vue.scrollTop = defilement;
+  const presences = vue.querySelector(".presences");
+  if (presences) presences.scrollTop = defilementPresences;
 }
 
 function vueTete(evenements) {
@@ -217,7 +235,7 @@ function vueEvenement(e, i, total, suivi) {
           fleche("plus-tard", "↓", "Plus tard", i === total - 1),
         ),
       ),
-      e.type ? el("span", { class: "statut evt-type" }, e.type) : null,
+      e.type ? el("span", { class: "statut evt-type", title: e.type }, e.type) : null,
       resume ? el("p", { class: "evt-resume" }, resume) : null,
       personnages.length || lieux.length
         ? el("div", { class: "pastilles" }, [...personnages, ...lieux].map((f) => pastille(f, suivi)))
@@ -305,7 +323,12 @@ function redessiner(selecteur, ancre, ...autres) {
   const avant = ancre && ancre.isConnected ? ancre.getBoundingClientRect().top : null;
   afficherFrise();
   const cible = [selecteur, ...autres].map((s) => s && vue.querySelector(s)).find((b) => b && !b.disabled && b.getClientRects().length);
-  if (cible && avant != null) vue.scrollTop += cible.getBoundingClientRect().top - avant;
+  if (cible && avant != null) {
+    // Ce qui défile : « Qui apparaît où » s'il défile seul (grand écran), sinon la page
+    const liste = cible.closest(".presences");
+    const boite = liste && liste.scrollHeight > liste.clientHeight ? liste : vue;
+    boite.scrollTop += cible.getBoundingClientRect().top - avant;
+  }
   (cible || $("titre-frise")).focus({ preventScroll: true });
 }
 
