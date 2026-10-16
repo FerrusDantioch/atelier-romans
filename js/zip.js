@@ -24,8 +24,9 @@ function crc32(octets) {
   return (crc ^ 0xFFFFFFFF) >>> 0;
 }
 
-// Date et heure au format des archives ZIP (celui de l'ancien MS-DOS)
+// Date et heure au format des archives ZIP (celui de l'ancien MS-DOS, de 1980 à 2107)
 function dateZip(d) {
+  if (!(d.getFullYear() >= 1980 && d.getFullYear() <= 2107)) d = new Date(1980, 0, 1); // (horloge déréglée)
   return {
     heure: (d.getHours() << 11) | (d.getMinutes() << 5) | Math.floor(d.getSeconds() / 2),
     jour: ((d.getFullYear() - 1980) << 9) | ((d.getMonth() + 1) << 5) | d.getDate(),

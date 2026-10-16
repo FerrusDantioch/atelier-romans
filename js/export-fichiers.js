@@ -44,7 +44,8 @@ export function telecharger(fichier, nom) {
   document.body.append(lien);
   lien.click();
   lien.remove();
-  setTimeout(() => URL.revokeObjectURL(lien.href), 10000);
+  // (le fichier reste disponible une minute : le temps de répondre si le navigateur demande « Télécharger ? »)
+  setTimeout(() => URL.revokeObjectURL(lien.href), 60000);
 }
 
 // =====================================================================
@@ -256,9 +257,10 @@ const STYLES_WORD = `${ENTETE_XML}<w:styles ${W}>
 </w:styles>
 `;
 
+// (Word exige ces réglages dans l'ordre de sa norme : defaultTabStop avant autoHyphenation, etc.)
 const REGLAGES_WORD = `${ENTETE_XML}<w:settings ${W}>
-<w:autoHyphenation/>
 <w:defaultTabStop w:val="708"/>
+<w:autoHyphenation/>
 <w:characterSpacingControl w:val="doNotCompress"/>
 <w:compat><w:compatSetting w:name="compatibilityMode" w:uri="http://schemas.microsoft.com/office/word" w:val="15"/></w:compat>
 <w:themeFontLang w:val="fr-FR"/>
