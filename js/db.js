@@ -444,11 +444,30 @@ export async function appliquerFusion({ donnees, tombes, source, exporteLe }, ma
     { quand: maintenant, nature: "fusion", avant });
 }
 
-// Remet les données d'avant le dernier import (et oublie cette copie)
-export async function annulerImport() {
+// Une fusion qui ne change rien : on note seulement ce qui a été reçu de l'autre appareil
+// (sans toucher aux données, ni à la copie gardée pour « Annuler le dernier import »)
+export async function noterReception(source, exporteLe) {
+  if (!source) return;
+  const db = await ouvrirBase();
+  const tx = db.transaction("reglages", "readwrite");
+  const fin = finTransaction(tx);
+  const reglages = tx.objectStore("reglages");
+  const demande = reglages.get("receptions");
+  demande.onsuccess = () => {
+    const receptions = { ...(demande.result?.valeur || {}) };
+    receptions[source.id] = Math.max(receptions[source.id] || 0, exporteLe || 0);
+    reglages.put({ cle: "receptions", valeur: receptions });
+  };
+  return fin;
+}
+
+// Remet les données d'avant le dernier import. L'état actuel est gardé à son tour :
+// en cas d'erreur, le même bouton revient sur cette annulation (rien n'est jamais perdu d'un clic).
+export async function annulerImport(maintenant = Date.now()) {
   const copie = await lireReglage("avantImport");
   if (!copie) throw new Error("Il n'y a pas d'import à annuler.");
-  return remplacer(copie, null);
+  const avant = await lireToutesLesDonnees();
+  return remplacer(copie, { quand: maintenant, nature: "annulation", avant });
 }
 
 // Remplace le contenu de tous les tiroirs, en une seule transaction.

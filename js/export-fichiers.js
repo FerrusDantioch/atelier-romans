@@ -30,8 +30,13 @@ const estSeparateur = (bloc) => bloc.classList.contains("livre-separateur");
 
 // Le nom du fichier : le titre du roman (et ce qui est exporté), sans les caractères interdits
 export function nomDeFichier(livre, extension) {
-  const nom = (livre.nom || livre.titre)
-    .replace(/[\\/:*?"<>|\u0000-\u001F]+/g, "-").replace(/\s+/g, " ").trim().slice(0, 120);
+  const nom = [...(livre.nom || livre.titre)
+    .replace(/[\u0000-\u001F\u007F]+/g, "")   // caractères invisibles : retirés
+    .replace(/"/g, "'")                       // guillemets droits : apostrophes (« Le "Corbeau" » → « Le 'Corbeau' »)
+    .replace(/[\\/:*?<>|]+/g, "-")             // caractères interdits dans un nom de fichier
+    .replace(/\s+/g, " ").trim()]
+    .slice(0, 120).join("")                   // (120 caractères au plus, sans couper un emoji en deux)
+    .replace(/[\s.-]+$/, "");                // (ni espace, ni point, ni tiret juste avant l'extension)
   return (nom || "roman") + "." + extension;
 }
 
@@ -200,7 +205,7 @@ const ENTETE_XML = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n';
 function enMorceaux(noeud, style = { i: false, b: false }) {
   if (noeud.nodeType === Node.TEXT_NODE) {
     if (!noeud.data) return "";
-    const rpr = (style.i ? "<w:i/><w:iCs/>" : "") + (style.b ? "<w:b/><w:bCs/>" : "");
+    const rpr = (style.b ? "<w:b/><w:bCs/>" : "") + (style.i ? "<w:i/><w:iCs/>" : ""); // (gras avant italique : l'ordre de la norme)
     return `<w:r>${rpr ? `<w:rPr>${rpr}</w:rPr>` : ""}<w:t xml:space="preserve">${xml(noeud.data)}</w:t></w:r>`;
   }
   const suite = { i: style.i || noeud.tagName === "EM", b: style.b || noeud.tagName === "STRONG" };

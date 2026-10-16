@@ -95,7 +95,7 @@
     <!-- Installation comme application (affiché seulement quand le navigateur le permet) -->
     <section class="encart-installation" id="encart-installation" aria-labelledby="titre-installation" hidden>
       <h2 id="titre-installation">Installer l'Atelier</h2>
-      <p class="discret">Une icône sur l'ordinateur, une fenêtre à part, et l'Atelier s'ouvre même sans connexion
+      <p class="discret">Une icône sur l'écran d'accueil ou le bureau, une fenêtre à part, et l'Atelier s'ouvre même sans connexion
         ni petit serveur. Vos romans restent les mêmes.</p>
       <div class="ligne"><button class="bouton" type="button" id="bouton-installer">Installer l'application</button></div>
     </section>
@@ -139,14 +139,14 @@
       <!-- Aucun chapitre : message d'accueil -->
       <div class="editeur-vide" id="editeur-vide">
         <p class="etiquette">Prêt à écrire</p>
-        <h2>Ce roman est encore vide</h2>
-        <p class="discret">Créez un premier chapitre : une première scène sera ouverte, prête à recevoir vos notes.</p>
+        <h2 id="editeur-vide-titre">Ce roman est encore vide</h2>
+        <p class="discret" id="editeur-vide-texte">Créez un premier chapitre : une première scène sera ouverte, prête à recevoir vos notes.</p>
         <button class="bouton" type="button" id="bouton-premier-chapitre">Créer le premier chapitre</button>
       </div>
 
       <div class="editeur-plein" id="editeur-plein" hidden>
         <div class="barre-outils" id="barre-outils">
-          <button class="petit-bouton seulement-petit-ecran" type="button" id="bouton-plan" aria-controls="plan">☰ Plan</button>
+          <button class="petit-bouton seulement-petit-ecran" type="button" id="bouton-plan" aria-controls="plan" aria-expanded="false">☰ Plan</button>
           <input class="titre-scene" id="titre-scene" type="text" aria-label="Titre de la scène" placeholder="Titre de la scène" maxlength="200" autocomplete="off">
           <div class="modes" role="group" aria-label="Mode d'écriture">
             <button type="button" data-mode="notes" aria-pressed="true" title="Fragments, idées, puces">Notes</button>
@@ -170,7 +170,7 @@
           <div class="br-ligne">
             <input class="br-saisie" id="br-chercher" type="text" placeholder="Rechercher dans le roman…" aria-label="Rechercher dans le roman"
               autocomplete="off" spellcheck="false" lang="fr" enterkeyhint="search">
-            <span class="br-compte mono" id="br-compte" aria-live="polite"></span>
+            <span class="br-compte mono" id="br-compte"></span>
             <button class="br-bouton" type="button" id="br-precedent" title="Passage précédent (Maj+Entrée)" aria-label="Passage précédent">↑</button>
             <button class="br-bouton" type="button" id="br-suivant" title="Passage suivant (Entrée)" aria-label="Passage suivant">↓</button>
             <button class="br-bouton" type="button" id="br-fermer" title="Fermer (Échap)" aria-label="Fermer la recherche">✕</button>
@@ -218,7 +218,7 @@
         </div>
 
         <div class="barre-etat" aria-live="off">
-          <span>Scène : <b class="mono" id="mots-scene">0</b> mots rédigés</span>
+          <span>Scène : <b class="mono" id="mots-scene">0</b> <span id="mots-scene-libelle">mot rédigé</span></span>
           <span>Chapitre : <b class="mono" id="mots-chapitre">0</b></span>
           <span class="etat-enregistrement" id="etat-enregistrement" data-etat="enregistre">Enregistré ✓</span>
         </div>
@@ -340,15 +340,25 @@
      Cas le plus fréquent : index.html ouvert par double-clic, sans le petit serveur. -->
 <script>
   function alerteDemarrage(detail) {
+    var local = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
     var raison = location.protocol === "file:"
       ? "La page a été ouverte directement (double-clic sur index.html). Elle doit passer par le petit serveur : "
         + "suivez l'étape B du fichier LISEZ-MOI.md, puis ouvrez l'adresse http://localhost:8000"
-      : "Rechargez la page. Si le problème continue, arrêtez le petit serveur et lancez-le avec « py serveur.py » "
-        + "(Mac : « python3 serveur.py »), ou utilisez une version à jour de Chrome ou d'Edge.";
+      : local
+        ? "Rechargez la page. Si le problème continue, arrêtez le petit serveur et lancez-le avec « py serveur.py » "
+          + "(Mac : « python3 serveur.py »), ou utilisez une version à jour de Chrome ou d'Edge."
+        : "Rechargez la page, avec une connexion à Internet si possible (une mise à jour de l'Atelier était "
+          + "peut-être en cours). Si le problème continue, utilisez une version à jour de Chrome ou d'Edge.";
     document.getElementById("alerte-raison").textContent = raison + (detail ? " (détail : " + detail + ")" : "");
     document.getElementById("alerte-demarrage").hidden = false;
     document.querySelector("main").hidden = true;
   }
+  // Un fichier de l'application refuse de se charger avec les autres (par exemple une ancienne copie
+  // mêlée à une nouvelle, juste après une mise à jour) : on le dit, plutôt que de laisser une page
+  // qui ne répond pas. (« atelierCharge » est posé par js/app.js, une fois tous les fichiers chargés.)
+  window.addEventListener("error", function (e) {
+    if (!window.atelierCharge && document.getElementById("alerte-demarrage").hidden) alerteDemarrage(e.message);
+  });
 </script>
 <!-- Le script principal (type="module" = découpé proprement en fichiers) -->
 <script type="module" src="js/app.js" onerror="alerteDemarrage()"></script>

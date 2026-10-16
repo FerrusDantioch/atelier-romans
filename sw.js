@@ -82,10 +82,12 @@ self.addEventListener("install", (e) => {
   e.waitUntil(actualiser().catch(() => {}).then(() => self.skipWaiting()));
 });
 
-// Activation : on supprime les éventuelles anciennes réserves, et on prend en charge la page ouverte
+// Activation : on supprime les éventuelles anciennes réserves de l'Atelier (seulement les siennes :
+// d'autres sites publiés à la même adresse, par exemple sur GitHub Pages, peuvent avoir les leurs),
+// et on prend en charge la page ouverte
 self.addEventListener("activate", (e) => {
   e.waitUntil((async () => {
-    for (const nom of await caches.keys()) if (nom !== RESERVE) await caches.delete(nom);
+    for (const nom of await caches.keys()) if (nom !== RESERVE && nom.startsWith("atelier")) await caches.delete(nom);
     await self.clients.claim();
   })());
 });
@@ -113,7 +115,7 @@ async function actualiser() {
 async function telecharger(f) {
   let reponse;
   try {
-    reponse = await fetch(f, { cache: "no-store" }); // toujours le fichier lui-même, jamais une copie
+    reponse = await fetch(f, { cache: "no-cache" }); // toujours vérifié auprès du serveur (inchangé : pas retéléchargé)
   } catch {
     throw new Error("le serveur ne répond pas");
   }
@@ -122,7 +124,10 @@ async function telecharger(f) {
   if (f === "index.html" && !(await reponse.clone().text()).includes(MARQUE)) {
     throw new Error("la page reçue n'est pas l'Atelier (le serveur est-il lancé depuis le bon dossier ?)");
   }
-  return [f, reponse];
+  // Le fichier est reçu EN ENTIER avant d'aller plus loin : la réserve n'est touchée qu'une fois tous les
+  // fichiers arrivés (une connexion coupée au milieu d'un fichier ne laisse pas une réserve à moitié neuve)
+  const corps = await reponse.blob();
+  return [f, new Response(corps, { status: reponse.status, statusText: reponse.statusText, headers: reponse.headers })];
 }
 
 // La réserve contient-elle toute l'application ?
@@ -158,7 +163,7 @@ async function repondre(demande, cle) {
   }
   try {
     // 1. Version fraîche, si le serveur répond assez vite
-    const reponse = await avecDelai(fetch(demande, { cache: "no-store" }), DELAI_RESEAU);
+    const reponse = await avecDelai(fetch(demande, { cache: "no-cache" }), DELAI_RESEAU);
     injoignableJusqua = 0;
     if (reponse.ok) return avecLeBonType(reponse, cle);
     // Le serveur répond, mais n'a pas ce fichier (autre dossier servi ?) : la copie, s'il y en a une

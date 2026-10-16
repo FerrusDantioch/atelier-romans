@@ -1,7 +1,8 @@
 # L'Atelier — Omni-système
 
 Application d'écriture de romans tirés des parties de l'Omni-système.
-Elle s'installe comme une application, fonctionne **sans connexion**, et garde tout sur l'ordinateur.
+Elle s'installe comme une application, fonctionne **sans connexion**, et garde tout sur l'appareil
+(ordinateur ou téléphone).
 
 **Version 1.8** — les sept étapes prévues sont terminées, plus l'étape 8 (les fiches repérées dans le texte),
 l'étape 9 (écrire sur deux appareils : la fusion), l'étape 10 (la frise des événements),
@@ -337,7 +338,8 @@ Choisissez **le roman entier**, **un chapitre** (dans la liste) ou **la scène o
 Dans tous les cas : le **texte rédigé** seulement (jamais les notes ni les fiches), l'*italique* et le
 **gras** mis en forme, les `* * *` (un séparateur est aussi placé entre deux scènes), une page de titre
 si la case est cochée, et un seul nom, le pseudonyme **Ferrus Dantioch** (auteur du fichier, et
-« Réalisé par Ferrus Dantioch » sur la page de titre). L'Atelier retient votre dernier choix.
+« Réalisé par Ferrus Dantioch » sur la page de titre). L'Atelier retient le type de fichier, le format
+et la case « Page de titre » choisis la dernière fois.
 
 ### ePub et Word
 
@@ -345,7 +347,7 @@ si la case est cochée, et un seul nom, le pseudonyme **Ferrus Dantioch** (auteu
 2. Le fichier arrive dans vos **Téléchargements**, nommé d'après le titre du roman
    (par exemple `Les Cendres de Port-Sombre.epub` ; pour un chapitre, son titre est ajouté).
 
-- **L'ePub** : un chapitre par « page » de la liseuse, un sommaire des chapitres, la typographie
+- **L'ePub** : un sommaire des chapitres, chaque chapitre commençant sur une nouvelle page de la liseuse, la typographie
   française (espaces insécables avant `:` `;` `!` `?`). La liseuse garde la main sur la police et sa taille.
   Pour le mettre sur une liseuse : Kobo, en le copiant par le câble USB ; Kindle, avec le service
   « Send to Kindle » d'Amazon ; sur le téléphone, en l'ouvrant avec une application de lecture
@@ -360,18 +362,18 @@ si la case est cochée, et un seul nom, le pseudonyme **Ferrus Dantioch** (auteu
 ### PDF (mise en page de livre)
 
 1. Cochez **PDF** (c'est aussi ce qu'ouvre **`Ctrl+P`**), puis choisissez le **format**
-   (*Livre A5*, le format d'un roman, ou *Page A4*) ; avec ou sans **page de titre**.
+   (*Livre (A5)*, le format d'un roman, ou *Page A4*) ; avec ou sans **page de titre**.
 2. Cliquez sur **« Préparer le PDF »** : la fenêtre d'impression du navigateur s'ouvre.
 3. Dans **« Destination »**, choisissez **« Enregistrer au format PDF »**, puis **« Enregistrer »**.
    Si la case **« En-têtes et pieds de page »** apparaît (dans « Plus de paramètres »), **décochez-la** :
    sinon le navigateur ajoute sa propre date et l'adresse de la page.
 
-Le PDF a en plus un chapitre par page, les numéros de page, et la mention discrète
-**« Réalisé par Ferrus Dantioch »** en pied de page.
+Comme le Word, le PDF commence chaque chapitre sur une nouvelle page et numérote les pages ; il a en plus
+la mention discrète **« Réalisé par Ferrus Dantioch »** en pied de page, à côté du numéro de page.
 Pour un roman entier, l'aperçu peut mettre quelques secondes à apparaître.
 Utilisez **Chrome ou Edge** : Firefox n'imprime pas encore les numéros de page ni la mention en pied de page.
 
-### Raccourcis clavier
+## Raccourcis clavier
 
 | Raccourci | Effet |
 |---|---|
@@ -380,21 +382,21 @@ Utilisez **Chrome ou Edge** : Firefox n'imprime pas encore les numéros de page 
 | `Entrée` sur une ligne `- …` (mode Notes) | nouvelle puce ; sur une puce vide : fin de la liste |
 | `Ctrl+K` | recherche rapide d'une fiche (le curseur reste en place) |
 | `Ctrl+F` | rechercher dans tout le roman (`Entrée` : passage suivant ; `Maj+Entrée` : précédent) |
-| `Ctrl+H` | rechercher et remplacer (le clavier va dans « Remplacer par ») |
+| `Ctrl+H` | rechercher et remplacer (le clavier va dans « Remplacer par » si le mot cherché est déjà tapé ou sélectionné) |
 | `Ctrl+clic` sur un nom coloré | ouvrir sa fiche (le curseur reste en place) |
 | `Ctrl+Maj+F` | mode concentration (seul le texte reste) |
-| `Ctrl+P` | exporter en PDF (scène, chapitre ou roman) ; ePub et Word : bouton « Exporter » |
+| `Ctrl+P` | ouvrir la fenêtre « Exporter », PDF déjà coché (ePub et Word s'y choisissent aussi) |
 | `Échap` | quitter le mode concentration, ou revenir au texte depuis le panneau, la frise ou la recherche |
 | `←` `→` sur les onglets du panneau | changer d'onglet |
 | `Ctrl+Z` | annuler (dans le texte : n'annule jamais, par erreur, une modification faite dans une fiche ; juste après un remplacement, l'annule) |
 | `Ctrl+Y` ou `Ctrl+Maj+Z` | rétablir |
 | `Ctrl+S` | inutile : tout est déjà enregistré (un message le rappelle) |
 
-Sur Mac, `Cmd` remplace `Ctrl`.
+Sur Mac, `Cmd` remplace `Ctrl` (pour remplacer, `Cmd+H` masquant le navigateur : `Cmd+F`, puis « Remplacer par »).
 
 ## Mes données : où sont-elles, comment les protéger ?
 
-- Tout est enregistré **automatiquement**, dans le navigateur, **sur cet ordinateur uniquement**.
+- Tout est enregistré **automatiquement**, dans le navigateur, **sur cet appareil uniquement**.
   Aucun compte, aucun serveur.
 - ⚠️ Si vous effacez les données de navigation du site, ou changez d'ordinateur ou de navigateur,
   vous ne retrouverez pas vos romans… sauf si vous les avez **exportés**.
@@ -408,7 +410,10 @@ Sur Mac, `Cmd` remplace `Ctrl`.
   Pour une sauvegarde faite sur ce même appareil, seul « Remplacer » est proposé (c'est une restauration).
 - **Annuler le dernier import** : ce bouton (à côté d'« Importer ») remet l'Atelier exactement
   dans son état d'avant le dernier import, fusion ou remplacement. Attention : ce qui a été écrit
-  depuis cet import est retiré aussi.
+  depuis cet import est retiré aussi. Rien n'est perdu pour autant : l'état d'avant l'annulation est
+  gardé, et le bouton devient **« Revenir sur l'annulation »** (en cas d'erreur).
+  Si le fichier importé n'apporte rien de nouveau, rien n'est changé (et ce bouton garde l'import d'avant).
+- Si du texte n'a pas encore pu être enregistré (« Non enregistré ! »), l'import attend : il l'effacerait.
 - Un **rappel discret** apparaît en haut de l'écran quand des modifications n'ont pas été
   exportées depuis 3 jours. « Plus tard » le cache pendant 2 jours.
 
@@ -427,8 +432,10 @@ La fusion :
 - pour ce qui existe des deux côtés, **garde la version la plus récente**, en prenant séparément le
   contenu, le titre et la place dans le plan : une scène renommée ou déplacée ici et réécrite là-bas
   garde le nouveau titre, la nouvelle place ET le nouveau texte ;
-- **supprime** ce qui a été supprimé sur l'autre appareil, sauf ce qui a été modifié ici après
-  cette suppression (du travail récent n'est jamais jeté) ;
+- **supprime** ce qui a été supprimé sur l'autre appareil, sauf ce qui a été modifié après cette
+  suppression, ou réécrit sur un appareil sans que celui qui l'a supprimé ait jamais vu cette version
+  (du travail que l'autre n'a pas vu n'est jamais jeté : il est gardé, et la fusion le signale ;
+  supprimez-le de nouveau si c'était voulu) ;
 - si une même scène a été **écrite sur les deux appareils** depuis le dernier échange, **les deux
   versions sont gardées** : la plus récente à sa place, l'autre juste après dans le plan, avec
   « (autre version : téléphone Android) » dans son titre. Relisez-les, gardez la bonne, supprimez
@@ -469,6 +476,11 @@ Prévu « pour plus tard » dès le départ (hors de la première version) :
 - la **synchronisation** entre plusieurs appareils : faite à l'étape 9 par fichier et fusion ;
   reste possible : une synchronisation automatique (elle demanderait un compte en ligne).
 
+Idées proposées en cours de route et pas encore faites : retrouver les **versions précédentes** d'une
+scène, suivre l'**avancement** du roman (mots par jour, objectifs par chapitre), et l'import des fiches
+PDF ci-dessus. (Faits : notes et rédigé côte à côte, « Nommé dans ces scènes », export ePub et Word,
+rechercher et remplacer.)
+
 À savoir :
 - **Remplacer les logos** par les vôtres (voir plus haut), si ceux repris du portfolio ne conviennent pas.
 - **Navigateur conseillé : Chrome ou Edge.** Firefox n'installe pas les applications de ce type et
@@ -491,8 +503,8 @@ trouverait un Atelier vide. L'adresse est signalée aux moteurs de recherche com
 4. L'Atelier s'ouvre ensuite depuis son icône, même en mode avion.
 - Sans clavier, `Ctrl+K` est remplacé par le bouton **⌕** (barre d'outils ou panneau des fiches),
   et `Ctrl+F` par « ☰ Plan » → **« Rechercher et remplacer »**.
-- **PDF** : « Exporter », PDF, ouvre la fenêtre d'impression d'Android ; choisir
-  **« Enregistrer au format PDF »** en haut, puis le bouton PDF.
+- **PDF** : « ☰ Plan » → « Exporter (PDF, ePub, Word) », cocher PDF, puis « Préparer le PDF » : la fenêtre
+  d'impression d'Android s'ouvre ; choisir **« Enregistrer au format PDF »** en haut, puis le bouton PDF.
 - **ePub et Word** : le fichier va dans les **Téléchargements** du téléphone (une notification
   l'annonce) ; le toucher l'ouvre dans une application de lecture ou de traitement de texte.
 
@@ -502,6 +514,10 @@ prochaine ouverture avec une connexion (quelques minutes après l'envoi).
 **À savoir** : chaque adresse a sa propre bibliothèque. Les romans écrits sur `localhost:8000`
 n'apparaissent pas à l'adresse en ligne, ni ceux du téléphone sur l'ordinateur. Pour passer de
 l'un à l'autre : « Exporter mes données » d'un côté, puis « Importer mes données » de l'autre.
+
+**Une seule copie publiée** : ne publiez pas une seconde copie de l'Atelier (un essai, une
+« fourche ») sous le même compte GitHub : elle serait à la même adresse de base et partagerait les
+mêmes romans, copies de secours et réglages que celle-ci.
 
 **Retirer la publication** : sur GitHub, dans le dépôt, **Settings → Pages → « Unpublish site »**
 (ou le demander). Les romans déjà écrits restent sur l'appareil, mais pensez à les exporter avant.

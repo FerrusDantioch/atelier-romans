@@ -28,6 +28,9 @@ import { initialiserFrise, montrerFrise, revenirDeLaFrise, oublierFrise, friseAf
 // Numéro de version affiché dans « À propos »
 export const VERSION = "1.8.0";
 
+// Tous les fichiers de l'application se sont chargés ensemble (voir alerteDemarrage dans index.html)
+window.atelierCharge = true;
+
 // Liste des pages (« vues ») de l'application
 const VUES = ["bibliotheque", "roman", "frise", "apropos"];
 
@@ -111,7 +114,6 @@ async function ouvrirRoman(romanId) {
   afficherPlan();
   await preparerEditeur();
   await preparerPanneau();
-  await db.ecrireReglage("dernierRoman", roman.id);
   return true;
 }
 

@@ -29,6 +29,12 @@ export function initialiserPlan() {
   });
   // Petit écran : le bouton « Plan » ouvre / ferme la colonne
   const vue = document.getElementById("vue-roman");
+  // Les boutons « ☰ Plan » et « Fiches » disent si leur volet est ouvert (lecteurs d'écran),
+  // quelle que soit la façon dont il s'ouvre ou se ferme
+  new MutationObserver(() => {
+    document.getElementById("bouton-plan").setAttribute("aria-expanded", String(vue.classList.contains("plan-ouvert")));
+    document.getElementById("bouton-fiches").setAttribute("aria-expanded", String(vue.classList.contains("panneau-ouvert")));
+  }).observe(vue, { attributes: true, attributeFilter: ["class"] });
   document.getElementById("bouton-plan").addEventListener("click", () => {
     if (vue.classList.toggle("plan-ouvert")) vue.classList.remove("panneau-ouvert"); // un seul volet à la fois
   });
@@ -37,7 +43,7 @@ export function initialiserPlan() {
     if (e.target === vue) vue.classList.remove("plan-ouvert", "panneau-ouvert");
   });
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && vue.classList.contains("plan-ouvert") && !document.querySelector("dialog[open]")) {
+    if (e.key === "Escape" && !e.defaultPrevented && vue.classList.contains("plan-ouvert") && !document.querySelector("dialog[open]")) {
       vue.classList.remove("plan-ouvert");
       document.getElementById("bouton-plan").focus();
     }
@@ -283,7 +289,7 @@ async function supprimer(type, id) {
     const ok = await confirmer({
       titre: "Supprimer ce chapitre ?",
       message: [
-        `« ${chapitre.titre} » sera supprimé avec ${pluriel(scenes.length, "scène")} (${pluriel(motsChapitre(id), "mot")} rédigés, plus les notes).`,
+        `« ${chapitre.titre} » sera supprimé avec ${pluriel(scenes.length, "scène")} (${pluriel(motsChapitre(id), "mot rédigé", "mots rédigés")}, plus les notes).`,
         "Cette action ne peut pas être annulée.",
       ],
       ok: "Supprimer définitivement",
@@ -303,7 +309,7 @@ async function supprimer(type, id) {
     const ok = await confirmer({
       titre: "Supprimer cette scène ?",
       message: [
-        `« ${scene.titre} » sera supprimée (${pluriel(motsScene(id), "mot")} rédigés, plus les notes).`,
+        `« ${scene.titre} » sera supprimée (${pluriel(motsScene(id), "mot rédigé", "mots rédigés")}, plus les notes).`,
         "Cette action ne peut pas être annulée.",
       ],
       ok: "Supprimer définitivement",
@@ -317,7 +323,13 @@ async function supprimer(type, id) {
     informer(`« ${scene.titre} » a été supprimée.`);
   }
   await apresChangement();
-  annoncer("scene-supprimee", { voisine });
+  await annoncer("scene-supprimee", { voisine });
+  // Le plan a été redessiné : si le clavier s'est perdu, il revient sur la scène voisine (ou « + Chapitre »)
+  if (document.activeElement === document.body || !document.activeElement) {
+    const cible = (voisine && document.querySelector(`.plan-ouvrir[data-id="${CSS.escape(voisine)}"]`))
+      || document.getElementById("bouton-ajout-chapitre");
+    cible.focus({ preventScroll: true });
+  }
 }
 
 // Après chaque changement de structure : date de modification du roman + nouvel affichage

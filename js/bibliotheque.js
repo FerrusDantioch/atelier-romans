@@ -23,7 +23,7 @@ export async function afficherBibliotheque() {
   ]);
 
   // Le plus récemment modifié en premier
-  romans.sort((a, b) => b.modifie - a.modifie);
+  romans.sort((a, b) => (b.modifie || 0) - (a.modifie || 0));
 
   liste.replaceChildren();
   if (romans.length === 0) {
@@ -49,15 +49,15 @@ function carteRoman(roman, nbChapitres, nbScenes, nbMots) {
   return el("article", { class: "carte roman-carte " + univers, "data-id": roman.id },
     el("span", { class: "statut", style: { "justify-self": "start" } }, UNIVERS[univers].nom),
     el("h3", {},
-      el("a", { href: "#roman/" + roman.id, class: "titre-roman" }, roman.titre),
+      el("a", { href: "#roman/" + encodeURIComponent(roman.id), class: "titre-roman" }, roman.titre),
     ),
     el("p", { class: "discret petit" },
       [pluriel(nbChapitres, "chapitre"), pluriel(nbScenes, "scène"), pluriel(nbMots, "mot")].join(" · "),
       el("br"),
-      "Modifié " + ilYa(roman.modifie),
+      "Modifié " + ilYa(roman.modifie || roman.cree || Date.now()),
     ),
     el("div", { class: "ligne" },
-      el("a", { class: "bouton bouton-petit", href: "#roman/" + roman.id }, "Ouvrir"),
+      el("a", { class: "bouton bouton-petit", href: "#roman/" + encodeURIComponent(roman.id) }, "Ouvrir"),
       el("button", { class: "petit-bouton", type: "button", onclick: () => modifierRoman(roman) }, "Modifier"),
       el("button", { class: "petit-bouton danger", type: "button", onclick: () => supprimerAvecConfirmation(roman) }, "Supprimer"),
     ),

@@ -154,12 +154,9 @@ select:focus-visible, textarea:focus-visible, summary:focus-visible{
 
 /* ---------- En-tête d'une page (titre à gauche, bouton à droite) ---------- */
 .vue-tete{ display:flex; align-items:flex-end; justify-content:space-between; gap:var(--esp-4); flex-wrap:wrap; }
-.vue .etiquette a{ color:var(--discret); text-decoration:none; }
-.vue .etiquette a:hover{ color:var(--texte); }
 
 /* ---------- Bibliothèque ---------- */
 .grille-romans{ display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr)); gap:var(--esp-5); }
-.carte-tete{ display:flex; justify-content:space-between; align-items:baseline; gap:var(--esp-3); flex-wrap:wrap; }
 .roman-carte .statut{ --c:inherit; color:var(--c-texte, var(--c)); border-color:color-mix(in srgb, var(--c) 55%, transparent); }
 .titre-roman{ color:var(--texte); text-decoration:none; }
 .titre-roman:hover{ color:var(--halo); }
@@ -230,8 +227,7 @@ select:focus-visible, textarea:focus-visible, summary:focus-visible{
   border-color:var(--omni); outline:none; box-shadow:var(--lueur-douce);
 }
 
-/* Choix de l'univers : petites cartes avec liseré de couleur */
-/* Fenêtre « Exporter en PDF » */
+/* Fenêtre « Exporter » (PDF, ePub, Word) */
 .groupe-export{ border:0; padding:0; margin:0; display:grid; gap:6px; }
 .groupe-export legend{ margin-bottom:var(--esp-2); padding:0; }
 .option-export{ display:flex; align-items:center; gap:var(--esp-2); cursor:pointer; }
@@ -240,6 +236,7 @@ select:focus-visible, textarea:focus-visible, summary:focus-visible{
 .option-export:has(> span > b){ align-items:baseline; }
 .option-export-chapitre{ display:flex; align-items:center; gap:var(--esp-2); flex-wrap:wrap; }
 .option-export-chapitre select{ flex:1 1 12em; min-width:0; }
+/* Choix de l'univers : petites cartes avec liseré de couleur */
 .choix-univers{ border:0; padding:0; margin:0; display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:var(--esp-2); }
 .choix-univers legend{ margin-bottom:var(--esp-2); padding:0; }
 .option-univers{
@@ -273,6 +270,7 @@ select:focus-visible, textarea:focus-visible, summary:focus-visible{
 .notification.erreur{ border-left-color:var(--danger); }
 /* Page d'écriture : les messages restent au-dessus de la barre d'état */
 body.mode-ecriture #notifications{ bottom:48px; }
+@media (max-width:760px){ body.mode-ecriture #notifications{ bottom:76px; } } /* (barre d'état sur deux lignes) */
 @keyframes apparition{ from{ opacity:0; } to{ opacity:1; } } /* simple fondu, pas de mouvement */
 
 
@@ -309,7 +307,7 @@ body.mode-ecriture main{ flex:1; min-height:0; }
 .retour:hover{ color:var(--texte); }
 .plan-roman{ display:grid; gap:6px; justify-items:start; }
 .plan-roman h1{ font-size:1.3rem; }
-.plan-roman .lien-discret{ font-size:.82rem; } /* « Frise des événements », « Exporter en PDF » */
+.plan-roman .lien-discret{ font-size:.82rem; } /* « Frise des événements », « Rechercher et remplacer », « Exporter » */
 .plan-liens{ display:flex; flex-wrap:wrap; gap:2px var(--esp-3); }
 .plan .pointilles{ margin:0; }
 /* La liste défile seule : le titre, les compteurs et la session restent toujours visibles */
@@ -454,7 +452,9 @@ body.mode-ecriture main{ flex:1; min-height:0; }
 /* La zone de texte : large, aérée, centrée, contrastée sans éblouir.
    Son fond est porté par la zone qui l'entoure : la zone de texte est transparente,
    pour laisser voir le calque des noms en couleur, placé juste derrière. */
-.zone-ecriture{ flex:1; min-height:0; display:flex; position:relative; background:var(--ecriture-fond); }
+.zone-ecriture{ flex:1; min-height:6.5rem; display:flex; position:relative; background:var(--ecriture-fond); }
+/* (min-height : sur un petit téléphone, barre de recherche ouverte, le texte garde quelques lignes ;
+   c'est la barre, qui sait défiler, qui se fait plus petite) */
 .texte{
   position:relative; z-index:1;
   flex:1; width:100%; height:100%; resize:none; margin:0;
@@ -1001,8 +1001,7 @@ body.concentration .sortie-concentration:focus-visible{ opacity:1; }
 .presence[aria-pressed="true"]{ background:color-mix(in srgb, var(--univers) 16%, transparent); box-shadow:inset 3px 0 0 var(--univers); }
 .presence-nom{ font:600 .85rem var(--f-texte); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .presence-cases{ display:flex; gap:2px; min-width:0; overflow:hidden; }
-.presence-cases.serrees{ gap:0; } /* beaucoup d'événements : une barre continue, comme un code-barres */
-.presence-cases.serrees{ background:var(--trait); border-radius:2px; }
+.presence-cases.serrees{ gap:0; background:var(--trait); border-radius:2px; } /* beaucoup d'événements : une barre continue, comme un code-barres */
 .presence-cases.serrees i{ border-radius:0; background:none; }
 .presence-cases i{ flex:1 1 0; min-width:1px; max-width:12px; height:12px; border-radius:2px; background:var(--trait); }
 .presence-cases i.plein{ background:var(--univers); }

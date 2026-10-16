@@ -24,6 +24,8 @@ const SEPARATEURS = /[^\p{L}\p{N}]+/u; // ce qui sépare deux mots
 // Mots qui ne suffisent pas à repérer une fiche (sans accents, en minuscules)
 const MOTS_COMMUNS = new Set(`
   les des aux une sur sous dans pour par avec sans chez entre vers the
+  mon ton son mes tes ses nos vos notre votre leur leurs cet cette ces tout toute tous toutes
+  elle elles ils nous vous lui eux qui que quoi dont nom oui non
   mere pere frere soeur sœur oncle tante cousin cousine fils fille veuve dame sire sieur messire seigneur
   maitre maitresse docteur doc professeur capitaine commandant lieutenant sergent caporal colonel general
   amiral major agent inspecteur inspectrice commissaire detective juge roi reine prince princesse duc duchesse
@@ -66,33 +68,59 @@ function planifier(delai) {
   minuterie = setTimeout(majReperage, delai);
 }
 
-// Met à jour la liste « Dans cette scène » (et le nombre sur le bouton « Fiches »)
+// Met à jour la liste « Dans cette scène » (et le nombre sur le bouton « Fiches »).
+// Mêmes règles que les noms en couleur : le plus long nom l'emporte (« la Taverne du Corbeau Noir »
+// ne nomme pas Mère Corbeau). Cela se passe pendant que l'on écrit : on ne retire donc rien de la page
+// (Chrome couperait sinon l'annulation Ctrl+Z) ; les pastilles sont réutilisées, celles en trop cachées.
 export function majReperage() {
   clearTimeout(minuterie);
   const zone = $("reperees");
   const fiches = etat.roman ? etat.fiches.filter(estReperable) : [];
-  if (!etat.sceneId || !fiches.length) {
+  const scene = etat.sceneId && etat.scenes.find((s) => s.id === etat.sceneId);
+  if (!scene || !fiches.length) {
     zone.hidden = true;
     dernierAffichage = "";
     majBouton(0);
     return;
   }
-  const texte = $("texte-notes").value + "\n" + $("texte-redige").value;
-  const trouvees = fichesNommees(texte, fiches);
+  const trouvees = fichesDeLaScene(scene, { notes: $("texte-notes").value, texte: $("texte-redige").value });
   majBouton(trouvees.length);
-  const affichage = trouvees.map((f) => f.id + "\u0001" + f.titre).join("\u0002") || "aucune";
+  const affichage = trouvees.map((f) => f.id + "\u0001" + f.titre + "\u0001" + f.type).join("\u0002") || "aucune";
   if (!zone.hidden && affichage === dernierAffichage) return;
   dernierAffichage = affichage;
   zone.hidden = false;
   // (le titre « Dans cette scène » et la case « Noms en couleur dans le texte » restent : seule la liste change)
-  $("reperees-liste").replaceChildren(
-    trouvees.length
-      ? el("div", { class: "pastilles" }, trouvees.map((f) => el("button", {
-          type: "button", class: "pastille", "data-fiche": f.id,
-          title: CATEGORIES[f.categorie].nom + (f.type ? " · " + f.type : ""),
-        }, f.titre)))
-      : el("p", { class: "discret petit" }, "Aucun personnage ni lieu de vos fiches n'est nommé ici."),
-  );
+  const liste = $("reperees-liste");
+  if (!liste.firstChild) {
+    liste.append(el("div", { class: "pastilles" }), el("p", { class: "discret petit" }, "Aucun personnage ni lieu de vos fiches n'est nommé ici."));
+  }
+  const [pastilles, aucune] = liste.children;
+  aucune.hidden = trouvees.length > 0;
+  pastilles.hidden = !trouvees.length;
+  trouvees.forEach((f, i) => {
+    let b = pastilles.children[i];
+    if (!b) b = pastilles.appendChild(el("button", { type: "button", class: "pastille" }));
+    b.hidden = false;
+    b.dataset.fiche = f.id;
+    const titre = CATEGORIES[f.categorie].nom + (f.type ? " · " + f.type : "");
+    if (b.title !== titre) b.title = titre;
+    ecrireTexte(b, f.titre);
+  });
+  // (pastilles en trop : cachées pendant que l'on écrit, retirées sinon)
+  const ecrit = !!document.activeElement && document.activeElement.classList.contains("texte");
+  for (let i = pastilles.children.length - 1; i >= trouvees.length; i--) {
+    if (ecrit) pastilles.children[i].hidden = true; else pastilles.children[i].remove();
+  }
+}
+
+// Les fiches nommées dans une scène, dans l'ordre de leur première apparition (notes, puis texte rédigé)
+function fichesDeLaScene(scene, textes) {
+  const decalage = (textes.notes || "").length + 1;
+  return [...passagesDeLaScene(scene, textes)]
+    .map(([id, p]) => ({ fiche: etat.fiches.find((f) => f.id === id), position: p.notes.length ? p.notes[0].debut : decalage + p.redige[0].debut }))
+    .filter((x) => x.fiche)
+    .sort((a, b) => a.position - b.position)
+    .map((x) => x.fiche);
 }
 
 // Le bouton « Fiches » (écrans moyens et petits) indique combien de fiches sont nommées

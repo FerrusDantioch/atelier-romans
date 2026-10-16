@@ -15,9 +15,9 @@ import * as db from "./db.js";
 import { el, nombre, pluriel, dateFichier, hauteurDansLeTexte, ecrireTexte } from "./outils.js";
 import { ouvrirDialogue, informer } from "./dialogues.js";
 import {
-  etat, trouverScene, scenesDansLOrdre, recompterScene, motsScene, motsChapitre, motsRoman, ecouter, annoncer,
+  etat, trouverScene, scenesDansLOrdre, chapitresTries, recompterScene, motsScene, motsChapitre, motsRoman, ecouter, annoncer,
 } from "./etat.js";
-import { afficherPlan, majComptes, marquerActive, ajouterChapitre } from "./plan.js";
+import { afficherPlan, majComptes, marquerActive, ajouterChapitre, ajouterScene } from "./plan.js";
 import { oublierHistorique } from "./annulation.js";
 import { passagesDeLaScene } from "./reperage.js";
 
@@ -51,6 +51,7 @@ let deuxAffiches = false;  // les deux textes sont-ils affichés en ce moment ? 
 let modeAuClavier = null;  // le texte où l'on écrit (Notes ou Rédigé) ; null = celui du mode de la scène
 const defilements = new Map(); // zone cachée → son défilement, rendu quand elle réapparaît
 let selectionsPosees = 0;  // compteur des passages montrés (voir placerPassage)
+let ouvertures = 0;        // compteur des scènes demandées (voir ouvrirScene)
 
 const $ = (id) => document.getElementById(id);
 
@@ -102,7 +103,10 @@ export function initialiserEditeur() {
   // Session d'écriture
   $("bouton-objectif").addEventListener("click", changerObjectif);
   $("bouton-nouvelle-session").addEventListener("click", () => demarrerSession({ forcer: true }));
-  $("bouton-premier-chapitre").addEventListener("click", ajouterChapitre);
+  $("bouton-premier-chapitre").addEventListener("click", () => {
+    const premier = chapitresTries()[0];
+    if (premier) ajouterScene(premier.id); else ajouterChapitre();
+  });
 
   // Raccourcis clavier valables partout dans la page d'écriture
   document.addEventListener("keydown", raccourcisGeneraux);
@@ -172,7 +176,10 @@ function zoneActive() {
 
 // « focus : false » : le clavier reste où il est (par exemple dans la barre de recherche)
 async function ouvrirScene(id, { focus = true } = {}) {
+  const jeton = ++ouvertures;
   await sauverMaintenant();       // on enregistre d'abord la scène précédente
+  // (deux scènes touchées très vite l'une après l'autre : seule la dernière s'ouvre, jamais dans le désordre)
+  if (jeton !== ouvertures) return;
   memoriserCurseur();
   const cible = trouverScene(id);
   if (!cible) { afficherAucuneScene(); return; }
@@ -196,7 +203,7 @@ async function ouvrirScene(id, { focus = true } = {}) {
   restaurerCurseur({ focus });
   majCompteurs();
   marquerActive(id);
-  indiquerEnregistrement("enregistre");
+  indiquerEnregistrement(echecEnAttente ? "erreur" : "enregistre"); // (un enregistrement a échoué : on le dit toujours)
   if (reprise) { afficherPlan(); marquerModifiee({ texte: reprise.texte }); } // ce qui est repris sera enregistré dans un instant
   db.ecrireReglage("derniereScene:" + etat.roman.id, id);
   annoncer("scene-affichee", id); // (le panneau cherche les fiches nommées dans la scène)
@@ -205,6 +212,13 @@ async function ouvrirScene(id, { focus = true } = {}) {
 function afficherAucuneScene() {
   scene = null;
   etat.sceneId = null;
+  // Roman sans chapitre, ou chapitres sans aucune scène : le message et le bouton le disent
+  const vide = !etat.chapitres.length;
+  ecrireTexte($("editeur-vide-titre"), vide ? "Ce roman est encore vide" : "Aucune scène pour l'instant");
+  ecrireTexte($("editeur-vide-texte"), vide
+    ? "Créez un premier chapitre : une première scène sera ouverte, prête à recevoir vos notes."
+    : "Ajoutez une scène (« + Scène » dans le plan) : elle s'ouvrira, prête à recevoir vos notes.");
+  ecrireTexte($("bouton-premier-chapitre"), vide ? "Créer le premier chapitre" : "Ajouter une scène");
   $("editeur-vide").hidden = false;
   $("editeur-plein").hidden = true;
   majCompteurs();
@@ -635,10 +649,12 @@ export async function sauverMaintenant() {
   try {
     await db.lot({ ecrire: { scenes: [copie], romans: [etat.roman] } });
     // Plus besoin de la copie de secours… sauf si l'on a retapé quelque chose entre-temps
-    if (!(scene === objet && modifiee)) {
+    if (!(scene === objet && modifiee)) effacerSecours(copie.id);
+    // (la minuterie de secours et le témoin « Enregistré » sont ceux de la scène affichée :
+    // on n'y touche que si c'est encore elle, sinon on effacerait ceux de la scène ouverte entre-temps)
+    if (scene === objet && !modifiee) {
       clearTimeout(minuterieSecours);
       minuterieSecours = null;
-      effacerSecours(copie.id);
       indiquerEnregistrement("enregistre");
     }
     // La base fonctionne de nouveau : on y remet aussi les scènes dont l'enregistrement avait échoué
@@ -649,6 +665,9 @@ export async function sauverMaintenant() {
   } catch (erreur) {
     echecEnAttente = true;
     if (scene === objet) modifiee = true;
+    // La copie de secours est écrite tout de suite, avec ce texte : même si l'on change de scène ou
+    // quitte le roman aussitôt après, il sera remis dans la base dès qu'elle fonctionnera de nouveau
+    ecrireSecoursDe(copie);
     indiquerEnregistrement("erreur");
     informer("L'enregistrement a échoué : " + erreur.message + ". Votre texte est gardé en secours.", { erreur: true });
   }
@@ -668,9 +687,12 @@ function ecrireSecoursMaintenant() {
   minuterieSecours = null;
   if (!scene || !modifiee) return;
   relire();
+  ecrireSecoursDe(scene);
+}
+function ecrireSecoursDe(s) {
   try {
-    localStorage.setItem(PREFIXE_SECOURS + scene.id, JSON.stringify({
-      sceneId: scene.id, titre: scene.titre, notes: scene.notes, texte: scene.texte, mode: scene.mode, t: scene.modifie,
+    localStorage.setItem(PREFIXE_SECOURS + s.id, JSON.stringify({
+      sceneId: s.id, titre: s.titre, notes: s.notes, texte: s.texte, mode: s.mode, t: s.modifie,
     }));
   } catch {
     // Mémoire de secours pleine ou indisponible : l'enregistrement normal continue
@@ -728,7 +750,7 @@ function reprendreSecours(s) {
 // Une copie de secours n'est effacée que lorsqu'on est SÛR de ne plus en avoir besoin.
 // « sauf » : la scène ouverte, dont l'éditeur s'occupe lui-même.
 export async function recupererSecours({ sauf = null } = {}) {
-  let recuperees = 0, gardees = 0;
+  let recuperees = 0, gardees = 0, enMemoire = false;
   for (const cle of clesSecours()) {
     if (sauf && cle === PREFIXE_SECOURS + sauf) continue;
     const secours = lireSecours(cle.slice(PREFIXE_SECOURS.length));
@@ -736,9 +758,12 @@ export async function recupererSecours({ sauf = null } = {}) {
     try {
       const enBase = await db.lire("scenes", secours.sceneId);
       if (enBase && secoursPlusRecent(secours, enBase)) {
-        await db.ecrire("scenes", {
-          ...enBase, titre: secours.titre, notes: secours.notes, texte: secours.texte, mode: secours.mode, modifie: secours.t,
-        });
+        const repris = { titre: secours.titre, notes: secours.notes, texte: secours.texte, mode: secours.mode, modifie: secours.t };
+        await db.ecrire("scenes", { ...enBase, ...repris });
+        // (le roman ouvert garde aussi ce texte en mémoire : sinon, la prochaine écriture de cette
+        // scène — la modifier, la déplacer, l'exporter — repartirait de l'ancien texte)
+        const s = trouverScene(secours.sceneId);
+        if (s && s !== scene) { Object.assign(s, repris); recompterScene(s.id); enMemoire = true; }
         recuperees++;
       }
       effacerCle(cle); // remise dans la base, ou plus utile (scène supprimée, base déjà à jour)
@@ -746,6 +771,7 @@ export async function recupererSecours({ sauf = null } = {}) {
       gardees++;       // la base refuse pour l'instant : on GARDE la copie pour un prochain essai
     }
   }
+  if (enMemoire && etat.roman) afficherPlan(); // (leurs nombres de mots)
   if (recuperees) informer(`Texte récupéré : ${pluriel(recuperees, "scène")} n'avai${recuperees > 1 ? "en" : ""}t pas fini d'être enregistrée${recuperees > 1 ? "s" : ""}.`);
   if (gardees) {
     echecEnAttente = true;
@@ -848,6 +874,7 @@ function majCompteurs() {
   if (scene) {
     recompterScene(scene.id);
     ecrireTexte($("mots-scene"), nombre(motsScene(scene.id)));
+    ecrireTexte($("mots-scene-libelle"), motsScene(scene.id) > 1 ? "mots rédigés" : "mot rédigé");
     ecrireTexte($("mots-chapitre"), nombre(motsChapitre(scene.chapitreId)));
     majComptes(scene.id);
   }

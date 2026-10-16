@@ -6,7 +6,8 @@
 //     en trois parts prises séparément (voir GROUPES dans db.js) : le contenu, le titre, la place.
 //     Une scène renommée ici et réécrite là-bas garde donc le nouveau titre ET le nouveau texte ;
 //   - ce qui a été supprimé d'un côté (voir les « faire-part » de db.js) est supprimé de l'autre,
-//     sauf s'il a été modifié après la suppression (on ne jette jamais du travail récent) ;
+//     sauf s'il a été modifié après la suppression, ou modifié sur un appareil sans que celui qui l'a
+//     supprimé ait jamais vu cette version (on ne jette jamais un travail que l'autre n'a pas vu) ;
 //   - une scène dont le texte a été écrit DES DEUX CÔTÉS depuis le dernier échange garde les deux
 //     versions : la plus récente à sa place, l'autre juste après, « (autre version : …) ».
 //     Pour une fiche, l'autre version est recopiée dans ses notes.
@@ -38,8 +39,8 @@ export function fusionner(local, distant, { maintenant = Date.now(), ici = null,
   const ecritIci = (e) => (e.origine == null || e.origine === ici) && dateDe(e, "texte") > baseLocale;
   const ecritLaBas = (e) => e.origine !== ici && dateDe(e, "texte") > baseDistante;
 
-  const bilan = { ajoutes: {}, modifies: {}, supprimes: {}, conflitsScenes: 0, conflitsFiches: 0, recuperes: 0 };
-  for (const nom of MAGASINS_SUIVIS) { bilan.ajoutes[nom] = 0; bilan.modifies[nom] = 0; bilan.supprimes[nom] = 0; }
+  const bilan = { ajoutes: {}, modifies: {}, supprimes: {}, gardes: {}, conflitsScenes: 0, conflitsFiches: 0, recuperes: 0 };
+  for (const nom of MAGASINS_SUIVIS) { bilan.ajoutes[nom] = 0; bilan.modifies[nom] = 0; bilan.supprimes[nom] = 0; bilan.gardes[nom] = 0; }
 
   // Les faire-part de suppression des deux côtés (on garde la date la plus récente)
   const tombes = new Map();
@@ -68,13 +69,28 @@ export function fusionner(local, distant, { maintenant = Date.now(), ici = null,
         if (nom === "scenes") conflitScene(l, d, choisi, copies);
         if (nom === "fiches") choisi = conflitFiche(l, d, choisi);
       }
-      // Supprimé de l'un des côtés après sa dernière modification : on le retire
-      if (tombe(nom, id) && tombe(nom, id) >= dateMaj(choisi)) {
-        if (l) bilan.supprimes[nom]++;
-        continue;
+      // Supprimé de l'un des côtés après sa dernière modification : on le retire…
+      // … sauf si cette version a été écrite sur un appareil sans que celui qui l'a supprimée l'ait
+      // jamais reçue (réécrite ici avant que l'autre ne la supprime, ou l'inverse) : on la garde.
+      // (« maj » la rend plus récente que sa suppression : une prochaine fusion ne la supprimera plus)
+      // (la date la plus récente des deux côtés : une version déjà gardée malgré une suppression,
+      // lors d'une fusion précédente, le dit par sa date « maj »)
+      const derniere = Math.max(dateMaj(choisi), l ? dateMaj(l) : 0, d ? dateMaj(d) : 0);
+      if (derniere > dateMaj(choisi)) choisi = { ...choisi, maj: derniere };
+      let gardee = false;
+      if (tombe(nom, id) && tombe(nom, id) >= derniere) {
+        const pasVue = (l && ecritIci(l)) || (d && ecritLaBas(d));
+        if (!pasVue) {
+          if (l) bilan.supprimes[nom]++;
+          continue;
+        }
+        choisi = { ...choisi, maj: maintenant };
+        gardee = true;
+        bilan.gardes[nom]++;
       }
       final.set(id, choisi);
       for (const c of copies) final.set(c.id, c);
+      if (gardee) continue;
       if (!l) bilan.ajoutes[nom]++;
       else if (!memeContenu(l, choisi, ignores)) bilan.modifies[nom]++;
     }
@@ -108,7 +124,7 @@ export function fusionner(local, distant, { maintenant = Date.now(), ici = null,
     const copie = {
       ...autre,
       id: nouvelId(autre.id),
-      chapitreId: scene.chapitreId, romanId: scene.romanId, ordre: scene.ordre + 0.5,
+      chapitreId: scene.chapitreId, romanId: scene.romanId, ordre: (scene.ordre || 0) + 0.5,
       titre: `${scene.titre || "Sans titre"} (autre version${nomAutre ? " : " + nomAutre : ""})`,
       modifie: maintenant, maj: maintenant, majTexte: maintenant, majTitre: maintenant, majPlace: maintenant,
     };
@@ -189,6 +205,6 @@ function nouvelId(base) {
 // Rien ne changerait ?
 export function bilanVide(bilan) {
   const somme = (o) => Object.values(o).reduce((a, b) => a + b, 0);
-  return !somme(bilan.ajoutes) && !somme(bilan.modifies) && !somme(bilan.supprimes) && !bilan.recuperes
-    && !bilan.conflitsScenes && !bilan.conflitsFiches;
+  return !somme(bilan.ajoutes) && !somme(bilan.modifies) && !somme(bilan.supprimes) && !somme(bilan.gardes)
+    && !bilan.recuperes && !bilan.conflitsScenes && !bilan.conflitsFiches;
 }

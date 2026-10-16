@@ -43,8 +43,10 @@ async function activer() {
     const inscription = await sansTropAttendre(navigator.serviceWorker.ready, 30000);
     const { complete, erreur } = await sansTropAttendre(demander(inscription.active, "actualiser"), 60000);
     if (!complete) {
-      ecrire("⚠ Pas encore prête à fonctionner sans connexion : " + erreur
-        + ". Gardez le serveur lancé et rouvrez l'Atelier (voir LISEZ-MOI.md).");
+      const local = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
+      ecrire("⚠ Pas encore prête à fonctionner sans connexion : " + erreur + (local
+        ? ". Gardez le serveur lancé et rouvrez l'Atelier (voir LISEZ-MOI.md)."
+        : ". Rouvrez l'Atelier avec une connexion à Internet pour terminer la mise en réserve."));
     } else if (erreur && erreur !== "le serveur ne répond pas") {
       ecrire("Prête à fonctionner sans connexion ✓ (avec la copie précédente : la nouvelle n'a pas pu être "
         + "mise en réserve, " + erreur + ")");

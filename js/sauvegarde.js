@@ -89,7 +89,12 @@ export async function importer(fichier) {
   let appareil, fusion = null;
   const source = db.provenance(sauvegarde);
   try {
-    await avantExport();
+    // (du texte récent n'a pas pu être enregistré : l'import l'effacerait, on s'arrête là)
+    if (await avantExport() === false) {
+      informer("Du texte récent n'a pas encore pu être enregistré : l'import est annulé pour ne pas le perdre. "
+        + "Réessayez dans un moment.", { erreur: true, duree: 10000 });
+      return;
+    }
     appareil = await db.monAppareil();
     if (source?.id !== appareil.id) {
       const local = await db.lireToutesLesDonnees();
@@ -131,6 +136,10 @@ export async function importer(fichier) {
     corps.push(el("p", { class: "avertissement" }, "C'est une sauvegarde faite sur cet appareil : les données actuelles seront remplacées "
       + "par celles du fichier (ce qui a été écrit depuis sera retiré)."));
   }
+  if (!r.romans) {
+    corps.push(el("p", { class: "avertissement" }, "Attention : ce fichier ne contient aucun roman. "
+      + "Le remplacement viderait la bibliothèque de cet appareil."));
+  }
   corps.push(el("p", { class: "discret" }, "Dans tous les cas, « Annuler le dernier import » (dans la sauvegarde de sécurité) permet de revenir en arrière."));
   const choix = await ouvrirDialogue({
     titre: "Importer cette sauvegarde ?",
@@ -142,26 +151,38 @@ export async function importer(fichier) {
   if (!choix) return;
   const parFusion = fusion && choix === true;
 
-  // 4. Fusionner, ou tout remplacer
+  // 4. Fusionner, ou tout remplacer.
+  // (Une fusion qui ne change rien note seulement ce qui a été reçu de l'autre appareil :
+  // elle ne prend pas la place de la copie gardée pour « Annuler le dernier import ».)
+  const rien = parFusion && bilanVide(fusion.bilan);
   try {
-    if (parFusion) await db.appliquerFusion({ donnees: fusion.donnees, tombes: fusion.tombes, source, exporteLe: date });
+    if (rien) await db.noterReception(source, date);
+    else if (parFusion) await db.appliquerFusion({ donnees: fusion.donnees, tombes: fusion.tombes, source, exporteLe: date });
     else await db.importerTout(sauvegarde);
   } catch (e) {
     informer("L'import a échoué, rien n'a été modifié : " + e.message, { erreur: true });
     mettreAJourEtat();
     return;
   }
+  if (rien) {
+    informer("Rien de nouveau : tout était déjà à jour ici.");
+    mettreAJourEtat();
+    return;
+  }
   if (parFusion) {
     const b = fusion.bilan;
+    const gardes = Object.values(b.gardes).reduce((a, n) => a + n, 0);
     const doubles = [
       b.conflitsScenes ? `${pluriel(b.conflitsScenes, "scène")} écrite${b.conflitsScenes > 1 ? "s" : ""} sur les deux appareils : `
         + "l'autre version suit la scène dans le plan, « (autre version : …) »." : "",
       b.conflitsFiches ? `${pluriel(b.conflitsFiches, "fiche")} modifiée${b.conflitsFiches > 1 ? "s" : ""} sur les deux appareils : `
         + "l'autre version est recopiée dans ses notes." : "",
+      gardes ? `${pluriel(gardes, "élément supprimé", "éléments supprimés")} sur un appareil mais réécrit${gardes > 1 ? "s" : ""} sur l'autre `
+        + `sans qu'il l'ait vu : gardé${gardes > 1 ? "s" : ""} (à supprimer de nouveau si c'était voulu).` : "",
     ].filter(Boolean).join(" ");
     informer("Fusion faite." + (doubles ? " " + doubles : ""), { duree: doubles ? 15000 : 5000 });
   } else {
-    informer("Sauvegarde importée : vos données ont été restaurées.");
+    informer("Sauvegarde importée : les données du fichier ont remplacé celles de cet appareil.");
   }
   await apresImport();
   mettreAJourEtat();
@@ -180,6 +201,7 @@ function lignesBilan(b) {
     liste(b.ajoutes) && "À ajouter : " + liste(b.ajoutes),
     liste(b.modifies) && "À mettre à jour (plus récent dans le fichier) : " + liste(b.modifies),
     liste(b.supprimes) && "À supprimer (supprimé sur l'autre appareil) : " + liste(b.supprimes),
+    liste(b.gardes) && "Supprimé sur un appareil, mais réécrit sur l'autre sans qu'il l'ait vu, donc gardé : " + liste(b.gardes),
     b.conflitsScenes && `${pluriel(b.conflitsScenes, "scène")} écrite${b.conflitsScenes > 1 ? "s" : ""} sur les deux appareils : les deux versions seront gardées`,
     b.conflitsFiches && `${pluriel(b.conflitsFiches, "fiche")} modifiée${b.conflitsFiches > 1 ? "s" : ""} sur les deux appareils : l'autre version sera recopiée dans ses notes`,
     b.recuperes && `${pluriel(b.recuperes, "élément")} supprimé${b.recuperes > 1 ? "s" : ""} d'un côté mais utilisé${b.recuperes > 1 ? "s" : ""} de l'autre : récupéré${b.recuperes > 1 ? "s" : ""}`,
@@ -188,17 +210,24 @@ function lignesBilan(b) {
 
 // ---------- Annuler le dernier import ----------
 
+// (après une annulation, le même bouton revient sur elle : « nature » vaut alors « annulation »)
 async function annulerDernierImport() {
   const info = await db.lireReglage("avantImportInfo");
   if (!info) return;
+  const retour = info.nature === "annulation";
   const ok = await ouvrirDialogue({
-    titre: "Annuler le dernier import ?",
+    titre: retour ? "Revenir sur l'annulation ?" : "Annuler le dernier import ?",
     corps: [
-      el("p", {}, `L'Atelier revient exactement à son état d'avant l'import du ${dateHeure(info.quand)}.`),
-      el("p", { class: "avertissement" }, "Ce qui a été écrit ou modifié depuis cet import sera retiré aussi."),
+      el("p", {}, retour
+        ? `L'Atelier revient exactement à son état d'avant l'annulation du ${dateHeure(info.quand)}.`
+        : `L'Atelier revient exactement à son état d'avant l'import du ${dateHeure(info.quand)}.`),
+      el("p", { class: "avertissement" }, retour
+        ? "Ce qui a été écrit ou modifié depuis cette annulation sera retiré aussi."
+        : "Ce qui a été écrit ou modifié depuis cet import sera retiré aussi."),
+      el("p", { class: "discret" }, "L'état actuel est gardé : ce même bouton permettra d'y revenir."),
     ],
     annuler: "Garder tel quel",
-    ok: "Revenir avant l'import",
+    ok: retour ? "Revenir avant l'annulation" : "Revenir avant l'import",
     danger: true,
   });
   if (!ok) return;
@@ -209,7 +238,8 @@ async function annulerDernierImport() {
     informer("L'import n'a pas pu être annulé : " + e.message, { erreur: true });
     return;
   }
-  informer("Import annulé : l'Atelier est revenu à son état d'avant.");
+  informer("C'est fait : l'Atelier est revenu à son état d'avant. (Changement d'avis ? Le même bouton y revient.)",
+    { duree: 8000 });
   await apresImport();
   mettreAJourEtat();
 }
@@ -224,7 +254,9 @@ export async function mettreAJourEtat() {
     navigator.storage && navigator.storage.persisted ? navigator.storage.persisted() : false,
     db.lireReglage("avantImportInfo"),
   ]);
-  document.getElementById("bouton-annuler-import").hidden = !dernierImport;
+  const bouton = document.getElementById("bouton-annuler-import");
+  bouton.hidden = !dernierImport;
+  bouton.textContent = dernierImport?.nature === "annulation" ? "Revenir sur l'annulation" : "Annuler le dernier import";
 
   // Texte de la carte « Sauvegarde de sécurité »
   const etat = document.getElementById("etat-sauvegarde");
@@ -235,8 +267,10 @@ export async function mettreAJourEtat() {
       el("li", {}, protege
         ? "Le navigateur s'est engagé à ne pas effacer ces données."
         : "Le navigateur pourrait effacer ces données s'il manque de place : exportez régulièrement."),
-      dernierImport ? el("li", {}, `Dernier import : ${dateHeure(dernierImport.quand)}`
-        + (dernierImport.nature === "fusion" ? " (fusion)" : " (remplacement)") + ", annulable.") : null,
+      dernierImport ? el("li", {}, dernierImport.nature === "annulation"
+        ? `Dernier import annulé le ${dateHeure(dernierImport.quand)} (on peut revenir sur cette annulation).`
+        : `Dernier import : ${dateHeure(dernierImport.quand)}`
+          + (dernierImport.nature === "fusion" ? " (fusion)" : " (remplacement)") + ", annulable.") : null,
     );
   }
 

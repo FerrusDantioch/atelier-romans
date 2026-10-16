@@ -69,16 +69,25 @@ export async function confirmer({ titre, message, ok = "Confirmer", danger = fal
   return (await ouvrirDialogue({ titre, corps, ok, danger })) === true;
 }
 
-// Affiche un petit message en bas de l'écran, qui disparaît tout seul
+// Affiche un petit message en bas de l'écran, qui disparaît tout seul.
+// (Si l'on est en train d'écrire, un message qui s'en va est seulement caché, et retiré plus tard :
+// retirer quelque chose de la page pendant la frappe couperait l'annulation Ctrl+Z, voir outils.js.)
 export function informer(message, { duree = 4000, erreur = false } = {}) {
   let zone = document.getElementById("notifications");
   if (!zone) {
     zone = el("div", { id: "notifications", "aria-live": "polite" });
     document.body.append(zone);
   }
+  const enEcriture = () => {
+    const a = document.activeElement;
+    return !!a && (a.tagName === "TEXTAREA" || (a.tagName === "INPUT" && a.type === "text"));
+  };
+  const retirer = (b) => { if (enEcriture()) b.hidden = true; else b.remove(); };
+  if (!enEcriture()) for (const b of zone.querySelectorAll(".notification[hidden]")) b.remove(); // (le ménage en attente)
   const bulle = el("div", { class: erreur ? "notification erreur" : "notification", role: erreur ? "alert" : "status" }, message);
   zone.append(bulle);
-  // Pas plus de deux messages à la fois : on retire les plus anciens
-  while (zone.children.length > 2) zone.firstElementChild.remove();
-  setTimeout(() => bulle.remove(), erreur ? duree * 2 : duree);
+  // Pas plus de deux messages à la fois : les plus anciens s'en vont
+  const visibles = [...zone.children].filter((b) => !b.hidden);
+  for (const b of visibles.slice(0, -2)) retirer(b);
+  setTimeout(() => retirer(bulle), erreur ? duree * 2 : duree);
 }

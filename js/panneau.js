@@ -56,6 +56,7 @@ const vue = {
 };
 
 let ficheModifiee = null;   // fiche en attente d'enregistrement
+let epingleeEnRetard = false; // la fiche épinglée attend d'être redessinée (voir sauverFiche)
 let minuterie = null;
 let minuterieScenes = null;
 
@@ -114,7 +115,7 @@ export function initialiserPanneau() {
 
   // Échap dans le panneau : retour au texte, curseur à sa place
   document.addEventListener("keydown", (e) => {
-    if (e.key !== "Escape" || $("vue-roman").hidden || document.querySelector("dialog[open]")) return;
+    if (e.key !== "Escape" || e.defaultPrevented || $("vue-roman").hidden || document.querySelector("dialog[open]")) return;
     const dansPanneau = panneau.contains(document.activeElement);
     const voletOuvert = $("vue-roman").classList.contains("panneau-ouvert");
     const clavierPerdu = document.activeElement === document.body || document.activeElement === null;
@@ -129,9 +130,20 @@ export function initialiserPanneau() {
   $("bouton-fiches").addEventListener("click", () => basculerVolet());
   $("fermer-panneau").addEventListener("click", () => { basculerVolet(false); revenirAuTexte(); });
 
+  // On quitte un champ de fiche : la fiche épinglée, si elle a changé, est redessinée
+  panneau.addEventListener("focusout", () => {
+    setTimeout(() => { if (epingleeEnRetard && !champEnCours() && etat.roman) { epingleeEnRetard = false; afficherEpinglee(); } }, 0);
+  });
+
   // Filet de sécurité : enregistrer la fiche si la page se cache ou se ferme
   document.addEventListener("visibilitychange", () => { if (document.hidden) sauverFiche(); });
   window.addEventListener("pagehide", () => sauverFiche());
+}
+
+// Le clavier est-il dans un champ où l'on écrit (une fiche en modification) ?
+function champEnCours() {
+  const a = document.activeElement;
+  return !!a && (a.tagName === "TEXTAREA" || (a.tagName === "INPUT" && a.type === "text")) && $("panneau").contains(a);
 }
 
 // Ouvre ou ferme le volet (écrans moyens et petits)
@@ -248,6 +260,7 @@ export function afficherPanneau() {
 
 // La fiche épinglée, toujours visible en haut du panneau
 function afficherEpinglee() {
+  epingleeEnRetard = false;
   const zone = $("epinglee");
   const fiche = trouverFiche(etat.roman.ficheEpinglee);
   zone.replaceChildren();
@@ -356,8 +369,8 @@ function vueLecture(fiche, { compacte }) {
     el("div", { class: "fiche-actions" },
       el("button", { type: "button", class: "petit-bouton", "data-action": "modifier", "data-id": fiche.id }, "✎ Modifier"),
       epinglee
-        ? el("button", { type: "button", class: "petit-bouton", "data-action": "desepingler", "aria-pressed": "true" }, "Désépingler")
-        : el("button", { type: "button", class: "petit-bouton", "data-action": "epingler", "data-id": fiche.id, "aria-pressed": "false" }, "📌 Épingler"),
+        ? el("button", { type: "button", class: "petit-bouton", "data-action": "desepingler" }, "Désépingler")
+        : el("button", { type: "button", class: "petit-bouton", "data-action": "epingler", "data-id": fiche.id }, "📌 Épingler"),
     ),
   );
 }
@@ -591,7 +604,12 @@ export async function sauverFiche() {
   if (!trouverFiche(fiche.id)) return true; // supprimée entre-temps
   try {
     await db.ecrire("fiches", { ...fiche, champs: { ...fiche.champs } });
-    if (etat.roman && etat.roman.ficheEpinglee === fiche.id) afficherEpinglee(); // la fiche épinglée suit les changements
+    // La fiche épinglée suit les changements. (Pas pendant que l'on écrit dans un champ : la redessiner
+    // retirerait des éléments de la page, et Chrome couperait alors l'annulation Ctrl+Z de ce champ ;
+    // elle est redessinée dès que l'on quitte le champ.)
+    if (etat.roman && etat.roman.ficheEpinglee === fiche.id) {
+      if (champEnCours()) epingleeEnRetard = true; else afficherEpinglee();
+    }
     annoncer("fiches-changees"); // (nom changé : les fiches repérées dans le texte suivent)
     return true;
   } catch (erreur) {

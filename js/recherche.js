@@ -198,7 +198,7 @@ function parCategorieEtNom(a, b) {
 function afficher(requete) {
   liste.replaceChildren();
   if (resultats.length === 0) {
-    liste.append(el("li", { class: "recherche-vide" },
+    liste.append(el("li", { class: "recherche-vide", role: "option", "aria-disabled": "true" },
       etat.fiches.length ? "Aucune fiche trouvée." : "Aucune fiche pour l'instant : tapez un nom pour en créer une."));
     saisie.removeAttribute("aria-activedescendant");
     return;
