@@ -162,11 +162,15 @@
           <button class="petit-bouton seulement-moyen-ecran" type="button" id="bouton-recherche-outils" title="Recherche rapide (Ctrl+K)" aria-label="Chercher une fiche">⌕</button>
         </div>
 
-        <div class="zone-ecriture">
+        <div class="zone-ecriture" id="zone-ecriture">
+          <!-- Calque derrière le texte : les noms des fiches y sont soulignés en couleur (js/surlignage.js) -->
+          <div class="calque" id="calque" aria-hidden="true"><div class="calque-texte" id="calque-texte"></div></div>
           <textarea id="texte-notes" class="texte texte-notes" lang="fr" spellcheck="true" aria-label="Notes de la scène"
             placeholder="Notes, fragments, idées…&#10;- une puce commence par un tiret&#10;- Entrée continue la liste"></textarea>
           <textarea id="texte-redige" class="texte texte-redige" lang="fr" spellcheck="true" aria-label="Texte rédigé de la scène"
             placeholder="Le texte du roman…" hidden></textarea>
+          <!-- Petite bulle qui apparaît quand on touche un nom coloré : elle ouvre sa fiche -->
+          <div class="bulle-noms" id="bulle-noms" role="group" aria-label="Ouvrir la fiche de ce nom" hidden></div>
         </div>
 
         <div class="barre-etat" aria-live="off">
@@ -187,7 +191,14 @@
       </div>
 
       <!-- Personnages et lieux nommés dans la scène ouverte (mis à jour pendant l'écriture) -->
-      <section class="reperees" id="reperees" aria-label="Fiches nommées dans cette scène" hidden></section>
+      <section class="reperees" id="reperees" aria-label="Fiches nommées dans cette scène" hidden>
+        <p class="etiquette">Dans cette scène</p>
+        <div id="reperees-liste"></div>
+        <label class="case case-surlignage">
+          <input type="checkbox" id="surligner" checked>
+          <span>Noms en couleur dans le texte</span>
+        </label>
+      </section>
 
       <!-- Fiche épinglée : reste visible quel que soit l'onglet -->
       <section class="epinglee" id="epinglee" aria-label="Fiche épinglée" hidden></section>
@@ -237,7 +248,7 @@
       <ul class="losanges" style="--c:var(--omni)">
         <li>Écrire en mode <em>Notes</em> ou <em>Rédigé</em></li>
         <li>Consulter une fiche sans quitter le texte (<span class="mono">Ctrl+K</span>)</li>
-        <li>Voir d'un coup d'œil les personnages et lieux nommés dans la scène</li>
+        <li>Voir d'un coup d'œil les personnages et lieux nommés dans la scène, en couleur dans le texte</li>
         <li>Suivre les événements sur une frise, et voir qui apparaît où</li>
         <li>Écrire sur deux appareils : exporter sur l'un, fusionner sur l'autre</li>
         <li>Exporter en PDF, mise en page de livre (<span class="mono">Ctrl+P</span>)</li>

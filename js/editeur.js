@@ -240,6 +240,7 @@ function appliquerMode(mode) {
   document.querySelectorAll("#barre-outils [data-mode]").forEach((b) =>
     b.setAttribute("aria-pressed", String(b.dataset.mode === mode)));
   $("vue-roman").dataset.mode = mode; // sert au style (ex. bouton « puce » visible en mode Notes)
+  annoncer("mode-affiche", mode);     // (les noms en couleur suivent le texte affiché)
 }
 
 // =====================================================================

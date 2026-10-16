@@ -446,12 +446,16 @@ body.mode-ecriture main{ flex:1; min-height:0; }
 .vue-ecriture[data-mode="redige"] .seulement-notes{ display:none; }
 #bouton-concentration[aria-pressed="true"]{ border-color:var(--omni); }
 
-/* La zone de texte : large, aérée, centrée, contrastée sans éblouir */
-.zone-ecriture{ flex:1; min-height:0; display:flex; }
+/* La zone de texte : large, aérée, centrée, contrastée sans éblouir.
+   Son fond est porté par la zone qui l'entoure : la zone de texte est transparente,
+   pour laisser voir le calque des noms en couleur, placé juste derrière. */
+.zone-ecriture{ flex:1; min-height:0; display:flex; position:relative; background:var(--ecriture-fond); }
+.vue-ecriture[data-mode="notes"] .zone-ecriture{ background:color-mix(in srgb, var(--univers) 4%, var(--ecriture-fond)); }
 .texte{
+  position:relative; z-index:1;
   flex:1; width:100%; height:100%; resize:none; margin:0;
   border:0; border-radius:0; box-shadow:none;
-  background:var(--ecriture-fond);
+  background:transparent;
   color:var(--ecriture-texte);
   font-family:var(--f-texte);
   font-size:var(--ecriture-taille);
@@ -464,12 +468,45 @@ body.mode-ecriture main{ flex:1; min-height:0; }
 .texte:focus, .texte:focus-visible{ outline:none; }
 .texte::placeholder{ color:color-mix(in srgb, var(--discret) 60%, transparent); }
 .texte::selection{ background:color-mix(in srgb, var(--omni) 40%, transparent); }
-/* Mode Notes : un fond très légèrement teinté de la couleur de l'univers, un texte un peu plus petit */
+/* Mode Notes : un fond très légèrement teinté de la couleur de l'univers (voir .zone-ecriture),
+   un texte un peu plus petit */
 .texte-notes{
-  background:color-mix(in srgb, var(--univers) 4%, var(--ecriture-fond));
   font-size:calc(var(--ecriture-taille) * .92);
   line-height:1.7;
 }
+
+/* Noms en couleur : le calque derrière le texte (voir js/surlignage.js).
+   Le même texte, au même endroit, invisible ; seuls les noms y sont soulignés. */
+.calque{ position:absolute; z-index:0; overflow:hidden; pointer-events:none; }
+.calque-texte{ width:100%; color:transparent; white-space:pre-wrap; overflow-wrap:break-word; }
+.calque mark{
+  color:transparent; border-radius:3px;
+  background:color-mix(in srgb, var(--univers) 13%, transparent);
+  text-decoration:underline 2px color-mix(in srgb, var(--univers) 80%, transparent);
+  text-underline-offset:.25em; text-decoration-skip-ink:none;
+}
+.calque mark.lieu{ text-decoration-style:dashed; }  /* les lieux : soulignés en pointillés */
+.calque mark.vide{ display:none; }                   /* un nom vidé, gardé pour resservir (il ne doit pas compter) */
+body.concentration .calque, body.concentration .bulle-noms{ display:none; }
+
+/* La bulle qui apparaît quand on touche un nom coloré */
+.bulle-noms{
+  position:absolute; z-index:3;
+  display:grid; gap:2px; max-width:min(340px, calc(100% - 16px));
+  background:var(--table-haute);
+  border:var(--filet) solid var(--trait); border-left:3px solid var(--univers); border-radius:var(--arrondi-petit);
+  box-shadow:var(--ombre); padding:4px;
+  animation:apparition var(--duree) ease-out;
+}
+.bulle-fiche{
+  display:flex; align-items:baseline; gap:var(--esp-2); min-width:0;
+  background:none; border:0; border-radius:6px; cursor:pointer;
+  padding:6px 10px; text-align:left; color:var(--texte); font:600 .92rem var(--f-titre);
+}
+.bulle-fiche:hover{ background:var(--trait); }
+.bulle-categorie{ flex:none; font:600 .64rem var(--f-titre); letter-spacing:.08em; text-transform:uppercase; color:var(--discret); }
+.bulle-nom{ min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+@media (pointer:coarse){ .bulle-fiche{ min-height:40px; align-items:center; } }
 
 .barre-etat{
   display:flex; gap:var(--esp-2) var(--esp-5); flex-wrap:wrap;
@@ -506,6 +543,7 @@ body.mode-ecriture main{ flex:1; min-height:0; }
   margin:var(--esp-3) var(--esp-4) 0;
 }
 .reperees .pastille{ max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.case-surlignage{ font-size:.8rem; color:var(--discret); }
 
 /* Fiche épinglée : carte avec liseré de l'univers, défile seule si elle est longue */
 .epinglee{

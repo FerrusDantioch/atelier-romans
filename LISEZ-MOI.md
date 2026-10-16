@@ -3,8 +3,9 @@
 Application d'écriture de romans tirés des parties de l'Omni-système.
 Elle s'installe comme une application, fonctionne **sans connexion**, et garde tout sur l'ordinateur.
 
-**Version 1.3** — les sept étapes prévues sont terminées, plus l'étape 8 (les fiches repérées dans le texte),
-l'étape 9 (écrire sur deux appareils : la fusion) et l'étape 10 (la frise des événements).
+**Version 1.4** — les sept étapes prévues sont terminées, plus l'étape 8 (les fiches repérées dans le texte),
+l'étape 9 (écrire sur deux appareils : la fusion), l'étape 10 (la frise des événements)
+et l'étape 11 (les noms en couleur dans le texte).
 
 **En ligne : https://ferrusdantioch.github.io/atelier-romans/** — s'ouvre aussi sur téléphone,
 sans rien installer d'autre (voir « L'Atelier en ligne » plus bas).
@@ -21,6 +22,7 @@ sans rien installer d'autre (voir « L'Atelier en ligne » plus bas).
 - **`Ctrl+K`** : on tape un nom, la fiche s'ouvre à côté, **le curseur ne bouge pas**.
 - **Dans cette scène** : les personnages et lieux nommés dans la scène s'affichent d'eux-mêmes
   à côté du texte, prêts à être consultés d'un clic.
+- **Noms en couleur** : ces noms sont aussi soulignés directement dans le texte ; les toucher ouvre leur fiche.
 - **Export PDF** d'une scène, d'un chapitre ou du roman, mis en page comme un livre.
 - **Sauvegarde automatique** permanente, copie de secours si l'onglet se ferme en pleine phrase,
   et **export / import** de toutes les données dans un fichier, avec un rappel doux.
@@ -178,6 +180,18 @@ Ouvrez un roman depuis la Bibliothèque. L'écran se divise en trois colonnes :
     Les mots courants (Mère, Docteur, Taverne, Grand…) ne suffisent pas, car plusieurs fiches peuvent les partager.
   Accents et majuscules sont ignorés, sauf la majuscule exigée pour un nom d'un seul mot.
   Les événements, et une fiche pas encore renommée (« Nouveau PNJ »), ne sont pas repérés.
+- **Noms en couleur dans le texte** : les mêmes noms sont soulignés directement dans la scène,
+  à la couleur de l'univers (les lieux en pointillés). La couleur suit l'écriture : un nom tapé se
+  colore aussitôt, un nom effacé perd sa couleur.
+  - **Toucher (ou cliquer) un nom coloré** fait apparaître une petite bulle, par exemple « PNJ · Mira la Rousse › » :
+    la toucher ouvre la fiche (sur téléphone, le volet des fiches s'ouvre). Le curseur reste dans le texte.
+    Si un même mot nomme deux fiches (« Corbeau » : Mère Corbeau et la Taverne du Corbeau Noir),
+    la bulle propose les deux. Taper au clavier ou toucher ailleurs la fait disparaître.
+  - **`Ctrl+clic`** (Mac : `Cmd+clic`) sur un nom ouvre sa fiche directement.
+  - Pour écrire sans couleurs : décochez **« Noms en couleur dans le texte »**, sous « Dans cette scène ».
+    Ce choix est propre à chaque appareil. En mode concentration, les couleurs s'effacent d'elles-mêmes.
+  - Un nom coupé par un retour à la ligne (« Mère » en fin de ligne, « Corbeau » au début de la suivante)
+    n'est pas coloré, mais il compte bien dans « Dans cette scène ».
 - **Fiche épinglée** : elle reste affichée en haut du panneau, quel que soit l'onglet.
   Le premier personnage principal s'épingle tout seul ; « 📌 Épingler » en choisit une autre ;
   « Replier » la réduit à son nom.
@@ -256,6 +270,7 @@ Utilisez **Chrome ou Edge** : Firefox n'imprime pas encore les numéros de page 
 | `Ctrl+B` | gras `**…**` |
 | `Entrée` sur une ligne `- …` (mode Notes) | nouvelle puce ; sur une puce vide : fin de la liste |
 | `Ctrl+K` | recherche rapide d'une fiche (le curseur reste en place) |
+| `Ctrl+clic` sur un nom coloré | ouvrir sa fiche (le curseur reste en place) |
 | `Ctrl+Maj+F` | mode concentration (seul le texte reste) |
 | `Ctrl+P` | exporter en PDF (scène, chapitre ou roman) |
 | `Échap` | quitter le mode concentration, ou revenir au texte depuis le panneau ou la frise |
@@ -337,8 +352,8 @@ puis la réinstaller la met à jour aussitôt ; les romans ne sont pas touchés)
 
 Prévu « pour plus tard » dès le départ (hors de la première version) :
 - une **frise chronologique visuelle** des événements : faite à l'étape 10 ;
-- des **liens automatiques** entre le texte et les fiches : premier pas fait avec « Dans cette scène »
-  (étape 8) ; reste possible : les noms mis en surbrillance directement dans le texte ;
+- des **liens automatiques** entre le texte et les fiches : faits avec « Dans cette scène » (étape 8)
+  et les noms en couleur dans le texte (étape 11) ;
 - l'**import des fiches PDF** de JDR ;
 - la **synchronisation** entre plusieurs appareils : faite à l'étape 9 par fichier et fusion ;
   reste possible : une synchronisation automatique (elle demanderait un compte en ligne).
@@ -397,6 +412,7 @@ js/editeur.js       l'écriture : modes, mise en forme, enregistrement, session,
 js/panneau.js       le panneau de consultation : onglets, fiches, épinglage, événements
 js/recherche.js     la recherche rapide Ctrl+K
 js/reperage.js      « Dans cette scène » : les fiches nommées dans le texte
+js/surlignage.js    les noms en couleur dans le texte, et la bulle qui ouvre leur fiche
 js/frise.js         la frise des événements et « Qui apparaît où »
 js/export-pdf.js    l'export PDF (le livre à imprimer)
 js/fusion.js        la fusion des données de deux appareils

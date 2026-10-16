@@ -44,6 +44,7 @@ const FICHIERS = [
   "js/recherche.js",
   "js/reperage.js",
   "js/sauvegarde.js",
+  "js/surlignage.js",
   "fonts/oxanium.woff2",
   "fonts/literata.woff2",
   "fonts/literata-italique.woff2",

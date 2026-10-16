@@ -84,8 +84,8 @@ export function majReperage() {
   if (!zone.hidden && affichage === dernierAffichage) return;
   dernierAffichage = affichage;
   zone.hidden = false;
-  zone.replaceChildren(
-    el("p", { class: "etiquette" }, "Dans cette scène"),
+  // (le titre « Dans cette scène » et la case « Noms en couleur dans le texte » restent : seule la liste change)
+  $("reperees-liste").replaceChildren(
     trouvees.length
       ? el("div", { class: "pastilles" }, trouvees.map((f) => el("button", {
           type: "button", class: "pastille", "data-fiche": f.id,
@@ -103,7 +103,7 @@ function majBouton(nombre) {
 }
 
 // Une fiche sans vrai nom (« Nouveau PNJ », pas encore renommée) n'est pas cherchée
-function estReperable(f) {
+export function estReperable(f) {
   return CATEGORIES_REPEREES.includes(f.categorie) && (f.titre || "").trim() !== ""
     && f.titre.trim() !== CATEGORIES[f.categorie].nouveau;
 }
@@ -167,11 +167,84 @@ const LETTRE = /[\p{L}\p{N}]/u;
 function motEntier(texte, re) {
   re.lastIndex = 0;
   for (let r; (r = re.exec(texte));) {
-    const avant = texte[r.index - 1], apres = texte[r.index + r[0].length];
-    if (!(avant && LETTRE.test(avant)) && !(apres && LETTRE.test(apres))) return r.index;
+    if (entier(texte, r.index, r.index + r[0].length)) return r.index;
     re.lastIndex = r.index + 1;
   }
   return -1;
+}
+const entier = (texte, debut, fin) =>
+  !(debut > 0 && LETTRE.test(texte[debut - 1])) && !(fin < texte.length && LETTRE.test(texte[fin]));
+
+// =====================================================================
+// Toutes les apparitions des noms, à leur place exacte (pour les colorer dans le texte)
+// =====================================================================
+
+// Les noms à chercher pour ces fiches : [{ fiche, re, indice }]
+export function preparerNoms(fiches) {
+  return fiches.flatMap((fiche) => motifsDe(fiche).map((m) => ({ fiche, ...m })));
+}
+
+// Seulement les noms qui peuvent apparaître dans ce texte (tri rapide par les mots du texte)
+export function nomsPossibles(texte, noms) {
+  const mots = new Set(sansAccents(texte).toLowerCase().split(SEPARATEURS));
+  return noms.filter((n) => !n.indice || mots.has(n.indice));
+}
+
+// Les noms trouvés dans un texte, à leur position exacte : [{ debut, fin, fiches }], dans l'ordre.
+// Deux noms ne se chevauchent jamais : le plus long l'emporte (« Mère Corbeau » plutôt que « Corbeau ») ;
+// un même passage qui nomme deux fiches les garde toutes les deux.
+export function nomsDansLeTexte(texte, noms) {
+  if (!texte) return [];
+  const { t, origine } = normaliser(texte);
+  const trouves = [];
+  for (const n of nomsPossibles(t, noms)) {
+    n.re.lastIndex = 0;
+    for (let r; (r = n.re.exec(t));) {
+      const debut = r.index, fin = r.index + r[0].length;
+      if (entier(t, debut, fin)) trouves.push({ debut, fin, fiche: n.fiche });
+      n.re.lastIndex = debut + 1;
+    }
+  }
+  // Les noms qui se chevauchent forment de petits groupes : on départage chaque groupe à part
+  trouves.sort((a, b) => a.debut - b.debut || b.fin - a.fin);
+  const gardes = [];
+  for (let i = 0; i < trouves.length;) {
+    let j = i + 1, finGroupe = trouves[i].fin;
+    while (j < trouves.length && trouves[j].debut < finGroupe) finGroupe = Math.max(finGroupe, trouves[j++].fin);
+    gardes.push(...departager(trouves.slice(i, j)));
+    i = j;
+  }
+  return origine ? gardes.map((g) => ({ ...g, debut: origine[g.debut], fin: origine[g.fin] })) : gardes;
+}
+
+// Dans un groupe de noms qui se chevauchent : le plus long d'abord, puis ceux qui ne le touchent pas
+function departager(groupe) {
+  if (groupe.length === 1) return [{ debut: groupe[0].debut, fin: groupe[0].fin, fiches: [groupe[0].fiche] }];
+  groupe.sort((a, b) => (b.fin - b.debut) - (a.fin - a.debut) || a.debut - b.debut);
+  const gardes = [];
+  for (const x of groupe) {
+    const meme = gardes.find((g) => g.debut === x.debut && g.fin === x.fin);
+    if (meme) { if (!meme.fiches.includes(x.fiche)) meme.fiches.push(x.fiche); continue; }
+    if (gardes.some((g) => x.debut < g.fin && g.debut < x.fin)) continue;
+    gardes.push({ debut: x.debut, fin: x.fin, fiches: [x.fiche] });
+  }
+  return gardes.sort((a, b) => a.debut - b.debut);
+}
+
+// Le texte sans accents, et pour chacun de ses caractères, sa position dans le texte d'origine.
+// (Presque toujours une lettre pour une lettre : alors les positions sont les mêmes.
+// Sinon, par exemple un accent tapé à part « e + ´ », on refait le compte lettre par lettre.)
+function normaliser(texte) {
+  const t = sansAccents(texte);
+  if (t.length === texte.length) return { t, origine: null };
+  const morceaux = [], origine = [];
+  for (let i = 0; i < texte.length; i++) {
+    const n = sansAccents(texte[i]);
+    morceaux.push(n);
+    for (let k = 0; k < n.length; k++) origine.push(i);
+  }
+  origine.push(texte.length);
+  return { t: morceaux.join(""), origine };
 }
 
 // Un nom → un motif de recherche : majuscules indifférentes,

@@ -21,10 +21,11 @@ import { demarrerSeul } from "./onglets.js";
 import { initialiserExportPdf } from "./export-pdf.js";
 import { initialiserHorsLigne } from "./hors-ligne.js";
 import { initialiserReperage } from "./reperage.js";
+import { initialiserSurlignage } from "./surlignage.js";
 import { initialiserFrise, montrerFrise, revenirDeLaFrise, oublierFrise, friseAffichee } from "./frise.js";
 
 // Numéro de version affiché dans « À propos »
-export const VERSION = "1.3.0";
+export const VERSION = "1.4.0";
 
 // Liste des pages (« vues ») de l'application
 const VUES = ["bibliotheque", "roman", "frise", "apropos"];
@@ -167,6 +168,7 @@ async function demarrer() {
   initialiserEditeur();
   initialiserPanneau();
   initialiserReperage();
+  initialiserSurlignage();
   initialiserFrise({ montrer });
   initialiserRecherche();
   initialiserExportPdf();
