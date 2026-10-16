@@ -150,6 +150,8 @@
           <div class="modes" role="group" aria-label="Mode d'écriture">
             <button type="button" data-mode="notes" aria-pressed="true" title="Fragments, idées, puces">Notes</button>
             <button type="button" data-mode="redige" aria-pressed="false" title="Le texte du roman">Rédigé</button>
+            <!-- (seulement si la colonne d'écriture est assez large : voir js/editeur.js) -->
+            <button type="button" data-mode="deux" id="bouton-deux" aria-pressed="false" title="Les notes à gauche, le texte rédigé à droite" hidden>Les deux</button>
           </div>
           <div class="outils-format" role="group" aria-label="Mise en forme">
             <button type="button" data-format="italique" title="Italique : *texte* (Ctrl+I)" aria-label="Italique"><em>I</em></button>
@@ -163,8 +165,12 @@
         </div>
 
         <div class="zone-ecriture" id="zone-ecriture">
-          <!-- Calque derrière le texte : les noms des fiches y sont soulignés en couleur (js/surlignage.js) -->
-          <div class="calque" id="calque" aria-hidden="true"><div class="calque-texte" id="calque-texte"></div></div>
+          <!-- Côte à côte : le nom de chaque colonne -->
+          <p class="cote-titre cote-titre-notes" aria-hidden="true">Notes</p>
+          <p class="cote-titre cote-titre-redige" aria-hidden="true">Rédigé</p>
+          <!-- Calques derrière le texte (un par zone) : les noms des fiches y sont soulignés en couleur (js/surlignage.js) -->
+          <div class="calque" id="calque-notes" aria-hidden="true"><div class="calque-texte"></div></div>
+          <div class="calque" id="calque-redige" aria-hidden="true"><div class="calque-texte"></div></div>
           <textarea id="texte-notes" class="texte texte-notes" lang="fr" spellcheck="true" aria-label="Notes de la scène"
             placeholder="Notes, fragments, idées…&#10;- une puce commence par un tiret&#10;- Entrée continue la liste"></textarea>
           <textarea id="texte-redige" class="texte texte-redige" lang="fr" spellcheck="true" aria-label="Texte rédigé de la scène"
@@ -246,7 +252,7 @@
       </div>
 
       <ul class="losanges" style="--c:var(--omni)">
-        <li>Écrire en mode <em>Notes</em> ou <em>Rédigé</em></li>
+        <li>Écrire en mode <em>Notes</em> ou <em>Rédigé</em>, ou les deux côte à côte</li>
         <li>Consulter une fiche sans quitter le texte (<span class="mono">Ctrl+K</span>)</li>
         <li>Voir d'un coup d'œil les personnages et lieux nommés dans la scène, en couleur dans le texte</li>
         <li>Suivre les événements sur une frise, et voir qui apparaît où</li>

@@ -3,9 +3,9 @@
 Application d'écriture de romans tirés des parties de l'Omni-système.
 Elle s'installe comme une application, fonctionne **sans connexion**, et garde tout sur l'ordinateur.
 
-**Version 1.4** — les sept étapes prévues sont terminées, plus l'étape 8 (les fiches repérées dans le texte),
-l'étape 9 (écrire sur deux appareils : la fusion), l'étape 10 (la frise des événements)
-et l'étape 11 (les noms en couleur dans le texte).
+**Version 1.5** — les sept étapes prévues sont terminées, plus l'étape 8 (les fiches repérées dans le texte),
+l'étape 9 (écrire sur deux appareils : la fusion), l'étape 10 (la frise des événements),
+l'étape 11 (les noms en couleur dans le texte) et l'étape 12 (les notes à côté du texte rédigé).
 
 **En ligne : https://ferrusdantioch.github.io/atelier-romans/** — s'ouvre aussi sur téléphone,
 sans rien installer d'autre (voir « L'Atelier en ligne » plus bas).
@@ -15,7 +15,8 @@ sans rien installer d'autre (voir « L'Atelier en ligne » plus bas).
 - **Bibliothèque** de romans, chacun dans un univers (Cyberpunk, Fantasy, Space opéra,
   Horreur / enquête, Autre) dont la couleur habille l'interface.
 - **Écriture** en chapitres et scènes, chaque scène en deux versions : *Notes* (fragments, puces)
-  et *Rédigé* (le texte du roman). Mise en forme `*italique*`, `**gras**`, séparateur `* * *`.
+  et *Rédigé* (le texte du roman), ou **les deux côte à côte** sur un écran assez large.
+  Mise en forme `*italique*`, `**gras**`, séparateur `* * *`.
   Compteurs de mots, objectif de session, mode concentration.
 - **Fiches** à côté du texte : personnage principal (épinglé), PNJ, lieux, événements dans l'ordre.
 - **Frise des événements** : toute la partie sur une ligne du temps, et d'un coup d'œil, qui apparaît où.
@@ -150,6 +151,16 @@ Ouvrez un roman depuis la Bibliothèque. L'écran se divise en trois colonnes :
   Une scène qu'on monte depuis le haut de son chapitre passe à la fin du chapitre précédent.
 - **Notes / Rédigé** : chaque scène a deux textes. *Notes* pour les fragments et les puces,
   *Rédigé* pour le texte du roman. On bascule à tout moment ; chacun garde son curseur.
+- **Les deux** (côte à côte) : les notes à gauche, le texte rédigé à droite, plus large.
+  On rédige en gardant ses notes sous les yeux, et l'on peut écrire dans les deux :
+  cliquez dans l'un ou l'autre ; le titre de la colonne où vous écrivez est en couleur,
+  et les boutons I, G, * * * (et la puce, côté notes) agissent sur elle.
+  - Ce bouton n'apparaît que si la colonne d'écriture est assez large (ordinateur, tablette tenue
+    en largeur, ou mode concentration). Si la fenêtre devient trop étroite, seul reste le texte où vous
+    écriviez ; elle s'élargit de nouveau, et les deux reviennent.
+  - Le choix est gardé sur cet appareil, pour toutes les scènes. Pour revenir à un seul texte :
+    « Notes » ou « Rédigé ».
+  - Passer d'une colonne à l'autre ne change rien à la scène (pas de mention « notes » dans le plan).
 - **Mise en forme** : `*italique*`, `**gras**`, et `* * *` (séparateur) sur sa propre ligne.
   Les boutons I, G et * * * insèrent ces symboles autour du texte sélectionné.
 - **Compteurs** : mots de la scène, du chapitre et du roman (seul le texte *Rédigé* compte).

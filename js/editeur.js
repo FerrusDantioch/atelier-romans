@@ -1,6 +1,7 @@
 // =====================================================================
 // ÉDITEUR : la zone d'écriture d'une scène
-// - deux modes : Notes (fragments, puces) et Rédigé (le texte du roman)
+// - deux modes : Notes (fragments, puces) et Rédigé (le texte du roman),
+//   ou les deux côte à côte sur un écran assez large
 // - mise en forme légère : *italique*, **gras**, séparateur * * *
 // - sauvegarde automatique + copie de secours instantanée
 // - compteurs de mots, objectif de session, mode concentration
@@ -30,6 +31,10 @@ const DELAI_SAUVEGARDE = 500;
 // Délai maximal avant la copie de secours (en millisecondes)
 const DELAI_SECOURS = 300;
 const OBJECTIF_PAR_DEFAUT = 500;
+// Côte à côte : le choix de cet appareil (gardé dans le navigateur), et la largeur
+// minimale de la colonne d'écriture pour y mettre les deux textes (en pixels)
+const CLE_COTE_A_COTE = "atelier-cote-a-cote";
+const LARGEUR_COTE_A_COTE = 680;
 
 let scene = null;          // la scène ouverte
 let modifiee = false;      // true = des changements ne sont pas encore dans la base
@@ -40,6 +45,9 @@ let echecEnAttente = false; // un enregistrement a échoué : sa copie de secour
 const aRelire = new Set();  // modes dont le texte a changé depuis la dernière relecture
 let session = null;        // { jour, motsDepart }
 const curseurs = new Map(); // position du curseur de chaque scène déjà ouverte
+let coteACote = false;     // « Les deux » choisi sur cet appareil
+let deuxAffiches = false;  // les deux textes sont-ils affichés en ce moment ? (choix + place suffisante)
+let modeAuClavier = null;  // côte à côte : le texte où l'on écrit (Notes ou Rédigé)
 
 const $ = (id) => document.getElementById(id);
 
@@ -58,6 +66,7 @@ export function initialiserEditeur() {
       marquerModifiee();
     });
     zone.addEventListener("keydown", (e) => raccourcisDansLeTexte(e, mode));
+    zone.addEventListener("focus", () => surFocus(mode));
   }
 
   // Les boutons de la barre d'outils ne « volent » pas le curseur au texte
@@ -65,7 +74,10 @@ export function initialiserEditeur() {
     if (e.target.closest("button")) e.preventDefault();
   });
   document.querySelectorAll("#barre-outils [data-mode]").forEach((b) =>
-    b.addEventListener("click", () => changerMode(b.dataset.mode)));
+    b.addEventListener("click", () => choisirAffichage(b.dataset.mode)));
+  // Côte à côte : choix gardé d'une fois sur l'autre, et suivi de la place disponible
+  try { coteACote = localStorage.getItem(CLE_COTE_A_COTE) === "oui"; } catch { /* stockage indisponible : un seul texte */ }
+  new ResizeObserver(surLargeur).observe(document.querySelector(".editeur"));
   document.querySelectorAll("#barre-outils [data-format]").forEach((b) =>
     b.addEventListener("click", () => formater(b.dataset.format)));
   $("bouton-concentration").addEventListener("click", () => basculerConcentration());
@@ -78,7 +90,7 @@ export function initialiserEditeur() {
     scene.titre = titre.value;
     const etiquette = document.querySelector(`.plan-scene[data-id="${CSS.escape(scene.id)}"] .plan-titre`);
     if (etiquette) etiquette.textContent = titre.value || "Sans titre";
-    marquerModifiee();
+    marquerModifiee({ texte: false });
   });
   titre.addEventListener("keydown", (e) => {
     if (e.key === "Enter") { e.preventDefault(); zoneActive().focus(); }
@@ -140,8 +152,13 @@ export function retrouverPosition({ focus = true } = {}) {
   if (scene && !$("vue-roman").hidden) restaurerCurseur({ focus });
 }
 
+// Le texte où va le clavier : côte à côte, celui où l'on écrit ; sinon, celui qui est affiché
+function modeActif() {
+  if (deuxAffiches && modeAuClavier) return modeAuClavier;
+  return scene && scene.mode === "redige" ? "redige" : "notes";
+}
 function zoneActive() {
-  return scene && scene.mode === "redige" ? zones.redige : zones.notes;
+  return zones[modeActif()];
 }
 
 // =====================================================================
@@ -168,6 +185,7 @@ async function ouvrirScene(id) {
   $("titre-scene").value = scene.titre || "";
   $("editeur-vide").hidden = true;
   $("editeur-plein").hidden = false;
+  modeAuClavier = null; // (côte à côte : le curseur va dans le texte du mode de la scène)
   appliquerMode(scene.mode === "redige" ? "redige" : "notes");
   restaurerCurseur();
   majCompteurs();
@@ -225,22 +243,81 @@ function restaurerCurseur({ focus = true } = {}) {
 // Modes Notes / Rédigé
 // =====================================================================
 
-function changerMode(mode) {
-  if (!scene || scene.mode === mode) { if (scene) zoneActive().focus(); return; }
-  scene.mode = mode;
-  marquerModifiee();
-  appliquerMode(mode);
-  zoneActive().focus();
-  afficherPlan(); // met à jour la petite mention « notes » dans le plan
+// Les boutons Notes / Rédigé / Les deux
+function choisirAffichage(choix) {
+  if (!scene) return;
+  if (choix === "deux") {
+    retenirCoteACote(true);
+    appliquerMode(scene.mode);
+    zoneActive().focus();
+    return;
+  }
+  if (deuxAffiches) retenirCoteACote(false); // Notes ou Rédigé seul : on quitte le côte à côte
+  changerMode(choix);
 }
 
+function retenirCoteACote(oui) {
+  coteACote = oui;
+  try { localStorage.setItem(CLE_COTE_A_COTE, oui ? "oui" : "non"); } catch { /* tant pis : le choix vaut pour cette fois */ }
+}
+
+function changerMode(mode) {
+  if (!scene) return;
+  if (scene.mode !== mode) {
+    scene.mode = mode;
+    marquerModifiee({ texte: false });
+    afficherPlan(); // met à jour la petite mention « notes » dans le plan
+  }
+  appliquerMode(mode);
+  zoneActive().focus();
+}
+
+// Affiche le texte du mode choisi, ou les deux textes côte à côte (si c'est le choix et qu'il y a la place)
 function appliquerMode(mode) {
-  zones.notes.hidden = mode !== "notes";
-  zones.redige.hidden = mode !== "redige";
+  deuxAffiches = coteACote && assezLarge();
+  if (!deuxAffiches) modeAuClavier = null;
+  else if (!modeAuClavier) modeAuClavier = mode;
+  zones.notes.hidden = !deuxAffiches && mode !== "notes";
+  zones.redige.hidden = !deuxAffiches && mode !== "redige";
+  $("vue-roman").classList.toggle("cote-a-cote", deuxAffiches);
+  majIndicateurs();
+  annoncer("mode-affiche", mode);     // (les noms en couleur suivent les textes affichés)
+}
+
+// Le bouton enfoncé (Notes, Rédigé ou Les deux), et le texte où va le clavier
+function majIndicateurs() {
+  const choix = deuxAffiches ? "deux" : modeActif();
   document.querySelectorAll("#barre-outils [data-mode]").forEach((b) =>
-    b.setAttribute("aria-pressed", String(b.dataset.mode === mode)));
-  $("vue-roman").dataset.mode = mode; // sert au style (ex. bouton « puce » visible en mode Notes)
-  annoncer("mode-affiche", mode);     // (les noms en couleur suivent le texte affiché)
+    b.setAttribute("aria-pressed", String(b.dataset.mode === choix)));
+  // Sert au style : bouton « puce » seulement pour les notes, titre de la colonne où l'on écrit
+  $("vue-roman").dataset.mode = modeActif();
+}
+
+function assezLarge() {
+  return document.querySelector(".editeur").clientWidth >= LARGEUR_COTE_A_COTE;
+}
+
+// Côte à côte : cliquer dans l'autre texte y fait aller les boutons de mise en forme
+// (sans changer le mode de la scène : c'est seulement l'endroit où l'on écrit)
+function surFocus(mode) {
+  if (!scene || !deuxAffiches || modeAuClavier === mode) return;
+  modeAuClavier = mode;
+  majIndicateurs();
+}
+
+// La colonne d'écriture a changé de largeur (fenêtre, volets, concentration…)
+function surLargeur() {
+  if (!document.querySelector(".editeur").clientWidth) return; // page d'écriture cachée (frise, bibliothèque…)
+  const large = assezLarge();
+  $("bouton-deux").hidden = !large; // « Les deux » n'est proposé que s'il y a la place
+  if (!scene || !coteACote || large === deuxAffiches) return;
+  // Plus assez de place pour les deux : on garde affiché le texte où l'on écrivait
+  if (!large && modeAuClavier && modeAuClavier !== scene.mode) {
+    scene.mode = modeAuClavier;
+    marquerModifiee({ texte: false });
+    afficherPlan();
+  }
+  appliquerMode(scene.mode);
 }
 
 // =====================================================================
@@ -437,8 +514,10 @@ export function relireMaintenant() {
   relire();
 }
 
-function marquerModifiee() {
-  scene.modifie = Date.now();
+// « texte : false » : seuls le titre ou le mode ont changé. La date de la scène ne bouge pas :
+// la fusion entre appareils ne confond pas ces gestes avec une réécriture du texte.
+function marquerModifiee({ texte = true } = {}) {
+  if (texte) scene.modifie = Date.now();
   modifiee = true;
   // Copie de secours au plus toutes les 0,3 s (et tout de suite si l'onglet se ferme)
   if (!minuterieSecours) minuterieSecours = setTimeout(ecrireSecoursMaintenant, DELAI_SECOURS);
@@ -458,7 +537,7 @@ export async function sauverMaintenant() {
   modifiee = false;
   relire();
   const copie = { ...objet };
-  etat.roman.modifie = copie.modifie;
+  etat.roman.modifie = Math.max(etat.roman.modifie || 0, copie.modifie || 0);
   try {
     await db.lot({ ecrire: { scenes: [copie], romans: [etat.roman] } });
     // Plus besoin de la copie de secours… sauf si l'on a retapé quelque chose entre-temps

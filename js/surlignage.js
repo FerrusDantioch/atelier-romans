@@ -14,6 +14,7 @@
 // Pour rester rapide dans une longue scène, le calque a une ligne par paragraphe,
 // et à chaque frappe on ne refait que les lignes qui ont changé (sans jamais rien retirer de la page :
 // voir majCalque, c'est ce qui garde Ctrl+Z intact).
+// Chaque zone de texte (Notes, Rédigé) a son propre calque : côte à côte, les deux sont colorées.
 // =====================================================================
 
 import { el } from "./outils.js";
@@ -34,13 +35,15 @@ const STYLES_COPIES = [
 let actif = true;
 let noms = [];             // les noms à chercher (ceux des fiches repérables du roman)
 let signature = "";        // les noms ont-ils changé ? (sinon, inutile de tout refaire)
-let lignes = [];           // le texte de chaque ligne du calque, tel qu'il est affiché
-let elements = [];         // l'élément de chaque ligne (dans l'ordre ; les lignes cachées n'y sont plus)
-let aNettoyer = false;     // des lignes cachées ou des noms vidés attendent le ménage
-let zoneSuivie = null;     // la zone de texte (Notes ou Rédigé) dont le calque est la copie
-let derniersStyles = "";
-let demande = 0, toutRefaire = false;
-let bulleSur = null;       // { marque, ligne } : le nom sous lequel la bulle est affichée
+let demande = 0;           // mise à jour prévue au prochain affichage
+let bulleSur = null;       // { copie, marque, morceau } : le nom sous lequel la bulle est affichée
+
+// Les deux calques, un par zone de texte. Pour chacun :
+//   lignes : le texte de chaque ligne du calque, tel qu'il est affiché
+//   elements : l'élément de chaque ligne (dans l'ordre ; les lignes cachées n'y sont plus)
+//   aNettoyer : des lignes cachées ou des noms vidés attendent le ménage
+//   construit : le calque est rempli (il est vidé quand sa zone de texte est cachée)
+const copies = [];
 
 const $ = (id) => document.getElementById(id);
 
@@ -55,25 +58,32 @@ export function initialiserSurlignage() {
     actif = e.target.checked;
     try { localStorage.setItem(CLE_CHOIX, actif ? "oui" : "non"); } catch { /* tant pis : le choix vaut pour cette fois */ }
     cacherBulle();
-    planifier(true);
+    planifier(null, true);
   });
 
-  for (const id of ["texte-notes", "texte-redige"]) {
-    const zone = $(id);
-    zone.addEventListener("input", () => { cacherBulle(); planifier(); });
-    zone.addEventListener("scroll", suivreDefilement);
-    zone.addEventListener("click", (e) => surClic(e, zone));
+  for (const mode of ["notes", "redige"]) {
+    const zone = $("texte-" + mode), calque = $("calque-" + mode);
+    const copie = {
+      zone, calque, interieur: calque.querySelector(".calque-texte"),
+      lignes: [], elements: [], aNettoyer: false, construit: false, signature: null, styles: "",
+      aFaire: false, toutRefaire: false,
+    };
+    copies.push(copie);
+    zone.addEventListener("input", () => { cacherBulle(); planifier(copie); });
+    zone.addEventListener("scroll", () => suivreDefilement(copie));
+    zone.addEventListener("click", (e) => surClic(e, copie));
     zone.addEventListener("keydown", (e) => { if (!["Shift", "Control", "Alt", "Meta"].includes(e.key)) cacherBulle(); });
     // On ne tape plus dans ce texte : le moment de faire le ménage du calque, sans gêner Ctrl+Z
-    zone.addEventListener("blur", () => { if (aNettoyer) planifier(true); });
+    zone.addEventListener("blur", () => { if (copie.aNettoyer) planifier(copie, true); });
     // Taille changée (fenêtre, volets, concentration, barre de défilement…) : les lignes se recoupent.
     // Deux surveillances : la place du texte (une barre de défilement qui apparaît la réduit),
     // et la taille totale (sur grand écran, élargir la fenêtre n'élargit que les marges du texte).
-    new ResizeObserver(() => planifier()).observe(zone);
-    new ResizeObserver(() => planifier()).observe(zone, { box: "border-box" });
+    new ResizeObserver(() => planifier(copie)).observe(zone);
+    new ResizeObserver(() => planifier(copie)).observe(zone, { box: "border-box" });
   }
-  ecouter("scene-affichee", () => { cacherBulle(); planifier(true); });
-  ecouter("mode-affiche", () => { cacherBulle(); planifier(true); });
+  ecouter("scene-affichee", () => { cacherBulle(); planifier(null, true); });
+  // (Notes, Rédigé ou les deux : chaque calque regarde si sa zone de texte est affichée)
+  ecouter("mode-affiche", () => { cacherBulle(); planifier(); });
   ecouter("fiches-changees", () => planifier()); // (tout est refait seulement si un nom a changé)
 
   const bulle = $("bulle-noms");
@@ -88,15 +98,28 @@ export function initialiserSurlignage() {
   });
 }
 
-function planifier(tout = false) {
-  if (tout) toutRefaire = true;
+// Prévoit la mise à jour d'un calque (ou des deux, sans « copie »)
+function planifier(copie = null, tout = false) {
+  for (const c of copie ? [copie] : copies) {
+    c.aFaire = true;
+    if (tout) c.toutRefaire = true;
+  }
   if (demande) return;
   // Juste avant le prochain affichage (plusieurs frappes très rapprochées ne font qu'une mise à jour)
   demande = requestAnimationFrame(() => {
     demande = 0;
-    const t = toutRefaire;
-    toutRefaire = false;
-    majCalque(t);
+    // Les noms à chercher : refaits seulement si une fiche a changé de nom (ou de catégorie)
+    const fiches = etat.roman ? etat.fiches.filter(estReperable) : [];
+    const sig = fiches.map((f) => [f.id, f.categorie, f.titre, f.champs?.autresNoms || ""].join("\u0001")).join("\u0002");
+    if (sig !== signature) { signature = sig; noms = preparerNoms(fiches); }
+    for (const c of copies) {
+      if (!c.aFaire) continue;
+      // Page d'écriture cachée (frise…) : rien à mesurer, on attend son retour (qui redemande une mise à jour)
+      if (!c.zone.hidden && !c.zone.offsetParent) continue;
+      const tout = c.toutRefaire;
+      c.aFaire = c.toutRefaire = false;
+      majCalque(c, tout, fiches.length > 0);
+    }
   });
 }
 
@@ -104,25 +127,21 @@ function planifier(tout = false) {
 // Le calque
 // =====================================================================
 
-function majCalque(tout) {
-  const calque = $("calque"), interieur = $("calque-texte");
-  const zone = [$("texte-notes"), $("texte-redige")].find((z) => !z.hidden);
-  const fiches = etat.roman ? etat.fiches.filter(estReperable) : [];
-  const visible = actif && !!etat.sceneId && !$("editeur-plein").hidden && !!zone && fiches.length > 0;
+function majCalque(copie, tout, desNoms) {
+  const { zone, calque, interieur } = copie;
+  const visible = actif && desNoms && !!etat.sceneId && !$("editeur-plein").hidden && !zone.hidden;
   calque.hidden = !visible;
   if (!visible) {
-    if (lignes.length) interieur.replaceChildren();
-    lignes = [];
-    elements = [];
-    zoneSuivie = null;
-    cacherBulle();
+    // Zone de texte cachée (ou rien à colorer) : son calque est vidé, il sera refait à son retour
+    if (copie.construit) interieur.replaceChildren();
+    Object.assign(copie, { lignes: [], elements: [], aNettoyer: false, construit: false });
+    if (bulleSur?.copie === copie) cacherBulle();
     return;
   }
-  if (zone !== zoneSuivie) { zoneSuivie = zone; tout = true; }
-  // Les noms à chercher : refaits seulement si une fiche a changé de nom (ou de catégorie)
-  const sig = fiches.map((f) => [f.id, f.categorie, f.titre, f.champs?.autresNoms || ""].join("\u0001")).join("\u0002");
-  if (sig !== signature) { signature = sig; noms = preparerNoms(fiches); tout = true; }
-  copierStyles(zone);
+  if (!copie.construit || copie.signature !== signature) tout = true;
+  copie.construit = true;
+  copie.signature = signature;
+  copierStyles(copie);
   const nouvelles = zone.value.split("\n");
 
   // Tout refaire (autre scène, autre mode, autres noms…) : on cherche dans tout le texte d'un coup
@@ -130,11 +149,11 @@ function majCalque(tout) {
   if (tout) {
     const parLigne = repartir(nomsDansLeTexte(zone.value, noms), nouvelles);
     const morceau = document.createDocumentFragment();
-    elements = nouvelles.map((texte, i) => morceau.appendChild(remplirLigne(document.createElement("div"), texte, parLigne[i])));
+    copie.aNettoyer = false;
+    copie.elements = nouvelles.map((texte, i) => morceau.appendChild(remplirLigne(copie, document.createElement("div"), texte, parLigne[i])));
     interieur.replaceChildren(morceau);
-    lignes = nouvelles;
-    aNettoyer = false;
-    suivreDefilement();
+    copie.lignes = nouvelles;
+    suivreDefilement(copie);
     return;
   }
 
@@ -143,19 +162,20 @@ function majCalque(tout) {
   // tape en petits morceaux, et Ctrl+Z n'annulerait plus qu'une lettre à la fois. On réécrit donc le texte
   // des lignes existantes, on en ajoute au besoin, et une ligne en trop est seulement cachée
   // (le ménage se fait au prochain « tout refaire »).
+  const { lignes, elements } = copie;
   const max = Math.min(lignes.length, nouvelles.length);
   let debut = 0, fin = 0;
   while (debut < max && lignes[debut] === nouvelles[debut]) debut++;
   while (fin < max - debut && lignes[lignes.length - 1 - fin] === nouvelles[nouvelles.length - 1 - fin]) fin++;
   const finAncien = lignes.length - fin, finNouveau = nouvelles.length - fin;
   const communes = Math.min(finAncien, finNouveau) - debut;
-  for (let i = debut; i < debut + communes; i++) remplirLigne(elements[i], nouvelles[i], nomsDansLeTexte(nouvelles[i], noms));
+  for (let i = debut; i < debut + communes; i++) remplirLigne(copie, elements[i], nouvelles[i], nomsDansLeTexte(nouvelles[i], noms));
   if (finNouveau > finAncien) {
     // Des lignes en plus : ajoutées juste avant la première ligne restée identique à la fin
     const suivante = elements[finAncien] || null;
     const ajout = [];
     for (let i = debut + communes; i < finNouveau; i++) {
-      const ligne = remplirLigne(document.createElement("div"), nouvelles[i], nomsDansLeTexte(nouvelles[i], noms));
+      const ligne = remplirLigne(copie, document.createElement("div"), nouvelles[i], nomsDansLeTexte(nouvelles[i], noms));
       interieur.insertBefore(ligne, suivante);
       ajout.push(ligne);
     }
@@ -163,10 +183,10 @@ function majCalque(tout) {
   } else if (finAncien > finNouveau) {
     // Des lignes en moins : cachées
     for (const ligne of elements.splice(debut + communes, finAncien - finNouveau)) ligne.hidden = true;
-    aNettoyer = true;
+    copie.aNettoyer = true;
   }
-  lignes = nouvelles;
-  suivreDefilement();
+  copie.lignes = nouvelles;
+  suivreDefilement(copie);
 }
 
 // Les noms trouvés dans tout le texte, rangés par ligne (positions comptées depuis le début de leur ligne)
@@ -187,7 +207,7 @@ function repartir(trouves, lignesDuTexte) {
 // Écrit une ligne (un paragraphe) du calque, avec ses noms soulignés.
 // Une ligne est toujours faite ainsi : texte, nom, texte, nom, …, texte. On réutilise ce qui existe
 // (on change seulement les textes) ; un nom en trop devient vide, il resservira plus tard.
-function remplirLigne(ligne, texte, trouves) {
+function remplirLigne(copie, ligne, texte, trouves) {
   const noeuds = ligne.childNodes;
   if (!noeuds.length) ligne.append(document.createTextNode(""));
   for (let n = (noeuds.length - 1) / 2; n < trouves.length; n++) {
@@ -209,7 +229,7 @@ function remplirLigne(ligne, texte, trouves) {
       ecrire(noeuds[2 * j + 2], texte.slice(n.fin, trouves[j + 1] ? trouves[j + 1].debut : texte.length));
     } else {
       ecrire(marque.firstChild, "");
-      if (marque.className !== "vide") { marque.className = "vide"; delete marque.dataset.fiches; aNettoyer = true; }
+      if (marque.className !== "vide") { marque.className = "vide"; delete marque.dataset.fiches; copie.aNettoyer = true; }
       ecrire(noeuds[2 * j + 2], "");
     }
   }
@@ -217,14 +237,28 @@ function remplirLigne(ligne, texte, trouves) {
 }
 
 // Le calque prend exactement la place, la police et les marges de la zone de texte
-// (sans sa barre de défilement : sinon les lignes ne seraient pas coupées au même endroit)
-function copierStyles(zone) {
+// (sans sa barre de défilement : sinon les lignes ne seraient pas coupées au même endroit).
+// La place est prise au centième de pixel près : côte à côte, une colonne mesure par exemple
+// 452,4 pixels, et un calque arrondi à 452 couperait parfois ses lignes une lettre plus loin.
+function copierStyles(copie) {
+  const { zone, calque, interieur } = copie;
   const cs = getComputedStyle(zone);
-  const place = [zone.offsetLeft + zone.clientLeft, zone.offsetTop + zone.clientTop, zone.clientWidth, zone.clientHeight];
+  const boite = zone.getBoundingClientRect();
+  const parent = zone.offsetParent, cadre = parent.getBoundingClientRect();
+  const [gauche, droite, haut, bas] = ["Left", "Right", "Top", "Bottom"].map((c) => parseFloat(cs[`border${c}Width`]) || 0);
+  // L'épaisseur des barres de défilement (en pixels entiers : un écart d'un pixel n'est qu'un arrondi)
+  const barre = (n) => (n >= 2 ? n : 0);
+  const barreVerticale = barre(zone.offsetWidth - Math.round(gauche + droite) - zone.clientWidth);
+  const barreHorizontale = barre(zone.offsetHeight - Math.round(haut + bas) - zone.clientHeight);
+  const place = [
+    boite.left - cadre.left - parent.clientLeft + gauche,
+    boite.top - cadre.top - parent.clientTop + haut,
+    boite.width - gauche - droite - barreVerticale,
+    boite.height - haut - bas - barreHorizontale,
+  ];
   const styles = STYLES_COPIES.map((p) => cs[p]).join("|") + "|" + place.join("|");
-  if (styles === derniersStyles) return;
-  derniersStyles = styles;
-  const calque = $("calque"), interieur = $("calque-texte");
+  if (styles === copie.styles) return;
+  copie.styles = styles;
   calque.style.left = place[0] + "px";
   calque.style.top = place[1] + "px";
   calque.style.width = place[2] + "px";
@@ -233,22 +267,22 @@ function copierStyles(zone) {
 }
 
 // Le calque défile avec le texte (et la bulle suit son nom)
-function suivreDefilement() {
-  if (!zoneSuivie) return;
-  const calque = $("calque");
-  calque.scrollTop = zoneSuivie.scrollTop;
-  calque.scrollLeft = zoneSuivie.scrollLeft;
-  if (bulleSur) placerBulle();
+function suivreDefilement(copie) {
+  if (!copie.construit) return;
+  copie.calque.scrollTop = copie.zone.scrollTop;
+  copie.calque.scrollLeft = copie.zone.scrollLeft;
+  if (bulleSur?.copie === copie) placerBulle();
 }
 
 // =====================================================================
 // La bulle : toucher un nom coloré propose d'ouvrir sa fiche
 // =====================================================================
 
-function surClic(e, zone) {
+function surClic(e, copie) {
   cacherBulle();
-  if (!actif || zone !== zoneSuivie || $("calque").hidden || zone.selectionStart !== zone.selectionEnd) return;
-  const trouve = marqueSous(zone, e.clientX, e.clientY);
+  const { zone } = copie;
+  if (!actif || !copie.construit || copie.calque.hidden || zone.selectionStart !== zone.selectionEnd) return;
+  const trouve = marqueSous(copie, e.clientX, e.clientY);
   if (!trouve) return;
   const ids = trouve.marque.dataset.fiches.split(" ").filter((id) => trouverFiche(id));
   if (!ids.length) return;
@@ -268,15 +302,16 @@ function surClic(e, zone) {
 }
 
 // Le nom coloré qui se trouve sous le point touché (dans la ligne où le curseur vient d'arriver)
-function marqueSous(zone, x, y) {
+function marqueSous(copie, x, y) {
+  const { zone } = copie;
   let numero = 0;
   for (let i = zone.value.indexOf("\n"); i >= 0 && i < zone.selectionStart; i = zone.value.indexOf("\n", i + 1)) numero++;
-  const ligne = elements[numero];
+  const ligne = copie.elements[numero];
   if (!ligne) return null;
   for (const marque of ligne.querySelectorAll("mark:not(.vide)")) {
     const rects = [...marque.getClientRects()];
     const r = rects.findIndex((b) => x >= b.left - 2 && x <= b.right + 2 && y >= b.top - 2 && y <= b.bottom + 2);
-    if (r >= 0) return { marque, morceau: r };
+    if (r >= 0) return { copie, marque, morceau: r };
   }
   return null;
 }
@@ -284,12 +319,13 @@ function marqueSous(zone, x, y) {
 // La bulle se place juste sous le nom (ou au-dessus, s'il est tout en bas)
 function placerBulle() {
   const bulle = $("bulle-noms");
-  const { marque, morceau } = bulleSur;
+  const { copie, marque, morceau } = bulleSur;
   const rects = marque.isConnected ? [...marque.getClientRects()] : [];
   const r = rects[morceau] || rects[0];
+  // Le nom est sorti de la partie visible de son texte (texte qui défile) : la bulle disparaît
+  const vue = copie.calque.getBoundingClientRect();
+  if (!r || r.bottom < vue.top || r.top > vue.bottom) { cacherBulle(); return; }
   const boite = $("zone-ecriture").getBoundingClientRect();
-  // Le nom est sorti de la zone visible (texte qui défile) : la bulle disparaît
-  if (!r || r.bottom < boite.top || r.top > boite.bottom) { cacherBulle(); return; }
   const largeur = bulle.offsetWidth, hauteur = bulle.offsetHeight;
   let haut = r.bottom - boite.top + 6;
   if (haut + hauteur > boite.height - 8) haut = r.top - boite.top - hauteur - 6;
