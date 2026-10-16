@@ -469,12 +469,12 @@ body.mode-ecriture main{ flex:1; min-height:0; }
   caret-color:var(--halo);
   tab-size:4;
 }
-/* La marge du bas (pour remonter la dernière ligne vers le milieu) se règle sur la place réelle du texte,
-   pas sur la hauteur de l'écran : sinon, quand la barre de recherche prend de la place (téléphone),
-   la zone de texte serait plus haute que sa place et déborderait sur la barre du bas. */
+/* La marge du bas (pour remonter la dernière ligne vers le milieu) ne dépasse jamais la moitié de la place
+   réelle du texte : sinon, quand la barre de recherche prend de la place (téléphone), la zone de texte
+   serait plus haute que sa place et déborderait sur la barre du bas. (cqh : la hauteur de .zone-ecriture) */
 @supports (padding-bottom:1cqh){
   .zone-ecriture{ container-type:size; }
-  .texte{ padding-bottom:35cqh; }
+  .texte{ padding-bottom:min(35vh, 45cqh); }
 }
 .texte:focus, .texte:focus-visible{ outline:none; }
 .texte::placeholder{ color:color-mix(in srgb, var(--discret) 60%, transparent); }
