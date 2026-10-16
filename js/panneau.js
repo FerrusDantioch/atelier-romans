@@ -56,7 +56,6 @@ const vue = {
 };
 
 let ficheModifiee = null;   // fiche en attente d'enregistrement
-let epingleeEnRetard = false; // la fiche épinglée attend d'être redessinée (voir sauverFiche)
 let minuterie = null;
 let minuterieScenes = null;
 
@@ -130,20 +129,9 @@ export function initialiserPanneau() {
   $("bouton-fiches").addEventListener("click", () => basculerVolet());
   $("fermer-panneau").addEventListener("click", () => { basculerVolet(false); revenirAuTexte(); });
 
-  // On quitte un champ de fiche : la fiche épinglée, si elle a changé, est redessinée
-  panneau.addEventListener("focusout", () => {
-    setTimeout(() => { if (epingleeEnRetard && !champEnCours() && etat.roman) { epingleeEnRetard = false; afficherEpinglee(); } }, 0);
-  });
-
   // Filet de sécurité : enregistrer la fiche si la page se cache ou se ferme
   document.addEventListener("visibilitychange", () => { if (document.hidden) sauverFiche(); });
   window.addEventListener("pagehide", () => sauverFiche());
-}
-
-// Le clavier est-il dans un champ où l'on écrit (une fiche en modification) ?
-function champEnCours() {
-  const a = document.activeElement;
-  return !!a && (a.tagName === "TEXTAREA" || (a.tagName === "INPUT" && a.type === "text")) && $("panneau").contains(a);
 }
 
 // Ouvre ou ferme le volet (écrans moyens et petits)
@@ -260,7 +248,6 @@ export function afficherPanneau() {
 
 // La fiche épinglée, toujours visible en haut du panneau
 function afficherEpinglee() {
-  epingleeEnRetard = false;
   const zone = $("epinglee");
   const fiche = trouverFiche(etat.roman.ficheEpinglee);
   zone.replaceChildren();
@@ -604,12 +591,7 @@ export async function sauverFiche() {
   if (!trouverFiche(fiche.id)) return true; // supprimée entre-temps
   try {
     await db.ecrire("fiches", { ...fiche, champs: { ...fiche.champs } });
-    // La fiche épinglée suit les changements. (Pas pendant que l'on écrit dans un champ : la redessiner
-    // retirerait des éléments de la page, et Chrome couperait alors l'annulation Ctrl+Z de ce champ ;
-    // elle est redessinée dès que l'on quitte le champ.)
-    if (etat.roman && etat.roman.ficheEpinglee === fiche.id) {
-      if (champEnCours()) epingleeEnRetard = true; else afficherEpinglee();
-    }
+    if (etat.roman && etat.roman.ficheEpinglee === fiche.id) afficherEpinglee(); // la fiche épinglée suit les changements
     annoncer("fiches-changees"); // (nom changé : les fiches repérées dans le texte suivent)
     return true;
   } catch (erreur) {

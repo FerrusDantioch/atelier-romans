@@ -115,7 +115,9 @@ async function actualiser() {
 async function telecharger(f) {
   let reponse;
   try {
-    reponse = await fetch(f, { cache: "no-cache" }); // toujours vérifié auprès du serveur (inchangé : pas retéléchargé)
+    // (toujours le fichier lui-même, jamais une copie : une simple vérification par la date du fichier
+    // laisserait passer un fichier remplacé par un plus ancien, ou un autre site servi à la même adresse)
+    reponse = await fetch(f, { cache: "no-store" });
   } catch {
     throw new Error("le serveur ne répond pas");
   }
@@ -163,7 +165,7 @@ async function repondre(demande, cle) {
   }
   try {
     // 1. Version fraîche, si le serveur répond assez vite
-    const reponse = await avecDelai(fetch(demande, { cache: "no-cache" }), DELAI_RESEAU);
+    const reponse = await avecDelai(fetch(demande, { cache: "no-store" }), DELAI_RESEAU);
     injoignableJusqua = 0;
     if (reponse.ok) return avecLeBonType(reponse, cle);
     // Le serveur répond, mais n'a pas ce fichier (autre dossier servi ?) : la copie, s'il y en a une
