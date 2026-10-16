@@ -12,7 +12,7 @@ import {
   etat, trouverFiche, fichesDe, annoncer, ecouter, deplacerEvenement, evenementsDe, chapitresTries, scenesDe, trouverScene,
 } from "./etat.js";
 import { revenirAuTexte, allerAuNom } from "./editeur.js";
-import { estReperable, passagesDeLaScene } from "./reperage.js";
+import { estReperable, passagesDeLaScene, toutEstLu, quandToutEstLu } from "./reperage.js";
 
 // « Autres noms » : surnoms qui servent aussi à repérer la fiche dans le texte (voir reperage.js)
 const AUTRES_NOMS = ["autresNoms", "Autres noms"];
@@ -102,8 +102,9 @@ export function initialiserPanneau() {
     else if (action === "aller-au-nom") { basculerVolet(false); allerAuNom(id, b.dataset.fiche); } // (petit écran : le volet laisse voir le texte)
   });
 
-  // « Nommé dans ces scènes » suit l'écriture, l'ouverture d'une autre scène et les changements du plan
-  for (const id of ["texte-notes", "texte-redige"]) {
+  // « Nommé dans ces scènes » suit l'écriture (et le titre de la scène), l'ouverture d'une autre scène
+  // et les changements du plan
+  for (const id of ["texte-notes", "texte-redige", "titre-scene"]) {
     $(id).addEventListener("input", () => {
       clearTimeout(minuterieScenes);
       minuterieScenes = setTimeout(majSceneOuverte, DELAI_SCENES);
@@ -396,8 +397,24 @@ function vueEvenementsLies(fiche) {
 // Toucher une scène l'ouvre au passage où il est nommé ; toucher la scène ouverte va au passage suivant.
 // La scène ouverte a toujours sa ligne (cachée si le nom n'y est pas) : pendant que l'on écrit,
 // elle est seulement mise à jour (voir majSceneOuverte).
+// Si le roman n'est pas encore tout lu (juste après son ouverture, ou un nom de fiche changé),
+// « Recherche dans le roman… » s'affiche un instant, puis la liste se remplit : elle est seulement
+// ajoutée, sans rien retirer de la page (on peut être en train d'écrire à ce moment-là).
 function vueScenesNommees(fiche) {
   if (!estReperable(fiche)) return null;
+  const pret = toutEstLu();
+  const bloc = el("div", { class: "fiche-liens scenes-nommees-bloc", "data-fiche": fiche.id },
+    el("p", { class: "etiquette" }, "Nommé dans ces scènes"),
+    el("p", { class: "discret petit scenes-nommees-attente", hidden: pret }, "Recherche dans le roman…"),
+    el("p", { class: "discret petit scenes-nommees-vide", hidden: true }, "Pas encore nommé dans le texte du roman."),
+    el("ol", { class: "scenes-nommees" }),
+  );
+  if (pret) remplirScenesNommees(bloc, fiche);
+  else quandToutEstLu(() => { if (bloc.isConnected && trouverFiche(fiche.id)) remplirScenesNommees(bloc, fiche); });
+  return bloc;
+}
+
+function remplirScenesNommees(bloc, fiche) {
   const chapitres = chapitresTries().map((c) => {
     const lignes = scenesDe(c.id)
       .map((s) => ({ s, n: comptes(fiche.id, s) }))
@@ -409,12 +426,9 @@ function vueScenesNommees(fiche) {
       el("ul", {}, lignes),
     );
   }).filter(Boolean);
-  const aucune = chapitres.every((c) => c.hidden);
-  return el("div", { class: "fiche-liens scenes-nommees-bloc", "data-fiche": fiche.id },
-    el("p", { class: "etiquette" }, "Nommé dans ces scènes"),
-    el("p", { class: "discret petit scenes-nommees-vide", hidden: !aucune }, "Pas encore nommé dans le texte du roman."),
-    el("ol", { class: "scenes-nommees" }, chapitres),
-  );
+  bloc.querySelector(".scenes-nommees").append(...chapitres);
+  bloc.querySelector(".scenes-nommees-vide").hidden = !chapitres.every((c) => c.hidden);
+  bloc.querySelector(".scenes-nommees-attente").hidden = true;
 }
 
 function ligneScene(fiche, s, n) {
@@ -456,6 +470,8 @@ function majSceneOuverte() {
   const n = comptes(bloc.dataset.fiche, s);
   const texte = li.querySelector(".scene-nommee-nombre").firstChild;
   if (texte.data !== nombreDeFois(n)) texte.data = nombreDeFois(n);
+  const titre = li.querySelector(".scene-nommee-titre").firstChild; // (scène renommée dans son titre, au-dessus du texte)
+  if (titre.data !== (s.titre || "Sans titre")) titre.data = s.titre || "Sans titre";
   const bouton = li.querySelector(".scene-nommee");
   if (bouton.title !== detailDesFois(n, true)) bouton.title = detailDesFois(n, true);
   if (li.hidden !== !n.total) li.hidden = !n.total;

@@ -262,10 +262,14 @@ function nomsDuRoman() {
 // Les scènes sont lues à l'avance, par petits morceaux, quand le navigateur n'a rien d'autre à faire :
 // ainsi la première fiche ouverte n'attend pas (tout un gros roman d'un coup : une demi-seconde).
 let lectureEnCours = false;
+let enAttente = []; // ce qui attend que tout le roman soit lu (voir quandToutEstLu)
 function lireEnAvance() {
   if (lectureEnCours) return;
   lectureEnCours = true;
-  const plusTard = window.requestIdleCallback || ((f) => setTimeout(() => f({ timeRemaining: () => 8 }), 50));
+  // (navigateurs sans « requestIdleCallback », comme Safari : des morceaux de 8 millisecondes,
+  // entre lesquels le navigateur répond au clavier et au toucher)
+  const plusTard = window.requestIdleCallback
+    || ((f) => setTimeout(() => { const fin = performance.now() + 8; f({ timeRemaining: () => fin - performance.now() }); }, 1));
   const morceau = (temps) => {
     nomsDuRoman(); // (des noms ont changé depuis : tout est à relire)
     for (const s of etat.roman ? etat.scenes : []) {
@@ -275,6 +279,9 @@ function lireEnAvance() {
       passagesDeLaScene(s);
     }
     lectureEnCours = false;
+    const attendaient = enAttente;
+    enAttente = [];
+    for (const f of attendaient) f();
   };
   plusTard(morceau);
 }
@@ -283,6 +290,24 @@ function dejaLue(s) {
   return !!deja && deja.notes === (s.notes || "") && deja.texte === (s.texte || "");
 }
 
+// Toutes les scènes sont-elles lues ? S'il en reste peu (par exemple la scène que l'on vient de quitter),
+// elles sont lues tout de suite. S'il en reste beaucoup (juste après l'ouverture d'un gros roman,
+// ou un nom de fiche changé), non : la lecture à l'avance s'en charge, sans figer l'écran.
+const A_LIRE_TOUT_DE_SUITE = 60000; // en caractères (environ 10 000 mots : quelques dizaines de millisecondes)
+export function toutEstLu() {
+  nomsDuRoman();
+  if (!etat.roman) return true;
+  const aLire = etat.scenes.filter((s) => s.id !== etat.sceneId && !dejaLue(s));
+  const taille = aLire.reduce((t, s) => t + (s.texte || "").length + (s.notes || "").length, 0);
+  if (taille > A_LIRE_TOUT_DE_SUITE) return false;
+  for (const s of aLire) passagesDeLaScene(s);
+  return true;
+}
+// Fait quelque chose dès que tout le roman est lu (la lecture se fait à l'avance, par petits morceaux)
+export function quandToutEstLu(f) {
+  enAttente.push(f);
+  lireEnAvance();
+}
 // Les passages d'une scène où chaque fiche est nommée, dans le texte rédigé et dans les notes.
 // « textes » : pour la scène ouverte, le texte des zones d'écriture (plus récent que celui enregistré).
 // (Le plus long nom l'emporte, comme pour les noms en couleur : « Mère Corbeau » ne nomme pas la

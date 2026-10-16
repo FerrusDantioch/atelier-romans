@@ -224,6 +224,9 @@ Ouvrez un roman depuis la Bibliothèque. L'écran se divise en trois colonnes :
   - Comme après une recherche, le nom sélectionné serait remplacé si vous tapiez aussitôt :
     un clic dans le texte, ou une flèche, retire la sélection (`Ctrl+Z` rétablit le nom au besoin).
   - La liste suit l'écriture : un nom tapé dans la scène ouverte y compte un instant après.
+  - Juste après l'ouverture d'un gros roman (ou après avoir changé un nom de fiche), la liste peut
+    mettre un instant à venir : « Recherche dans le roman… ». Le roman est lu en arrière-plan,
+    sans jamais bloquer l'écriture.
   - Pas de liste pour la fiche épinglée (gardée courte), ni pour les événements (ils ont leurs « Concernés »).
 - **Fiche épinglée** : elle reste affichée en haut du panneau, quel que soit l'onglet.
   Le premier personnage principal s'épingle tout seul ; « 📌 Épingler » en choisit une autre ;
