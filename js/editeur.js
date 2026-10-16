@@ -12,13 +12,14 @@
 // =====================================================================
 
 import * as db from "./db.js";
-import { el, nombre, pluriel, dateFichier } from "./outils.js";
+import { el, nombre, pluriel, dateFichier, hauteurDansLeTexte } from "./outils.js";
 import { ouvrirDialogue, informer } from "./dialogues.js";
 import {
   etat, trouverScene, scenesDansLOrdre, recompterScene, motsScene, motsChapitre, motsRoman, ecouter, annoncer,
 } from "./etat.js";
 import { afficherPlan, majComptes, marquerActive, ajouterChapitre } from "./plan.js";
 import { oublierHistorique } from "./annulation.js";
+import { passagesDeLaScene } from "./reperage.js";
 
 // Les deux zones de texte : une par mode (chacune garde son curseur ; pour Ctrl+Z, voir annulation.js)
 const zones = {};
@@ -238,6 +239,39 @@ function restaurerCurseur({ focus = true } = {}) {
     if (zone.hidden) defilements.set(zone, defilement); else zone.scrollTop = defilement;
   }
   if (focus) zoneActive().focus({ preventScroll: true });
+}
+
+// =====================================================================
+// Aller à un nom (depuis une fiche : « Nommé dans ces scènes »)
+// =====================================================================
+
+// Ouvre la scène au premier passage où la fiche est nommée (le texte rédigé d'abord, puis les notes).
+// Dans la scène déjà ouverte : au passage qui suit le curseur (après le dernier, de nouveau au premier).
+// Le nom est sélectionné, et sa ligne amenée au tiers de la hauteur du texte.
+// (Si le nom est dans les notes, ce sont elles qui s'affichent, sans changer le mode de la scène.)
+export async function allerAuNom(sceneId, ficheId) {
+  const autreScene = !scene || scene.id !== sceneId;
+  if (autreScene) {
+    await ouvrirScene(sceneId);
+    if (!scene || scene.id !== sceneId) return;
+  }
+  const passages = passagesDeLaScene(scene, { notes: zones.notes.value, texte: zones.redige.value }).get(ficheId);
+  const liste = passages
+    ? [...passages.redige.map((p) => ({ mode: "redige", ...p })), ...passages.notes.map((p) => ({ mode: "notes", ...p }))]
+    : [];
+  if (!liste.length) { zoneActive().focus({ preventScroll: true }); return; } // (le nom vient d'être effacé)
+  let cible = liste[0];
+  if (!autreScene) {
+    const rang = (mode) => (mode === "redige" ? 0 : 1);
+    const ici = modeActif(), curseur = zoneActive().selectionStart;
+    cible = liste.find((p) => rang(p.mode) > rang(ici) || (p.mode === ici && p.debut > curseur)) || liste[0];
+  }
+  modeAuClavier = cible.mode;
+  appliquerMode();
+  const zone = zones[cible.mode];
+  zone.focus({ preventScroll: true });
+  zone.setSelectionRange(cible.debut, cible.fin);
+  zone.scrollTop = Math.max(0, hauteurDansLeTexte(zone, cible.debut) - zone.clientHeight / 3);
 }
 
 // =====================================================================

@@ -25,7 +25,7 @@ import { initialiserSurlignage } from "./surlignage.js";
 import { initialiserFrise, montrerFrise, revenirDeLaFrise, oublierFrise, friseAffichee } from "./frise.js";
 
 // Numéro de version affiché dans « À propos »
-export const VERSION = "1.5.0";
+export const VERSION = "1.6.0";
 
 // Liste des pages (« vues ») de l'application
 const VUES = ["bibliotheque", "roman", "frise", "apropos"];

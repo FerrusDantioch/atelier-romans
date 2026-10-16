@@ -8,8 +8,11 @@
 import * as db from "./db.js";
 import { el, nouvelId } from "./outils.js";
 import { confirmer, informer } from "./dialogues.js";
-import { etat, trouverFiche, fichesDe, annoncer, deplacerEvenement, evenementsDe } from "./etat.js";
-import { revenirAuTexte } from "./editeur.js";
+import {
+  etat, trouverFiche, fichesDe, annoncer, ecouter, deplacerEvenement, evenementsDe, chapitresTries, scenesDe, trouverScene,
+} from "./etat.js";
+import { revenirAuTexte, allerAuNom } from "./editeur.js";
+import { estReperable, passagesDeLaScene } from "./reperage.js";
 
 // « Autres noms » : surnoms qui servent aussi à repérer la fiche dans le texte (voir reperage.js)
 const AUTRES_NOMS = ["autresNoms", "Autres noms"];
@@ -41,6 +44,8 @@ export const CATEGORIES = {
 const CHAMPS_COURTS = ["quand", "autresNoms"];
 const EXEMPLES = { autresNoms: "Surnoms, séparés par des virgules : la Vieille, Corbeau…" };
 const DELAI_SAUVEGARDE = 400;
+// « Nommé dans ces scènes » : mis à jour un instant après la dernière touche (pas à chaque touche)
+const DELAI_SCENES = 600;
 
 // Ce que montre le panneau en ce moment
 const vue = {
@@ -52,6 +57,7 @@ const vue = {
 
 let ficheModifiee = null;   // fiche en attente d'enregistrement
 let minuterie = null;
+let minuterieScenes = null;
 
 const $ = (id) => document.getElementById(id);
 
@@ -93,7 +99,17 @@ export function initialiserPanneau() {
     else if (action === "monter") deplacer(id, -1);
     else if (action === "descendre") deplacer(id, +1);
     else if (action === "voir-frise") annoncer("voir-frise", id || null); // (la frise suit cette fiche, s'il y en a une)
+    else if (action === "aller-au-nom") { basculerVolet(false); allerAuNom(id, b.dataset.fiche); } // (petit écran : le volet laisse voir le texte)
   });
+
+  // « Nommé dans ces scènes » suit l'écriture, l'ouverture d'une autre scène et les changements du plan
+  for (const id of ["texte-notes", "texte-redige"]) {
+    $(id).addEventListener("input", () => {
+      clearTimeout(minuterieScenes);
+      minuterieScenes = setTimeout(majSceneOuverte, DELAI_SCENES);
+    });
+  }
+  for (const annonce of ["scene-affichee", "plan-change", "scene-renommee", "fiches-changees"]) ecouter(annonce, refaireScenesNommees);
 
   // Échap dans le panneau : retour au texte, curseur à sa place
   document.addEventListener("keydown", (e) => {
@@ -334,8 +350,8 @@ function vueLecture(fiche, { compacte }) {
     champs.length
       ? el("dl", { class: "fiche-champs" }, champs)
       : el("p", { class: "discret petit" }, "Fiche vide pour l'instant."),
-    // (la fiche épinglée reste compacte : sans la liste des événements liés)
-    fiche.categorie === "evenement" ? vueConcernes(fiche) : compacte ? null : vueEvenementsLies(fiche),
+    // (la fiche épinglée reste compacte : sans la liste des événements liés, ni celle des scènes)
+    fiche.categorie === "evenement" ? vueConcernes(fiche) : compacte ? null : [vueEvenementsLies(fiche), vueScenesNommees(fiche)],
     el("div", { class: "fiche-actions" },
       el("button", { type: "button", class: "petit-bouton", "data-action": "modifier", "data-id": fiche.id }, "✎ Modifier"),
       epinglee
@@ -374,6 +390,94 @@ function vueEvenementsLies(fiche) {
     el("button", { type: "button", class: "lien-discret petit suivre-frise", "data-action": "voir-frise", "data-id": fiche.id },
       "Suivre sur la frise"),
   );
+}
+
+// Personnage ou lieu : les scènes où il est nommé (texte rédigé ou notes), chapitre par chapitre.
+// Toucher une scène l'ouvre au passage où il est nommé ; toucher la scène ouverte va au passage suivant.
+// La scène ouverte a toujours sa ligne (cachée si le nom n'y est pas) : pendant que l'on écrit,
+// elle est seulement mise à jour (voir majSceneOuverte).
+function vueScenesNommees(fiche) {
+  if (!estReperable(fiche)) return null;
+  const chapitres = chapitresTries().map((c) => {
+    const lignes = scenesDe(c.id)
+      .map((s) => ({ s, n: comptes(fiche.id, s) }))
+      .filter(({ s, n }) => n.total || s.id === etat.sceneId)
+      .map(({ s, n }) => ligneScene(fiche, s, n));
+    if (!lignes.length) return null;
+    return el("li", { class: "scenes-nommees-chapitre", hidden: lignes.every((l) => l.hidden) },
+      el("span", { class: "scenes-nommees-chapitre-titre" }, c.titre || "Sans titre"),
+      el("ul", {}, lignes),
+    );
+  }).filter(Boolean);
+  const aucune = chapitres.every((c) => c.hidden);
+  return el("div", { class: "fiche-liens scenes-nommees-bloc", "data-fiche": fiche.id },
+    el("p", { class: "etiquette" }, "Nommé dans ces scènes"),
+    el("p", { class: "discret petit scenes-nommees-vide", hidden: !aucune }, "Pas encore nommé dans le texte du roman."),
+    el("ol", { class: "scenes-nommees" }, chapitres),
+  );
+}
+
+function ligneScene(fiche, s, n) {
+  const ici = s.id === etat.sceneId;
+  return el("li", { "data-scene": s.id, hidden: !n.total },
+    el("button", {
+      type: "button", class: "scene-nommee" + (ici ? " ici" : ""), "data-action": "aller-au-nom", "data-id": s.id, "data-fiche": fiche.id,
+      "aria-current": ici ? "true" : false, title: detailDesFois(n, ici),
+    },
+      el("span", { class: "scene-nommee-titre" }, s.titre || "Sans titre"),
+      el("span", { class: "scene-nommee-nombre" }, nombreDeFois(n)),
+    ),
+  );
+}
+
+// Combien de fois la fiche est nommée dans une scène (la scène ouverte : son texte tel qu'il est à l'écran)
+function comptes(ficheId, s) {
+  const textes = s.id === etat.sceneId ? { notes: $("texte-notes").value, texte: $("texte-redige").value } : s;
+  const p = passagesDeLaScene(s, textes).get(ficheId);
+  const redige = p ? p.redige.length : 0, notes = p ? p.notes.length : 0;
+  return { redige, notes, total: redige + notes };
+}
+const nombreDeFois = (n) => n.total + " fois" + (n.total && !n.redige ? " (notes)" : "");
+function detailDesFois(n, ici) {
+  const parties = [];
+  if (n.redige) parties.push(`${n.redige} dans le texte rédigé`);
+  if (n.notes) parties.push(`${n.notes} dans les notes`);
+  return parties.join(", ") + (ici ? " — scène ouverte : toucher pour aller au passage suivant" : " — toucher pour y aller");
+}
+
+// Pendant l'écriture : seule la ligne de la scène ouverte peut changer. On change seulement
+// des textes et des attributs, sans rien retirer de la page (Chrome couperait sinon ce que l'on
+// tape en petits morceaux, et Ctrl+Z n'annulerait plus qu'une lettre à la fois).
+function majSceneOuverte() {
+  const bloc = $("contenu-panneau").querySelector(".scenes-nommees-bloc");
+  const s = trouverScene(etat.sceneId);
+  const li = bloc && s && bloc.querySelector(`li[data-scene="${CSS.escape(s.id)}"]`);
+  if (!li) return;
+  const n = comptes(bloc.dataset.fiche, s);
+  const texte = li.querySelector(".scene-nommee-nombre").firstChild;
+  if (texte.data !== nombreDeFois(n)) texte.data = nombreDeFois(n);
+  const bouton = li.querySelector(".scene-nommee");
+  if (bouton.title !== detailDesFois(n, true)) bouton.title = detailDesFois(n, true);
+  if (li.hidden !== !n.total) li.hidden = !n.total;
+  const chapitre = li.closest(".scenes-nommees-chapitre");
+  const chapitreVide = [...chapitre.querySelectorAll("li[data-scene]")].every((x) => x.hidden);
+  if (chapitre.hidden !== chapitreVide) chapitre.hidden = chapitreVide;
+  const vide = bloc.querySelector(".scenes-nommees-vide");
+  const aucune = [...bloc.querySelectorAll(".scenes-nommees-chapitre")].every((x) => x.hidden);
+  if (vide.hidden !== !aucune) vide.hidden = !aucune;
+}
+
+// Autre scène ouverte, plan ou noms changés : la liste est refaite (on n'est pas en train d'écrire)
+function refaireScenesNommees() {
+  clearTimeout(minuterieScenes);
+  const bloc = $("contenu-panneau").querySelector(".scenes-nommees-bloc");
+  if (!bloc) return;
+  const fiche = trouverFiche(bloc.dataset.fiche);
+  const nouveau = fiche && vueScenesNommees(fiche);
+  if (!nouveau) { bloc.remove(); return; }
+  const defilement = bloc.querySelector(".scenes-nommees").scrollTop; // (une longue liste garde sa place)
+  bloc.replaceWith(nouveau);
+  nouveau.querySelector(".scenes-nommees").scrollTop = defilement;
 }
 
 // ---------- Une fiche, en modification ----------

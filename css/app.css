@@ -671,6 +671,28 @@ body.concentration .calque, body.concentration .bulle-noms{ display:none; }
 }
 .pastille:hover{ background:color-mix(in srgb, var(--c) 14%, transparent); }
 .suivre-frise{ justify-self:start; font-size:.8rem; }
+
+/* Fiche : les scènes où le personnage ou le lieu est nommé, chapitre par chapitre */
+.scenes-nommees{ list-style:none; margin:0; padding:0; display:grid; gap:var(--esp-2); max-height:22rem; overflow-y:auto; }
+.scenes-nommees-chapitre-titre{
+  display:block; font:600 .68rem var(--f-titre); letter-spacing:.1em; text-transform:uppercase; color:var(--discret);
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.scenes-nommees ul{
+  list-style:none; margin:2px 0 0 3px; padding:0 0 0 var(--esp-2);
+  border-left:var(--filet) dashed var(--trait); display:grid; gap:1px;
+}
+.scene-nommee{
+  width:100%; display:flex; align-items:baseline; gap:var(--esp-2);
+  background:none; border:0; border-radius:6px; cursor:pointer; text-align:left;
+  padding:4px 8px; color:var(--texte); font:.9rem/1.4 var(--f-texte);
+}
+.scene-nommee:hover{ background:var(--table-haute); }
+/* La scène ouverte (la toucher va au passage suivant) */
+.scene-nommee.ici{ background:color-mix(in srgb, var(--univers) 12%, transparent); box-shadow:inset 3px 0 0 var(--univers); }
+.scene-nommee-titre{ flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.scene-nommee-nombre{ flex:none; font-size:.75rem; color:var(--discret); }
+@media (pointer:coarse){ .scene-nommee{ min-height:40px; align-items:center; } }
 .fiche-actions{ display:flex; flex-wrap:wrap; gap:var(--esp-2); }
 .fiche.compacte .fiche-actions .petit-bouton{ font-size:.78rem; padding:4px 10px; }
 

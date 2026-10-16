@@ -3,9 +3,10 @@
 Application d'écriture de romans tirés des parties de l'Omni-système.
 Elle s'installe comme une application, fonctionne **sans connexion**, et garde tout sur l'ordinateur.
 
-**Version 1.5** — les sept étapes prévues sont terminées, plus l'étape 8 (les fiches repérées dans le texte),
+**Version 1.6** — les sept étapes prévues sont terminées, plus l'étape 8 (les fiches repérées dans le texte),
 l'étape 9 (écrire sur deux appareils : la fusion), l'étape 10 (la frise des événements),
-l'étape 11 (les noms en couleur dans le texte) et l'étape 12 (les notes à côté du texte rédigé).
+l'étape 11 (les noms en couleur dans le texte), l'étape 12 (les notes à côté du texte rédigé)
+et l'étape 13 (sur chaque fiche, les scènes où elle est nommée).
 
 **En ligne : https://ferrusdantioch.github.io/atelier-romans/** — s'ouvre aussi sur téléphone,
 sans rien installer d'autre (voir « L'Atelier en ligne » plus bas).
@@ -24,6 +25,8 @@ sans rien installer d'autre (voir « L'Atelier en ligne » plus bas).
 - **Dans cette scène** : les personnages et lieux nommés dans la scène s'affichent d'eux-mêmes
   à côté du texte, prêts à être consultés d'un clic.
 - **Noms en couleur** : ces noms sont aussi soulignés directement dans le texte ; les toucher ouvre leur fiche.
+- **Nommé dans ces scènes** : sur la fiche d'un personnage ou d'un lieu, les scènes où il est nommé ;
+  en toucher une l'ouvre, le nom sélectionné.
 - **Export PDF** d'une scène, d'un chapitre ou du roman, mis en page comme un livre.
 - **Sauvegarde automatique** permanente, copie de secours si l'onglet se ferme en pleine phrase,
   et **export / import** de toutes les données dans un fichier, avec un rappel doux.
@@ -208,6 +211,20 @@ Ouvrez un roman depuis la Bibliothèque. L'écran se divise en trois colonnes :
   - Un nom coupé par un retour à la ligne (« Mère » en fin de ligne, « Corbeau » au début de la suivante)
     n'est pas coloré en entier : seul « Corbeau » l'est, comme un nom d'un seul mot.
     Il compte bien, lui, dans « Dans cette scène ».
+- **Nommé dans ces scènes** (en bas de la fiche d'un personnage ou d'un lieu) : les scènes où il est
+  nommé, chapitre par chapitre, avec le nombre de fois (« 2 fois » ; « 1 fois (notes) » s'il n'est
+  nommé que dans les notes). Le survol en donne le détail (texte rédigé, notes).
+  Mêmes règles que pour les noms en couleur : « Mère Corbeau » ne compte que pour Mère Corbeau ;
+  « Corbeau » tout seul compte pour chaque fiche qui porte ce mot.
+  - **Toucher une scène** l'ouvre et y sélectionne le nom ; sa ligne est amenée vers le haut du texte
+    (sur téléphone, le volet des fiches se referme pour laisser voir le texte).
+    Si le nom n'est que dans les notes, ce sont elles qui s'affichent (le mode de la scène ne change pas).
+  - **La scène ouverte** est marquée d'un trait de couleur : la toucher de nouveau mène au passage
+    suivant (le texte rédigé d'abord, puis les notes), et après le dernier, de nouveau au premier.
+  - Comme après une recherche, le nom sélectionné serait remplacé si vous tapiez aussitôt :
+    un clic dans le texte, ou une flèche, retire la sélection (`Ctrl+Z` rétablit le nom au besoin).
+  - La liste suit l'écriture : un nom tapé dans la scène ouverte y compte un instant après.
+  - Pas de liste pour la fiche épinglée (gardée courte), ni pour les événements (ils ont leurs « Concernés »).
 - **Fiche épinglée** : elle reste affichée en haut du panneau, quel que soit l'onglet.
   Le premier personnage principal s'épingle tout seul ; « 📌 Épingler » en choisit une autre ;
   « Replier » la réduit à son nom.
@@ -427,7 +444,7 @@ js/plan.js          le plan : chapitres et scènes
 js/editeur.js       l'écriture : modes, mise en forme, enregistrement, session, concentration
 js/panneau.js       le panneau de consultation : onglets, fiches, épinglage, événements
 js/recherche.js     la recherche rapide Ctrl+K
-js/reperage.js      « Dans cette scène » : les fiches nommées dans le texte
+js/reperage.js      les fiches nommées dans le texte (« Dans cette scène », « Nommé dans ces scènes »)
 js/surlignage.js    les noms en couleur dans le texte, et la bulle qui ouvre leur fiche
 js/frise.js         la frise des événements et « Qui apparaît où »
 js/export-pdf.js    l'export PDF (le livre à imprimer)

@@ -17,20 +17,13 @@
 // Chaque zone de texte (Notes, Rédigé) a son propre calque : côte à côte, les deux sont colorées.
 // =====================================================================
 
-import { el } from "./outils.js";
+import { el, STYLES_DU_TEXTE, placeDuTexte } from "./outils.js";
 import { etat, ecouter, trouverFiche } from "./etat.js";
 import { CATEGORIES, ouvrirFiche, basculerVolet } from "./panneau.js";
-import { estReperable, preparerNoms, nomsDansLeTexte } from "./reperage.js";
+import { estReperable, preparerNoms, nomsDansLeTexte, signatureDesNoms } from "./reperage.js";
 
 // Le choix « noms en couleur », propre à cet appareil (gardé dans le navigateur)
 const CLE_CHOIX = "atelier-surlignage";
-// Ce qui doit être identique dans le calque et dans la zone de texte pour que les lignes tombent pareil
-const STYLES_COPIES = [
-  "fontFamily", "fontSize", "fontWeight", "fontStyle", "fontStretch", "fontVariant", "fontKerning",
-  "fontFeatureSettings", "fontVariationSettings", "lineHeight", "letterSpacing", "wordSpacing", "tabSize",
-  "textIndent", "textTransform", "textRendering", "whiteSpace", "overflowWrap", "wordBreak", "hyphens",
-  "direction", "paddingTop", "paddingRight", "paddingBottom", "paddingLeft",
-];
 
 let actif = true;
 let noms = [];             // les noms à chercher (ceux des fiches repérables du roman)
@@ -110,7 +103,7 @@ function planifier(copie = null, tout = false) {
     demande = 0;
     // Les noms à chercher : refaits seulement si une fiche a changé de nom (ou de catégorie)
     const fiches = etat.roman ? etat.fiches.filter(estReperable) : [];
-    const sig = fiches.map((f) => [f.id, f.categorie, f.titre, f.champs?.autresNoms || ""].join("\u0001")).join("\u0002");
+    const sig = signatureDesNoms(fiches);
     if (sig !== signature) { signature = sig; noms = preparerNoms(fiches); }
     for (const c of copies) {
       if (!c.aFaire) continue;
@@ -237,33 +230,20 @@ function remplirLigne(copie, ligne, texte, trouves) {
 }
 
 // Le calque prend exactement la place, la police et les marges de la zone de texte
-// (sans sa barre de défilement : sinon les lignes ne seraient pas coupées au même endroit).
-// La place est prise au centième de pixel près : côte à côte, une colonne mesure par exemple
-// 452,4 pixels, et un calque arrondi à 452 couperait parfois ses lignes une lettre plus loin.
+// (sans sa barre de défilement : sinon les lignes ne seraient pas coupées au même endroit ;
+// la place est prise au centième de pixel près : voir placeDuTexte dans outils.js)
 function copierStyles(copie) {
   const { zone, calque, interieur } = copie;
   const cs = getComputedStyle(zone);
-  const boite = zone.getBoundingClientRect();
-  const parent = zone.offsetParent, cadre = parent.getBoundingClientRect();
-  const [gauche, droite, haut, bas] = ["Left", "Right", "Top", "Bottom"].map((c) => parseFloat(cs[`border${c}Width`]) || 0);
-  // L'épaisseur des barres de défilement (en pixels entiers : un écart d'un pixel n'est qu'un arrondi)
-  const barre = (n) => (n >= 2 ? n : 0);
-  const barreVerticale = barre(zone.offsetWidth - Math.round(gauche + droite) - zone.clientWidth);
-  const barreHorizontale = barre(zone.offsetHeight - Math.round(haut + bas) - zone.clientHeight);
-  const place = [
-    boite.left - cadre.left - parent.clientLeft + gauche,
-    boite.top - cadre.top - parent.clientTop + haut,
-    boite.width - gauche - droite - barreVerticale,
-    boite.height - haut - bas - barreHorizontale,
-  ];
-  const styles = STYLES_COPIES.map((p) => cs[p]).join("|") + "|" + place.join("|");
+  const { gauche, haut, largeur, hauteur } = placeDuTexte(zone);
+  const styles = STYLES_DU_TEXTE.map((p) => cs[p]).join("|") + "|" + [gauche, haut, largeur, hauteur].join("|");
   if (styles === copie.styles) return;
   copie.styles = styles;
-  calque.style.left = place[0] + "px";
-  calque.style.top = place[1] + "px";
-  calque.style.width = place[2] + "px";
-  calque.style.height = place[3] + "px";
-  for (const p of STYLES_COPIES) interieur.style[p] = cs[p];
+  calque.style.left = gauche + "px";
+  calque.style.top = haut + "px";
+  calque.style.width = largeur + "px";
+  calque.style.height = hauteur + "px";
+  for (const p of STYLES_DU_TEXTE) interieur.style[p] = cs[p];
 }
 
 // Le calque défile avec le texte (et la bulle suit son nom)

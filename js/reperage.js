@@ -47,8 +47,8 @@ const $ = (id) => document.getElementById(id);
 export function initialiserReperage() {
   for (const id of ["texte-notes", "texte-redige"]) $(id).addEventListener("input", () => planifier(DELAI));
   // (juste après l'affichage de la scène, pour ne pas le retarder)
-  ecouter("scene-affichee", () => planifier(30));
-  ecouter("fiches-changees", () => planifier(30));
+  ecouter("scene-affichee", () => { planifier(30); lireEnAvance(); });
+  ecouter("fiches-changees", () => { planifier(30); lireEnAvance(); });
 
   const zone = $("reperees");
   // Un clic sur une pastille ne « vole » pas le curseur au texte
@@ -195,8 +195,9 @@ export function nomsPossibles(texte, noms) {
 // un même passage qui nomme deux fiches les garde toutes les deux.
 // Un nom coupé par un retour à la ligne (« Mère », puis « Corbeau » au début de la ligne suivante)
 // n'est pas pris en entier : ses mots restent repérables chacun de son côté (ici « Corbeau »).
-// (Il compte bien, lui, dans « Dans cette scène » : voir fichesNommees.)
-export function nomsDansLeTexte(texte, noms) {
+// (Il compte bien, lui, dans « Dans cette scène » : voir fichesNommees ;
+// et avec « coupes : true », qui sert à la liste des scènes d'une fiche.)
+export function nomsDansLeTexte(texte, noms, { coupes = false } = {}) {
   if (!texte) return [];
   const { t, origine } = normaliser(texte);
   const trouves = [];
@@ -204,7 +205,7 @@ export function nomsDansLeTexte(texte, noms) {
     n.re.lastIndex = 0;
     for (let r; (r = n.re.exec(t));) {
       const debut = r.index, fin = r.index + r[0].length;
-      if (entier(t, debut, fin) && !r[0].includes("\n")) trouves.push({ debut, fin, fiche: n.fiche });
+      if (entier(t, debut, fin) && (coupes || !r[0].includes("\n"))) trouves.push({ debut, fin, fiche: n.fiche });
       n.re.lastIndex = debut + 1;
     }
   }
@@ -232,6 +233,76 @@ function departager(groupe) {
     gardes.push({ debut: x.debut, fin: x.fin, fiches: [x.fiche] });
   }
   return gardes.sort((a, b) => a.debut - b.debut);
+}
+
+// Ce qui distingue les noms de ces fiches : s'il change, il faut chercher de nouveau
+export function signatureDesNoms(fiches) {
+  return fiches.map((f) => [f.id, f.categorie, f.titre, f.champs?.autresNoms || ""].join("\u0001")).join("\u0002");
+}
+
+// =====================================================================
+// Les scènes où chaque fiche est nommée (sur une fiche : « Nommé dans ces scènes »)
+// Chaque scène n'est lue qu'une fois, puis de nouveau seulement si son texte change
+// (ou si le nom d'une fiche change).
+// =====================================================================
+
+let lecture = { roman: null, signature: null, noms: [] };
+const lues = new Map(); // scène.id → { notes, texte, fiches : Map(fiche.id → { redige: [{ debut, fin }], notes: [...] }) }
+
+function nomsDuRoman() {
+  const fiches = etat.roman ? etat.fiches.filter(estReperable) : [];
+  const signature = signatureDesNoms(fiches);
+  if (lecture.roman !== etat.roman?.id || lecture.signature !== signature) {
+    lecture = { roman: etat.roman?.id, signature, noms: preparerNoms(fiches) };
+    lues.clear();
+  }
+  return lecture.noms;
+}
+
+// Les scènes sont lues à l'avance, par petits morceaux, quand le navigateur n'a rien d'autre à faire :
+// ainsi la première fiche ouverte n'attend pas (tout un gros roman d'un coup : une demi-seconde).
+let lectureEnCours = false;
+function lireEnAvance() {
+  if (lectureEnCours) return;
+  lectureEnCours = true;
+  const plusTard = window.requestIdleCallback || ((f) => setTimeout(() => f({ timeRemaining: () => 8 }), 50));
+  const morceau = (temps) => {
+    nomsDuRoman(); // (des noms ont changé depuis : tout est à relire)
+    for (const s of etat.roman ? etat.scenes : []) {
+      // (la scène ouverte est lue au besoin, avec le texte qui est à l'écran)
+      if (s.id === etat.sceneId || dejaLue(s)) continue;
+      if (temps.timeRemaining() < 4) { plusTard(morceau); return; }
+      passagesDeLaScene(s);
+    }
+    lectureEnCours = false;
+  };
+  plusTard(morceau);
+}
+function dejaLue(s) {
+  const deja = lues.get(s.id);
+  return !!deja && deja.notes === (s.notes || "") && deja.texte === (s.texte || "");
+}
+
+// Les passages d'une scène où chaque fiche est nommée, dans le texte rédigé et dans les notes.
+// « textes » : pour la scène ouverte, le texte des zones d'écriture (plus récent que celui enregistré).
+// (Le plus long nom l'emporte, comme pour les noms en couleur : « Mère Corbeau » ne nomme pas la
+// Taverne du Corbeau Noir ; « Corbeau » tout seul nomme les deux.)
+export function passagesDeLaScene(scene, textes = scene) {
+  const noms = nomsDuRoman();
+  const notes = textes.notes || "", texte = textes.texte || "";
+  const deja = lues.get(scene.id);
+  if (deja && deja.notes === notes && deja.texte === texte) return deja.fiches;
+  const fiches = new Map();
+  for (const [mode, contenu] of [["redige", texte], ["notes", notes]]) {
+    for (const n of nomsDansLeTexte(contenu, noms, { coupes: true })) {
+      for (const f of n.fiches) {
+        if (!fiches.has(f.id)) fiches.set(f.id, { redige: [], notes: [] });
+        fiches.get(f.id)[mode].push({ debut: n.debut, fin: n.fin });
+      }
+    }
+  }
+  lues.set(scene.id, { notes, texte, fiches });
+  return fiches;
 }
 
 // Le texte sans accents, et pour chacun de ses caractères, sa position dans le texte d'origine.
