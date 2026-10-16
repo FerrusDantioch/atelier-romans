@@ -20,7 +20,7 @@ import {
 import { afficherPlan, majComptes, marquerActive, ajouterChapitre } from "./plan.js";
 import { oublierHistorique } from "./annulation.js";
 
-// Les deux zones de texte : une par mode (chacune garde son curseur et son « Ctrl+Z »)
+// Les deux zones de texte : une par mode (chacune garde son curseur ; pour Ctrl+Z, voir annulation.js)
 const zones = {};
 // Nom du champ enregistré pour chaque mode
 const CHAMP = { notes: "notes", redige: "texte" };
@@ -47,7 +47,8 @@ let session = null;        // { jour, motsDepart }
 const curseurs = new Map(); // position du curseur de chaque scène déjà ouverte
 let coteACote = false;     // « Les deux » choisi sur cet appareil
 let deuxAffiches = false;  // les deux textes sont-ils affichés en ce moment ? (choix + place suffisante)
-let modeAuClavier = null;  // côte à côte : le texte où l'on écrit (Notes ou Rédigé)
+let modeAuClavier = null;  // le texte où l'on écrit (Notes ou Rédigé) ; null = celui du mode de la scène
+const defilements = new Map(); // zone cachée → son défilement, rendu quand elle réapparaît
 
 const $ = (id) => document.getElementById(id);
 
@@ -107,7 +108,7 @@ export function initialiserEditeur() {
   // Annonces venant du plan
   ecouter("ouvrir-scene", ouvrirScene);
   ecouter("scene-creee", () => { $("titre-scene").focus(); $("titre-scene").select(); });
-  ecouter("scene-renommee", (id) => { if (scene && scene.id === id) $("titre-scene").value = scene.titre; });
+  ecouter("scene-renommee", surRenommage);
   ecouter("scene-supprimee", surSuppression);
   ecouter("plan-change", majCompteurs);
 
@@ -152,9 +153,11 @@ export function retrouverPosition({ focus = true } = {}) {
   if (scene && !$("vue-roman").hidden) restaurerCurseur({ focus });
 }
 
-// Le texte où va le clavier : côte à côte, celui où l'on écrit ; sinon, celui qui est affiché
+// Le texte où va le clavier : celui où l'on écrit, sinon celui du mode de la scène.
+// (Seuls les boutons Notes et Rédigé changent le mode de la scène. Passer d'une colonne à l'autre,
+// ou une fenêtre devenue trop étroite pour les deux, change seulement le texte où l'on écrit.)
 function modeActif() {
-  if (deuxAffiches && modeAuClavier) return modeAuClavier;
+  if (modeAuClavier) return modeAuClavier;
   return scene && scene.mode === "redige" ? "redige" : "notes";
 }
 function zoneActive() {
@@ -185,13 +188,13 @@ async function ouvrirScene(id) {
   $("titre-scene").value = scene.titre || "";
   $("editeur-vide").hidden = true;
   $("editeur-plein").hidden = false;
-  modeAuClavier = null; // (côte à côte : le curseur va dans le texte du mode de la scène)
-  appliquerMode(scene.mode === "redige" ? "redige" : "notes");
+  modeAuClavier = null; // (le curseur va dans le texte du mode de la scène)
+  appliquerMode();
   restaurerCurseur();
   majCompteurs();
   marquerActive(id);
   indiquerEnregistrement("enregistre");
-  if (reprise) { afficherPlan(); marquerModifiee(); } // le texte repris sera enregistré dans un instant
+  if (reprise) { afficherPlan(); marquerModifiee({ texte: reprise.texte }); } // ce qui est repris sera enregistré dans un instant
   db.ecrireReglage("derniereScene:" + etat.roman.id, id);
   annoncer("scene-affichee", id); // (le panneau cherche les fiches nommées dans la scène)
 }
@@ -221,20 +224,18 @@ async function surSuppression({ voisine = null } = {}) {
 // Retient où était le curseur dans chaque mode, pour y revenir plus tard
 function memoriserCurseur() {
   if (!scene) return;
-  const position = (z) => ({ debut: z.selectionStart, fin: z.selectionEnd, defilement: z.scrollTop });
+  const position = (z) => ({ debut: z.selectionStart, fin: z.selectionEnd, defilement: z.hidden ? defilements.get(z) ?? 0 : z.scrollTop });
   curseurs.set(scene.id, { notes: position(zones.notes), redige: position(zones.redige) });
 }
 function restaurerCurseur({ focus = true } = {}) {
   const memo = curseurs.get(scene.id);
   for (const [mode, zone] of Object.entries(zones)) {
-    if (memo) {
-      zone.setSelectionRange(memo[mode].debut, memo[mode].fin);
-      zone.scrollTop = memo[mode].defilement;
-    } else {
-      // Première ouverture : curseur à la fin, là où l'on reprend l'écriture
-      zone.setSelectionRange(zone.value.length, zone.value.length);
-      zone.scrollTop = zone.scrollHeight;
-    }
+    // (première ouverture : curseur à la fin, là où l'on reprend l'écriture)
+    const debut = memo ? memo[mode].debut : zone.value.length, fin = memo ? memo[mode].fin : zone.value.length;
+    const defilement = memo ? memo[mode].defilement : 1e9; // (trop grand : le texte défile jusqu'en bas)
+    zone.setSelectionRange(debut, fin);
+    // Une zone cachée ne peut pas défiler : elle le fera quand elle réapparaîtra
+    if (zone.hidden) defilements.set(zone, defilement); else zone.scrollTop = defilement;
   }
   if (focus) zoneActive().focus({ preventScroll: true });
 }
@@ -248,8 +249,8 @@ function choisirAffichage(choix) {
   if (!scene) return;
   if (choix === "deux") {
     retenirCoteACote(true);
-    appliquerMode(scene.mode);
-    zoneActive().focus();
+    appliquerMode();
+    zoneActive().focus({ preventScroll: true });
     return;
   }
   if (deuxAffiches) retenirCoteACote(false); // Notes ou Rédigé seul : on quitte le côte à côte
@@ -263,23 +264,29 @@ function retenirCoteACote(oui) {
 
 function changerMode(mode) {
   if (!scene) return;
+  modeAuClavier = mode;
   if (scene.mode !== mode) {
     scene.mode = mode;
     marquerModifiee({ texte: false });
     afficherPlan(); // met à jour la petite mention « notes » dans le plan
   }
-  appliquerMode(mode);
-  zoneActive().focus();
+  appliquerMode();
+  zoneActive().focus({ preventScroll: true }); // (le texte reste à l'endroit où on l'avait laissé)
 }
 
-// Affiche le texte du mode choisi, ou les deux textes côte à côte (si c'est le choix et qu'il y a la place)
-function appliquerMode(mode) {
+// Affiche le texte où l'on écrit, ou les deux textes côte à côte (si c'est le choix et qu'il y a la place)
+function appliquerMode() {
   deuxAffiches = coteACote && assezLarge();
-  if (!deuxAffiches) modeAuClavier = null;
-  else if (!modeAuClavier) modeAuClavier = mode;
-  zones.notes.hidden = !deuxAffiches && mode !== "notes";
-  zones.redige.hidden = !deuxAffiches && mode !== "redige";
+  const mode = modeActif();
   $("vue-roman").classList.toggle("cote-a-cote", deuxAffiches);
+  const reapparues = [];
+  for (const [m, zone] of Object.entries(zones)) {
+    const visible = deuxAffiches || m === mode;
+    if (visible === !zone.hidden) continue;
+    if (visible) reapparues.push(zone); else defilements.set(zone, zone.scrollTop);
+    zone.hidden = !visible;
+  }
+  for (const zone of reapparues) zone.scrollTop = defilements.get(zone) ?? 0;
   majIndicateurs();
   annoncer("mode-affiche", mode);     // (les noms en couleur suivent les textes affichés)
 }
@@ -300,7 +307,7 @@ function assezLarge() {
 // Côte à côte : cliquer dans l'autre texte y fait aller les boutons de mise en forme
 // (sans changer le mode de la scène : c'est seulement l'endroit où l'on écrit)
 function surFocus(mode) {
-  if (!scene || !deuxAffiches || modeAuClavier === mode) return;
+  if (!scene || modeAuClavier === mode) return;
   modeAuClavier = mode;
   majIndicateurs();
 }
@@ -310,14 +317,19 @@ function surLargeur() {
   if (!document.querySelector(".editeur").clientWidth) return; // page d'écriture cachée (frise, bibliothèque…)
   const large = assezLarge();
   $("bouton-deux").hidden = !large; // « Les deux » n'est proposé que s'il y a la place
-  if (!scene || !coteACote || large === deuxAffiches) return;
-  // Plus assez de place pour les deux : on garde affiché le texte où l'on écrivait
-  if (!large && modeAuClavier && modeAuClavier !== scene.mode) {
-    scene.mode = modeAuClavier;
-    marquerModifiee({ texte: false });
-    afficherPlan();
-  }
-  appliquerMode(scene.mode);
+  // (plus assez de place pour les deux : reste affiché le texte où l'on écrivait)
+  if (scene && coteACote && large !== deuxAffiches) appliquerMode();
+}
+
+// Une scène renommée depuis le plan : son titre ici, et dans sa copie de secours si elle en attend une
+// (sinon, à la prochaine ouverture, la copie ramènerait l'ancien titre)
+function surRenommage(id) {
+  const s = trouverScene(id);
+  if (!s) return;
+  if (scene && scene.id === id) $("titre-scene").value = s.titre;
+  const secours = lireSecours(id);
+  if (!secours) return;
+  try { localStorage.setItem(PREFIXE_SECOURS + id, JSON.stringify({ ...secours, titre: s.titre })); } catch { /* rien */ }
 }
 
 // =====================================================================
@@ -615,15 +627,18 @@ function secoursPlusRecent(secours, s) {
 
 // À l'ouverture d'une scène : une copie de secours qui attend encore veut dire que son
 // texte n'a jamais été confirmé dans la base (enregistrement qui avait échoué).
-// On reprend son texte s'il est plus récent, et on renvoie true : la scène sera réenregistrée.
+// On reprend son contenu s'il est plus récent, et on renvoie { texte } : la scène sera réenregistrée
+// (texte : true si le texte lui-même a changé, false si ce n'était que le titre ou le mode).
 function reprendreSecours(s) {
   const secours = lireSecours(s.id);
   if (!secours || (s.modifie || 0) > secours.t) return false; // pas de copie, ou copie dépassée
+  let texte = false;
   if (secoursPlusRecent(secours, s)) {
+    texte = s.notes !== secours.notes || s.texte !== secours.texte;
     Object.assign(s, { titre: secours.titre, notes: secours.notes, texte: secours.texte, mode: secours.mode });
     recompterScene(s.id);
   }
-  return true;
+  return { texte };
 }
 
 // Au démarrage et à l'ouverture d'un roman : remet dans la base les frappes qui

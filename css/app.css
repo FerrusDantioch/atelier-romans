@@ -444,6 +444,9 @@ body.mode-ecriture main{ flex:1; min-height:0; }
 .outils-format button.mono{ font:600 .8rem var(--f-des); }
 .outils-format button:hover{ border-color:var(--omni); }
 .vue-ecriture[data-mode="redige"] .seulement-notes{ display:none; }
+/* Côte à côte : le bouton puce garde sa place (invisible) quand on écrit dans le texte rédigé,
+   pour que la barre d'outils ne change pas de forme à chaque clic d'une colonne à l'autre */
+.vue-ecriture.cote-a-cote[data-mode="redige"] .seulement-notes{ display:inline-block; visibility:hidden; }
 #bouton-concentration[aria-pressed="true"]{ border-color:var(--omni); }
 
 /* La zone de texte : large, aérée, centrée, contrastée sans éblouir.

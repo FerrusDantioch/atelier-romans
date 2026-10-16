@@ -156,11 +156,15 @@ Ouvrez un roman depuis la Bibliothèque. L'écran se divise en trois colonnes :
   cliquez dans l'un ou l'autre ; le titre de la colonne où vous écrivez est en couleur,
   et les boutons I, G, * * * (et la puce, côté notes) agissent sur elle.
   - Ce bouton n'apparaît que si la colonne d'écriture est assez large (ordinateur, tablette tenue
-    en largeur, ou mode concentration). Si la fenêtre devient trop étroite, seul reste le texte où vous
-    écriviez ; elle s'élargit de nouveau, et les deux reviennent.
+    en largeur). Si la fenêtre devient trop étroite, seul reste le texte où vous écriviez ;
+    qu'elle s'élargisse de nouveau, et les deux reviennent. En mode concentration, les deux restent.
   - Le choix est gardé sur cet appareil, pour toutes les scènes. Pour revenir à un seul texte :
     « Notes » ou « Rédigé ».
-  - Passer d'une colonne à l'autre ne change rien à la scène (pas de mention « notes » dans le plan).
+  - Seuls ces boutons « Notes » et « Rédigé » changent le mode de la scène (et la mention « notes »
+    dans le plan) : passer d'une colonne à l'autre n'y change rien.
+  - `Ctrl+Z` annule dans la colonne où vous écrivez. Limite : après un `Ctrl+Z` dans une colonne,
+    ce que vous aviez tapé juste avant dans l'autre ne peut plus être annulé (le navigateur ne garde
+    qu'une seule liste d'annulations pour toute la page).
 - **Mise en forme** : `*italique*`, `**gras**`, et `* * *` (séparateur) sur sa propre ligne.
   Les boutons I, G et * * * insèrent ces symboles autour du texte sélectionné.
 - **Compteurs** : mots de la scène, du chapitre et du roman (seul le texte *Rédigé* compte).

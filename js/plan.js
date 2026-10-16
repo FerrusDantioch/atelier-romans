@@ -202,8 +202,8 @@ async function renommer(type, id) {
   const titre = await demanderTitre(type === "chapitre" ? "Renommer le chapitre" : "Renommer la scène", objet.titre, "Enregistrer");
   if (!titre) return;
   objet.titre = titre;
-  // Une scène renommée devient plus récente qu'une éventuelle copie de secours (qui ne la ramènera pas)
-  if (type === "scene") objet.modifie = Date.now();
+  // (sa date ne change pas : renommer n'est pas réécrire le texte, la fusion entre appareils ne les confond pas ;
+  // une éventuelle copie de secours prend le nouveau titre : voir surRenommage dans editeur.js)
   await db.ecrire(type === "chapitre" ? "chapitres" : "scenes", objet);
   await apresChangement();
   if (type === "scene") annoncer("scene-renommee", id);
