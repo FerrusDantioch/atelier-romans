@@ -236,6 +236,8 @@ select:focus-visible, textarea:focus-visible, summary:focus-visible{
 .groupe-export legend{ margin-bottom:var(--esp-2); padding:0; }
 .option-export{ display:flex; align-items:center; gap:var(--esp-2); cursor:pointer; }
 .option-export input{ accent-color:var(--univers); margin:0; }
+/* (« Type de fichier » : une option sur deux lignes garde son bouton en face de la première) */
+.option-export:has(> span > b){ align-items:baseline; }
 .option-export-chapitre{ display:flex; align-items:center; gap:var(--esp-2); flex-wrap:wrap; }
 .option-export-chapitre select{ flex:1 1 12em; min-width:0; }
 .choix-univers{ border:0; padding:0; margin:0; display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:var(--esp-2); }

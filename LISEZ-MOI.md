@@ -3,10 +3,10 @@
 Application d'écriture de romans tirés des parties de l'Omni-système.
 Elle s'installe comme une application, fonctionne **sans connexion**, et garde tout sur l'ordinateur.
 
-**Version 1.6** — les sept étapes prévues sont terminées, plus l'étape 8 (les fiches repérées dans le texte),
+**Version 1.7** — les sept étapes prévues sont terminées, plus l'étape 8 (les fiches repérées dans le texte),
 l'étape 9 (écrire sur deux appareils : la fusion), l'étape 10 (la frise des événements),
-l'étape 11 (les noms en couleur dans le texte), l'étape 12 (les notes à côté du texte rédigé)
-et l'étape 13 (sur chaque fiche, les scènes où elle est nommée).
+l'étape 11 (les noms en couleur dans le texte), l'étape 12 (les notes à côté du texte rédigé),
+l'étape 13 (sur chaque fiche, les scènes où elle est nommée) et l'étape 14 (l'export en ePub et en Word).
 
 **En ligne : https://ferrusdantioch.github.io/atelier-romans/** — s'ouvre aussi sur téléphone,
 sans rien installer d'autre (voir « L'Atelier en ligne » plus bas).
@@ -27,7 +27,8 @@ sans rien installer d'autre (voir « L'Atelier en ligne » plus bas).
 - **Noms en couleur** : ces noms sont aussi soulignés directement dans le texte ; les toucher ouvre leur fiche.
 - **Nommé dans ces scènes** : sur la fiche d'un personnage ou d'un lieu, les scènes où il est nommé ;
   en toucher une l'ouvre, le nom sélectionné.
-- **Export PDF** d'une scène, d'un chapitre ou du roman, mis en page comme un livre.
+- **Export** d'une scène, d'un chapitre ou du roman : en **PDF** mis en page comme un livre,
+  en **ePub** pour une liseuse, ou en **Word** pour faire relire.
 - **Sauvegarde automatique** permanente, copie de secours si l'onglet se ferme en pleine phrase,
   et **export / import** de toutes les données dans un fichier, avec un rappel doux.
 - **Deux appareils** (téléphone et ordinateur) : le fichier exporté sur l'un se **fusionne** sur l'autre,
@@ -113,7 +114,7 @@ Une fois l'application installée, **plus besoin du serveur** pour écrire.
 4. **Exporter ses données** quand le rappel apparaît (ou une fois par semaine) : bouton
    « Exporter mes données » en bas de la Bibliothèque, puis ranger le fichier en lieu sûr
    (clé USB, cloud…). **C'est la seule copie hors de cet ordinateur.**
-5. Pour lire ou faire relire : **Exporter en PDF**, depuis la page d'écriture du roman (`Ctrl+P`).
+5. Pour lire ou faire relire : **Exporter (PDF, ePub, Word)**, depuis la page d'écriture du roman.
 
 ## Mettre à jour l'Atelier (nouvelle version)
 
@@ -280,21 +281,51 @@ Sans rien taper, la recherche propose les dernières fiches consultées.
 
 Les boutons « ⌕ Chercher » (panneau) et « ⌕ » (barre d'outils, sur écran moyen) font la même chose à la souris.
 
-## Exporter en PDF (mise en page de livre)
+## Exporter : PDF, ePub ou Word
 
-1. Dans la page d'écriture, cliquez sur **« Exporter en PDF »** (sous le titre du roman, à gauche),
-   ou appuyez sur **`Ctrl+P`**.
-2. Choisissez : **le roman entier**, **un chapitre** (dans la liste) ou **la scène ouverte** ;
-   le **format** (*Livre A5*, le format d'un roman, ou *Page A4*) ; avec ou sans **page de titre**.
-3. Cliquez sur **« Préparer le PDF »** : la fenêtre d'impression du navigateur s'ouvre.
-4. Dans **« Destination »**, choisissez **« Enregistrer au format PDF »**, puis **« Enregistrer »**.
+Dans la page d'écriture, cliquez sur **« Exporter (PDF, ePub, Word) »** (sous le titre du roman, à gauche).
+Choisissez **le roman entier**, **un chapitre** (dans la liste) ou **la scène ouverte**, puis le **type de fichier** :
+
+| Type | Pour quoi faire |
+|---|---|
+| **PDF** | un livre à imprimer ou à lire à l'écran (voir ci-dessous) |
+| **ePub** | lire le roman sur une liseuse (Kobo, Kindle…) ou dans une application de lecture du téléphone |
+| **Word (.docx)** | le faire relire, l'annoter, le retravailler (Word, LibreOffice, Google Docs…) |
+
+Dans tous les cas : le **texte rédigé** seulement (jamais les notes ni les fiches), l'*italique* et le
+**gras** mis en forme, les `* * *` (un séparateur est aussi placé entre deux scènes), une page de titre
+si la case est cochée, et un seul nom, le pseudonyme **Ferrus Dantioch** (auteur du fichier, et
+« Réalisé par Ferrus Dantioch » sur la page de titre). L'Atelier retient votre dernier choix.
+
+### ePub et Word
+
+1. Cochez **ePub** ou **Word (.docx)**, puis cliquez sur **« Créer le fichier ePub »** (ou « … Word »).
+2. Le fichier arrive dans vos **Téléchargements**, nommé d'après le titre du roman
+   (par exemple `Les Cendres de Port-Sombre.epub` ; pour un chapitre, son titre est ajouté).
+
+- **L'ePub** : un chapitre par « page » de la liseuse, un sommaire des chapitres, la typographie
+  française (espaces insécables avant `:` `;` `!` `?`). La liseuse garde la main sur la police et sa taille.
+  Pour le mettre sur une liseuse : Kobo, en le copiant par le câble USB ; Kindle, avec le service
+  « Send to Kindle » d'Amazon ; sur le téléphone, en l'ouvrant avec une application de lecture
+  (Google Play Livres, Apple Livres…). Exporter de nouveau le roman entier crée une nouvelle version
+  du même livre.
+- **Le Word** : un manuscrit classique, facile à relire : format A4, Times New Roman 12, interligne 1,5,
+  texte justifié, chaque chapitre sur une nouvelle page, numéros de page en bas.
+  Les chapitres ont le style « Titre 1 » : ils apparaissent dans le volet de navigation de Word.
+- Ces fichiers ont été contrôlés avec les outils de référence (EPUBCheck pour l'ePub, LibreOffice et
+  pandoc pour le Word), mais pas encore sur une vraie liseuse ni dans Microsoft Word lui-même.
+
+### PDF (mise en page de livre)
+
+1. Cochez **PDF** (c'est aussi ce qu'ouvre **`Ctrl+P`**), puis choisissez le **format**
+   (*Livre A5*, le format d'un roman, ou *Page A4*) ; avec ou sans **page de titre**.
+2. Cliquez sur **« Préparer le PDF »** : la fenêtre d'impression du navigateur s'ouvre.
+3. Dans **« Destination »**, choisissez **« Enregistrer au format PDF »**, puis **« Enregistrer »**.
    Si la case **« En-têtes et pieds de page »** apparaît (dans « Plus de paramètres »), **décochez-la** :
    sinon le navigateur ajoute sa propre date et l'adresse de la page.
 
-Ce que contient le PDF : le **texte rédigé** seulement (jamais les notes ni les fiches), un chapitre
-par page, les `* * *` centrés (un séparateur est aussi placé entre deux scènes), l'*italique* et le
-**gras** mis en forme, les numéros de page, et la mention discrète **« Réalisé par Ferrus Dantioch »**
-sur la page de titre et en pied de page — c'est le seul nom qui y figure.
+Le PDF a en plus un chapitre par page, les numéros de page, et la mention discrète
+**« Réalisé par Ferrus Dantioch »** en pied de page.
 Pour un roman entier, l'aperçu peut mettre quelques secondes à apparaître.
 Utilisez **Chrome ou Edge** : Firefox n'imprime pas encore les numéros de page ni la mention en pied de page.
 
@@ -308,7 +339,7 @@ Utilisez **Chrome ou Edge** : Firefox n'imprime pas encore les numéros de page 
 | `Ctrl+K` | recherche rapide d'une fiche (le curseur reste en place) |
 | `Ctrl+clic` sur un nom coloré | ouvrir sa fiche (le curseur reste en place) |
 | `Ctrl+Maj+F` | mode concentration (seul le texte reste) |
-| `Ctrl+P` | exporter en PDF (scène, chapitre ou roman) |
+| `Ctrl+P` | exporter en PDF (scène, chapitre ou roman) ; ePub et Word : bouton « Exporter » |
 | `Échap` | quitter le mode concentration, ou revenir au texte depuis le panneau ou la frise |
 | `←` `→` sur les onglets du panneau | changer d'onglet |
 | `Ctrl+Z` | annuler (dans le texte : n'annule jamais, par erreur, une modification faite dans une fiche) |
@@ -415,8 +446,10 @@ trouverait un Atelier vide. L'adresse est signalée aux moteurs de recherche com
 3. Dans « À propos », attendre la ligne **« Prête à fonctionner sans connexion ✓ »**.
 4. L'Atelier s'ouvre ensuite depuis son icône, même en mode avion.
 - Sans clavier, `Ctrl+K` est remplacé par le bouton **⌕** (barre d'outils ou panneau des fiches).
-- **PDF** : « Exporter en PDF » ouvre la fenêtre d'impression d'Android ; choisir
+- **PDF** : « Exporter », PDF, ouvre la fenêtre d'impression d'Android ; choisir
   **« Enregistrer au format PDF »** en haut, puis le bouton PDF.
+- **ePub et Word** : le fichier va dans les **Téléchargements** du téléphone (une notification
+  l'annonce) ; le toucher l'ouvre dans une application de lecture ou de traitement de texte.
 
 **Mises à jour** : chaque nouvelle version envoyée sur GitHub est prise automatiquement à la
 prochaine ouverture avec une connexion (quelques minutes après l'envoi).
@@ -450,7 +483,9 @@ js/recherche.js     la recherche rapide Ctrl+K
 js/reperage.js      les fiches nommées dans le texte (« Dans cette scène », « Nommé dans ces scènes »)
 js/surlignage.js    les noms en couleur dans le texte, et la bulle qui ouvre leur fiche
 js/frise.js         la frise des événements et « Qui apparaît où »
-js/export-pdf.js    l'export PDF (le livre à imprimer)
+js/export-pdf.js    la fenêtre « Exporter » et l'export PDF (le livre à imprimer)
+js/export-fichiers.js  l'export en ePub et en Word (.docx)
+js/zip.js           les archives ZIP (un ePub et un .docx en sont)
 js/fusion.js        la fusion des données de deux appareils
 js/annulation.js    Ctrl+Z en toute sécurité (n'annule que là où l'on écrit)
 js/onglets.js       une seule page de l'Atelier ouverte à la fois
