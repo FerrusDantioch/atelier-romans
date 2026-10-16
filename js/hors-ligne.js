@@ -6,6 +6,7 @@
 // =====================================================================
 
 import { informer } from "./dialogues.js";
+import { ecrireTexte } from "./outils.js";
 
 let invitation = null; // la proposition d'installation du navigateur, gardée pour notre bouton
 
@@ -31,7 +32,7 @@ export function initialiserHorsLigne() {
 
 // Active le mode hors ligne, rafraîchit la copie en réserve, et dit dans « À propos » où l'on en est
 async function activer() {
-  const ecrire = (texte) => { $("etat-hors-ligne").textContent = texte; };
+  const ecrire = (texte) => ecrireTexte($("etat-hors-ligne"), texte); // (sans rien retirer de la page : voir outils.js)
   if (!("serviceWorker" in navigator) || !/^https?:$/.test(location.protocol)) {
     ecrire("Mode hors ligne indisponible ici.");
     return;

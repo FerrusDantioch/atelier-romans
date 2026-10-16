@@ -4,7 +4,7 @@
 // =====================================================================
 
 import * as db from "./db.js";
-import { el, nouvelId, nombre, pluriel, UNIVERS } from "./outils.js";
+import { el, nouvelId, nombre, pluriel, UNIVERS, ecrireTexte } from "./outils.js";
 import { ouvrirDialogue, confirmer, informer } from "./dialogues.js";
 import {
   etat, chapitresTries, scenesDe, trouverScene, trouverChapitre, scenesDansLOrdre,
@@ -109,13 +109,13 @@ export function majComptes(sceneId) {
   const s = trouverScene(sceneId);
   if (!s) return;
   const zoneScene = document.querySelector(`[data-mots-scene="${CSS.escape(sceneId)}"]`);
-  if (zoneScene) zoneScene.textContent = nombre(motsScene(sceneId));
+  if (zoneScene) ecrireTexte(zoneScene, nombre(motsScene(sceneId)));
   const zoneChapitre = document.querySelector(`[data-mots-chapitre="${CSS.escape(s.chapitreId)}"]`);
-  if (zoneChapitre) zoneChapitre.textContent = nombre(motsChapitre(s.chapitreId));
+  if (zoneChapitre) ecrireTexte(zoneChapitre, nombre(motsChapitre(s.chapitreId)));
   majTotal();
 }
 function majTotal() {
-  document.getElementById("mots-roman").textContent = pluriel(motsRoman(), "mot");
+  ecrireTexte(document.getElementById("mots-roman"), pluriel(motsRoman(), "mot"));
 }
 
 // Met en évidence la scène ouverte

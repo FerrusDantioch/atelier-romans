@@ -113,6 +113,7 @@
         <p class="discret petit" id="mots-roman"></p>
         <span class="plan-liens">
           <button class="lien-discret" type="button" id="bouton-frise">Frise des événements</button>
+          <button class="lien-discret" type="button" id="bouton-remplacer" title="Chercher un mot dans tout le roman, et le remplacer (Ctrl+F, Ctrl+H)">Rechercher et remplacer</button>
           <button class="lien-discret" type="button" id="bouton-pdf" title="Exporter le texte en PDF, ePub ou Word (Ctrl+P : PDF)">Exporter (PDF, ePub, Word)</button>
         </span>
       </div>
@@ -164,6 +165,40 @@
           <button class="petit-bouton seulement-moyen-ecran" type="button" id="bouton-recherche-outils" title="Recherche rapide (Ctrl+K)" aria-label="Chercher une fiche">⌕</button>
         </div>
 
+        <!-- Rechercher et remplacer dans tout le roman (Ctrl+F, Ctrl+H : voir js/remplacer.js) -->
+        <section class="barre-recherche" id="barre-recherche" aria-label="Rechercher et remplacer dans le roman" hidden>
+          <div class="br-ligne">
+            <input class="br-saisie" id="br-chercher" type="text" placeholder="Rechercher dans le roman…" aria-label="Rechercher dans le roman"
+              autocomplete="off" spellcheck="false" lang="fr" enterkeyhint="search">
+            <span class="br-compte mono" id="br-compte" aria-live="polite"></span>
+            <button class="br-bouton" type="button" id="br-precedent" title="Passage précédent (Maj+Entrée)" aria-label="Passage précédent">↑</button>
+            <button class="br-bouton" type="button" id="br-suivant" title="Passage suivant (Entrée)" aria-label="Passage suivant">↓</button>
+            <button class="br-bouton" type="button" id="br-fermer" title="Fermer (Échap)" aria-label="Fermer la recherche">✕</button>
+          </div>
+          <div class="br-ligne br-ligne-remplacer">
+            <input class="br-saisie" id="br-par" type="text" placeholder="Remplacer par…" aria-label="Remplacer par"
+              autocomplete="off" spellcheck="false" lang="fr" enterkeyhint="done">
+            <span class="br-actions">
+              <button class="petit-bouton" type="button" id="br-remplacer" title="Remplacer le passage montré, puis aller au suivant (Entrée)">Remplacer</button>
+              <button class="petit-bouton" type="button" id="br-tout" title="Remplacer tous les passages trouvés (après confirmation)">Tout remplacer</button>
+            </span>
+          </div>
+          <div class="br-options" id="br-options" role="group" aria-label="Options de recherche">
+            <label class="case"><input type="checkbox" id="br-majuscules"><span>Majuscules exactes</span></label>
+            <label class="case"><input type="checkbox" id="br-mot"><span>Mot entier</span></label>
+            <label class="case"><input type="checkbox" id="br-redige" checked><span>Texte rédigé</span></label>
+            <label class="case"><input type="checkbox" id="br-notes" checked><span>Notes</span></label>
+          </div>
+          <p class="br-etat">
+            <span id="br-message" aria-live="polite"></span>
+            <button class="lien-discret" type="button" id="br-annuler" hidden>Annuler le remplacement</button>
+            <!-- (petit écran : les options se replient, pour laisser de la place au texte) -->
+            <button class="lien-discret" type="button" id="br-voir-options" aria-controls="br-options" aria-expanded="false">Options</button>
+            <button class="lien-discret" type="button" id="br-voir-liste" aria-controls="br-resultats" aria-expanded="true" hidden>Masquer la liste</button>
+          </p>
+          <ol class="br-resultats" id="br-resultats" aria-label="Passages trouvés" hidden></ol>
+        </section>
+
         <div class="zone-ecriture" id="zone-ecriture">
           <!-- Côte à côte : le nom de chaque colonne -->
           <p class="cote-titre cote-titre-notes" aria-hidden="true">Notes</p>
@@ -171,6 +206,9 @@
           <!-- Calques derrière le texte (un par zone) : les noms des fiches y sont soulignés en couleur (js/surlignage.js) -->
           <div class="calque" id="calque-notes" aria-hidden="true"><div class="calque-texte"></div></div>
           <div class="calque" id="calque-redige" aria-hidden="true"><div class="calque-texte"></div></div>
+          <!-- … et les passages trouvés par « Rechercher » y sont surlignés (js/remplacer.js) -->
+          <div class="trouvailles" id="trouvailles-notes" aria-hidden="true" hidden><div class="trouvailles-texte"></div></div>
+          <div class="trouvailles" id="trouvailles-redige" aria-hidden="true" hidden><div class="trouvailles-texte"></div></div>
           <textarea id="texte-notes" class="texte texte-notes" lang="fr" spellcheck="true" aria-label="Notes de la scène"
             placeholder="Notes, fragments, idées…&#10;- une puce commence par un tiret&#10;- Entrée continue la liste"></textarea>
           <textarea id="texte-redige" class="texte texte-redige" lang="fr" spellcheck="true" aria-label="Texte rédigé de la scène"
@@ -256,6 +294,7 @@
         <li>Consulter une fiche sans quitter le texte (<span class="mono">Ctrl+K</span>)</li>
         <li>Voir d'un coup d'œil les personnages et lieux nommés dans la scène, en couleur dans le texte</li>
         <li>Retrouver, depuis une fiche, chaque scène où le personnage ou le lieu est nommé</li>
+        <li>Rechercher un mot dans tout le roman, et le remplacer partout d'un coup (<span class="mono">Ctrl+F</span>)</li>
         <li>Suivre les événements sur une frise, et voir qui apparaît où</li>
         <li>Écrire sur deux appareils : exporter sur l'un, fusionner sur l'autre</li>
         <li>Exporter en PDF, mise en page de livre (<span class="mono">Ctrl+P</span>), en ePub pour une liseuse, ou en Word pour faire relire</li>

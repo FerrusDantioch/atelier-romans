@@ -49,6 +49,7 @@
   --halo:#d6c2ff;        /* lueur de l'anneau */
   --sur-accent:#140d24;  /* texte posé sur un bouton violet */
   --danger:#e0705f;      /* actions dangereuses (supprimer) */
+  --trouvaille:#ffd666;  /* passages trouvés par « Rechercher » (surlignés dans le texte) */
 
   /* Couleurs des univers — identiques au portfolio */
   --cyber:#ff4fa3;       /* Cyberpunk : rose */

@@ -13,7 +13,7 @@
 // « Corbeau » repère Mère Corbeau, « un corbeau » non.
 // =====================================================================
 
-import { el } from "./outils.js";
+import { el, ecrireTexte } from "./outils.js";
 import { etat, ecouter } from "./etat.js";
 import { CATEGORIES, ouvrirFiche } from "./panneau.js";
 
@@ -98,7 +98,7 @@ export function majReperage() {
 // Le bouton « Fiches » (écrans moyens et petits) indique combien de fiches sont nommées
 function majBouton(nombre) {
   const b = $("bouton-fiches");
-  b.textContent = nombre ? `Fiches (${nombre})` : "Fiches";
+  ecrireTexte(b, nombre ? `Fiches (${nombre})` : "Fiches");
   b.setAttribute("aria-label", nombre ? `Fiches : ${nombre} nommée${nombre > 1 ? "s" : ""} dans cette scène` : "Fiches");
 }
 

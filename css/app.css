@@ -469,6 +469,13 @@ body.mode-ecriture main{ flex:1; min-height:0; }
   caret-color:var(--halo);
   tab-size:4;
 }
+/* La marge du bas (pour remonter la dernière ligne vers le milieu) se règle sur la place réelle du texte,
+   pas sur la hauteur de l'écran : sinon, quand la barre de recherche prend de la place (téléphone),
+   la zone de texte serait plus haute que sa place et déborderait sur la barre du bas. */
+@supports (padding-bottom:1cqh){
+  .zone-ecriture{ container-type:size; }
+  .texte{ padding-bottom:35cqh; }
+}
 .texte:focus, .texte:focus-visible{ outline:none; }
 .texte::placeholder{ color:color-mix(in srgb, var(--discret) 60%, transparent); }
 .texte::selection{ background:color-mix(in srgb, var(--omni) 40%, transparent); }
@@ -536,6 +543,96 @@ body.concentration .calque, body.concentration .bulle-noms{ display:none; }
 .bulle-categorie{ flex:none; font:600 .64rem var(--f-titre); letter-spacing:.08em; text-transform:uppercase; color:var(--discret); }
 .bulle-nom{ min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 @media (pointer:coarse){ .bulle-fiche{ min-height:40px; align-items:center; } }
+
+/* ---------- Rechercher et remplacer : la barre au-dessus du texte (js/remplacer.js) ---------- */
+.barre-recherche{
+  display:grid; grid-template-columns:minmax(0,1fr); gap:var(--esp-2);
+  padding:var(--esp-2) var(--esp-4) var(--esp-3);
+  background:var(--table);
+  border-bottom:var(--filet) solid var(--trait);
+  box-shadow:inset 3px 0 0 var(--univers);
+  /* (petit écran, clavier ouvert : la barre défile, le texte garde de la place) */
+  max-height:62%; overflow-y:auto;
+}
+.br-ligne{ display:flex; align-items:center; gap:var(--esp-2); flex-wrap:wrap; }
+.br-ligne:first-child{ flex-wrap:nowrap; } /* (le mot cherché et ses boutons restent toujours sur une ligne) */
+.br-saisie{ flex:1 1 12rem; min-width:0; padding:6px 10px; }
+.br-ligne:first-child .br-saisie{ flex-basis:auto; }
+.br-compte{ flex:none; min-width:4em; text-align:center; font-size:.78rem; color:var(--discret); }
+.br-bouton{
+  flex:none; width:34px; height:32px; display:grid; place-items:center;
+  background:none; color:var(--texte); cursor:pointer;
+  border:var(--filet) solid var(--trait); border-radius:var(--arrondi-petit);
+  font:600 .95rem var(--f-titre);
+}
+.br-bouton:hover:not(:disabled){ border-color:var(--omni); }
+.br-actions{ flex:none; display:flex; gap:var(--esp-2); }
+.br-actions .petit-bouton{ padding:5px 12px; white-space:nowrap; }
+.barre-recherche button:disabled{ opacity:.4; cursor:default; }
+.barre-recherche .petit-bouton:disabled:hover{ border-color:var(--trait); }
+.br-options{ display:flex; flex-wrap:wrap; gap:2px var(--esp-4); }
+.br-options .case{ font-size:.85rem; }
+.br-etat{ display:flex; flex-wrap:wrap; align-items:baseline; gap:2px var(--esp-3); font-size:.85rem; color:var(--discret); }
+#br-annuler{ color:var(--texte); }
+#br-voir-options, #br-voir-liste{ font-size:.8rem; }
+#br-voir-options{ display:none; } /* (seulement sur petit écran : voir plus bas) */
+#br-voir-liste{ margin-left:auto; }
+.br-resultats{
+  position:relative; /* (repère pour faire défiler la liste jusqu'au passage courant) */
+  list-style:none; margin:0; padding:var(--esp-2) 0 0;
+  max-height:min(30vh, 320px); overflow-y:auto;
+  display:grid; grid-template-columns:minmax(0,1fr); gap:var(--esp-2);
+  border-top:var(--filet) dashed var(--trait);
+}
+.br-resultats.perime{ opacity:.45; } /* (le texte a changé : la liste attend le retour dans la barre) */
+.br-scene-titre{ display:flex; align-items:baseline; gap:var(--esp-2); min-width:0; padding:0 8px; font:600 .75rem var(--f-titre); color:var(--discret); }
+.br-chapitre{ flex:none; max-width:45%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.br-chapitre::after{ content:" ›"; }
+.br-titre{ flex:1; min-width:0; color:var(--texte); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.br-nombre{ flex:none; }
+.br-passages{ list-style:none; margin:2px 0 0; padding:0; display:grid; grid-template-columns:minmax(0,1fr); gap:1px; }
+.br-resultat{
+  width:100%; display:flex; align-items:baseline; gap:var(--esp-2);
+  background:none; border:0; border-radius:6px; cursor:pointer;
+  padding:4px 8px; text-align:left;
+  color:var(--ecriture-texte); font:.9rem/1.5 var(--f-texte);
+}
+.br-resultat:hover{ background:var(--table-haute); }
+.br-resultat[aria-current="true"]{ background:color-mix(in srgb, var(--univers) 14%, transparent); box-shadow:inset 3px 0 0 var(--univers); }
+.br-ou{
+  flex:none; font:600 .6rem var(--f-titre); letter-spacing:.08em; text-transform:uppercase; color:var(--discret);
+  border:var(--filet) dashed var(--trait); border-radius:var(--arrondi-pilule); padding:0 6px;
+}
+.br-extrait{ min-width:0; overflow-wrap:anywhere; }
+.br-extrait mark, .br-extrait ins{
+  color:var(--texte); text-decoration:none; border-radius:3px; padding:0 1px;
+  background:color-mix(in srgb, var(--trouvaille) 30%, transparent);
+}
+.br-extrait del{ color:var(--discret); text-decoration:line-through; } /* l'aperçu : l'ancien texte barré, puis le nouveau */
+.br-plus{ padding:0 8px; }
+@media (pointer:coarse){
+  .br-bouton{ width:40px; height:38px; }
+  .br-resultat{ min-height:40px; align-items:center; }
+}
+/* Petit écran : la barre se fait plus compacte (le texte garde de la place) */
+@media (max-width:760px){
+  .barre-recherche{ padding:var(--esp-2) var(--esp-3); gap:6px; }
+  .br-compte{ min-width:3.2em; }
+  .br-ligne-remplacer .br-saisie{ flex-basis:7rem; } /* (les boutons restent à côté du champ s'il y a la place) */
+  .br-options{ gap:0 var(--esp-3); }
+  .barre-recherche:not(.options-ouvertes) .br-options{ display:none; }
+  #br-voir-options{ display:inline; margin-left:auto; }
+  #br-voir-liste{ margin-left:0; }
+  .br-options .case, .br-etat{ font-size:.8rem; }
+  .br-resultats{ max-height:min(24vh, 240px); }
+}
+
+/* Les passages trouvés, surlignés sur un calque derrière le texte (comme les noms en couleur) */
+.trouvailles{ position:absolute; z-index:0; overflow:hidden; pointer-events:none; }
+.trouvailles-texte{ width:100%; color:transparent; white-space:pre-wrap; overflow-wrap:break-word; }
+.trouvailles mark{ color:transparent; border-radius:3px; background:color-mix(in srgb, var(--trouvaille) 24%, transparent); }
+.trouvailles mark.actuelle{ background:color-mix(in srgb, var(--trouvaille) 40%, transparent); box-shadow:0 0 0 2px var(--trouvaille); }
+body.concentration .barre-recherche, body.concentration .trouvailles{ display:none; }
 
 .barre-etat{
   display:flex; gap:var(--esp-2) var(--esp-5); flex-wrap:wrap;

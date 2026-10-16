@@ -16,6 +16,7 @@ import {
 } from "./editeur.js";
 import { initialiserPanneau, preparerPanneau, fermerPanneau, sauverFiche } from "./panneau.js";
 import { initialiserRecherche, fermerRecherche } from "./recherche.js";
+import { initialiserRemplacement, fermerRemplacement } from "./remplacer.js";
 import { initialiserAnnulation } from "./annulation.js";
 import { demarrerSeul } from "./onglets.js";
 import { initialiserExportPdf } from "./export-pdf.js";
@@ -25,7 +26,7 @@ import { initialiserSurlignage } from "./surlignage.js";
 import { initialiserFrise, montrerFrise, revenirDeLaFrise, oublierFrise, friseAffichee } from "./frise.js";
 
 // Numéro de version affiché dans « À propos »
-export const VERSION = "1.7.0";
+export const VERSION = "1.8.0";
 
 // Liste des pages (« vues ») de l'application
 const VUES = ["bibliotheque", "roman", "frise", "apropos"];
@@ -61,6 +62,7 @@ const suivreAdresseEnOrdre = () => enOrdre(suivreAdresse);
 async function suivreAdresse() {
   const [page, id, sousPage] = location.hash.slice(1).split("/");
   fermerRecherche();
+  fermerRemplacement();
 
   if (page === "roman" && id) {
     const romanId = decodeURIComponent(id);
@@ -171,6 +173,7 @@ async function demarrer() {
   initialiserSurlignage();
   initialiserFrise({ montrer });
   initialiserRecherche();
+  initialiserRemplacement();
   initialiserExportPdf();
   initialiserHorsLigne();
   // Ctrl+Z dans le texte du roman ne défait jamais une modification faite ailleurs

@@ -3,10 +3,11 @@
 Application d'écriture de romans tirés des parties de l'Omni-système.
 Elle s'installe comme une application, fonctionne **sans connexion**, et garde tout sur l'ordinateur.
 
-**Version 1.7** — les sept étapes prévues sont terminées, plus l'étape 8 (les fiches repérées dans le texte),
+**Version 1.8** — les sept étapes prévues sont terminées, plus l'étape 8 (les fiches repérées dans le texte),
 l'étape 9 (écrire sur deux appareils : la fusion), l'étape 10 (la frise des événements),
 l'étape 11 (les noms en couleur dans le texte), l'étape 12 (les notes à côté du texte rédigé),
-l'étape 13 (sur chaque fiche, les scènes où elle est nommée) et l'étape 14 (l'export en ePub et en Word).
+l'étape 13 (sur chaque fiche, les scènes où elle est nommée), l'étape 14 (l'export en ePub et en Word)
+et l'étape 15 (rechercher et remplacer dans tout le roman).
 
 **En ligne : https://ferrusdantioch.github.io/atelier-romans/** — s'ouvre aussi sur téléphone,
 sans rien installer d'autre (voir « L'Atelier en ligne » plus bas).
@@ -27,6 +28,8 @@ sans rien installer d'autre (voir « L'Atelier en ligne » plus bas).
 - **Noms en couleur** : ces noms sont aussi soulignés directement dans le texte ; les toucher ouvre leur fiche.
 - **Nommé dans ces scènes** : sur la fiche d'un personnage ou d'un lieu, les scènes où il est nommé ;
   en toucher une l'ouvre, le nom sélectionné.
+- **Rechercher et remplacer** (`Ctrl+F`) : un mot cherché dans tout le roman, chaque passage listé
+  et surligné ; le remplacer un par un ou partout d'un coup (renommer un personnage…), et l'annuler.
 - **Export** d'une scène, d'un chapitre ou du roman : en **PDF** mis en page comme un livre,
   en **ePub** pour une liseuse, ou en **Word** pour faire relire.
 - **Sauvegarde automatique** permanente, copie de secours si l'onglet se ferme en pleine phrase,
@@ -281,6 +284,43 @@ Sans rien taper, la recherche propose les dernières fiches consultées.
 
 Les boutons « ⌕ Chercher » (panneau) et « ⌕ » (barre d'outils, sur écran moyen) font la même chose à la souris.
 
+## Rechercher et remplacer dans tout le roman : `Ctrl+F`
+
+Pour retrouver un passage, ou renommer un personnage dans tout le roman.
+
+1. **`Ctrl+F`** (Mac : `Cmd+F`), ou le lien **« Rechercher et remplacer »** sous le titre du roman
+   (sur téléphone : « ☰ Plan », puis ce lien). Une barre s'ouvre au-dessus du texte.
+   Si un mot était sélectionné dans le texte, il est déjà tapé.
+2. Tapez le mot : il est cherché dans **toutes les scènes**, texte rédigé et notes.
+   - Le nombre de passages s'affiche (« 8 passages dans 3 scènes ») ; la **liste** les montre scène par
+     scène, avec un peu de texte autour ; dans le texte, chaque passage est **surligné**, et le passage
+     courant est encadré.
+   - **`Entrée`** (ou **↓**) : le passage suivant, même dans une autre scène (elle s'ouvre) ;
+     **`Maj+Entrée`** (ou **↑**) : le précédent. Toucher une ligne de la liste y mène aussi.
+     Le clavier reste dans la barre : on peut enchaîner.
+   - **`Échap`** (ou **✕**) : la barre se ferme, le clavier revient dans le texte, sur le passage trouvé.
+3. Pour remplacer, tapez le nouveau texte dans **« Remplacer par »** : la liste montre aussitôt
+   l'**aperçu** (l'ancien mot barré, le nouveau à côté).
+   - **« Remplacer »** (ou `Entrée` dans ce champ) : remplace le passage encadré, puis va au suivant.
+     Un passage pas encore montré est d'abord montré : on ne remplace que ce que l'on a vu.
+   - **« Tout remplacer »** : remplace tous les passages d'un coup, après une confirmation qui dit combien.
+   - **Annuler** : le bouton **« Annuler le remplacement »**, ou **`Ctrl+Z`** dans le texte juste après.
+     Une scène que vous avez retouchée depuis n'est pas remise en arrière (rien de ce que vous avez écrit
+     ensuite n'est effacé), et le message le dit.
+
+Les options (sur téléphone, derrière le bouton « Options ») :
+- **Majuscules exactes** : sans elle, « kaël » trouve aussi « Kaël » et « KAËL », et le remplacement garde
+  la majuscule du passage (« Épée » devient « Lame », « ÉPÉE » devient « LAME ») ;
+- **Mot entier** : « Ana » ne trouve plus le début d'« Anabelle » ;
+- **Texte rédigé** et **Notes** : où chercher.
+
+À savoir : les **accents comptent** (« a » ne trouve pas « à ») ; l'apostrophe droite `'` trouve aussi
+l'apostrophe typographique `’` ; les espaces tapées au début ou à la fin ne comptent pas (le clavier d'un
+téléphone en ajoute souvent une). Après « Ana » → « Anabelle », « Remplacer » ne remplace pas une seconde
+fois le « Ana » d'« Anabelle ». Si vous écrivez dans le texte pendant que la barre est ouverte, la liste
+s'estompe et se remet à jour dès que vous revenez dans la barre. Les titres des scènes et les fiches ne
+sont pas concernés (renommez la fiche du personnage vous-même).
+
 ## Exporter : PDF, ePub ou Word
 
 Dans la page d'écriture, cliquez sur **« Exporter (PDF, ePub, Word) »** (sous le titre du roman, à gauche).
@@ -337,12 +377,14 @@ Utilisez **Chrome ou Edge** : Firefox n'imprime pas encore les numéros de page 
 | `Ctrl+B` | gras `**…**` |
 | `Entrée` sur une ligne `- …` (mode Notes) | nouvelle puce ; sur une puce vide : fin de la liste |
 | `Ctrl+K` | recherche rapide d'une fiche (le curseur reste en place) |
+| `Ctrl+F` | rechercher dans tout le roman (`Entrée` : passage suivant ; `Maj+Entrée` : précédent) |
+| `Ctrl+H` | rechercher et remplacer (le clavier va dans « Remplacer par ») |
 | `Ctrl+clic` sur un nom coloré | ouvrir sa fiche (le curseur reste en place) |
 | `Ctrl+Maj+F` | mode concentration (seul le texte reste) |
 | `Ctrl+P` | exporter en PDF (scène, chapitre ou roman) ; ePub et Word : bouton « Exporter » |
-| `Échap` | quitter le mode concentration, ou revenir au texte depuis le panneau ou la frise |
+| `Échap` | quitter le mode concentration, ou revenir au texte depuis le panneau, la frise ou la recherche |
 | `←` `→` sur les onglets du panneau | changer d'onglet |
-| `Ctrl+Z` | annuler (dans le texte : n'annule jamais, par erreur, une modification faite dans une fiche) |
+| `Ctrl+Z` | annuler (dans le texte : n'annule jamais, par erreur, une modification faite dans une fiche ; juste après un remplacement, l'annule) |
 | `Ctrl+Y` ou `Ctrl+Maj+Z` | rétablir |
 | `Ctrl+S` | inutile : tout est déjà enregistré (un message le rappelle) |
 
@@ -445,7 +487,8 @@ trouverait un Atelier vide. L'adresse est signalée aux moteurs de recherche com
    **« Installer l'application »** (ou « Ajouter à l'écran d'accueil »).
 3. Dans « À propos », attendre la ligne **« Prête à fonctionner sans connexion ✓ »**.
 4. L'Atelier s'ouvre ensuite depuis son icône, même en mode avion.
-- Sans clavier, `Ctrl+K` est remplacé par le bouton **⌕** (barre d'outils ou panneau des fiches).
+- Sans clavier, `Ctrl+K` est remplacé par le bouton **⌕** (barre d'outils ou panneau des fiches),
+  et `Ctrl+F` par « ☰ Plan » → **« Rechercher et remplacer »**.
 - **PDF** : « Exporter », PDF, ouvre la fenêtre d'impression d'Android ; choisir
   **« Enregistrer au format PDF »** en haut, puis le bouton PDF.
 - **ePub et Word** : le fichier va dans les **Téléchargements** du téléphone (une notification
@@ -480,6 +523,7 @@ js/plan.js          le plan : chapitres et scènes
 js/editeur.js       l'écriture : modes, mise en forme, enregistrement, session, concentration
 js/panneau.js       le panneau de consultation : onglets, fiches, épinglage, événements
 js/recherche.js     la recherche rapide Ctrl+K
+js/remplacer.js     rechercher et remplacer dans tout le roman (Ctrl+F)
 js/reperage.js      les fiches nommées dans le texte (« Dans cette scène », « Nommé dans ces scènes »)
 js/surlignage.js    les noms en couleur dans le texte, et la bulle qui ouvre leur fiche
 js/frise.js         la frise des événements et « Qui apparaît où »

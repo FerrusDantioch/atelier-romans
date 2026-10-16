@@ -12,7 +12,7 @@
 // =====================================================================
 
 import * as db from "./db.js";
-import { el, nombre, pluriel, dateFichier, hauteurDansLeTexte } from "./outils.js";
+import { el, nombre, pluriel, dateFichier, hauteurDansLeTexte, ecrireTexte } from "./outils.js";
 import { ouvrirDialogue, informer } from "./dialogues.js";
 import {
   etat, trouverScene, scenesDansLOrdre, recompterScene, motsScene, motsChapitre, motsRoman, ecouter, annoncer,
@@ -50,6 +50,7 @@ let coteACote = false;     // « Les deux » choisi sur cet appareil
 let deuxAffiches = false;  // les deux textes sont-ils affichés en ce moment ? (choix + place suffisante)
 let modeAuClavier = null;  // le texte où l'on écrit (Notes ou Rédigé) ; null = celui du mode de la scène
 const defilements = new Map(); // zone cachée → son défilement, rendu quand elle réapparaît
+let selectionsPosees = 0;  // compteur des passages montrés (voir placerPassage)
 
 const $ = (id) => document.getElementById(id);
 
@@ -91,7 +92,7 @@ export function initialiserEditeur() {
     if (!scene) return;
     scene.titre = titre.value;
     const etiquette = document.querySelector(`.plan-scene[data-id="${CSS.escape(scene.id)}"] .plan-titre`);
-    if (etiquette) etiquette.textContent = titre.value || "Sans titre";
+    if (etiquette) ecrireTexte(etiquette, titre.value || "Sans titre");
     marquerModifiee({ texte: false });
   });
   titre.addEventListener("keydown", (e) => {
@@ -169,7 +170,8 @@ function zoneActive() {
 // Ouvrir une scène
 // =====================================================================
 
-async function ouvrirScene(id) {
+// « focus : false » : le clavier reste où il est (par exemple dans la barre de recherche)
+async function ouvrirScene(id, { focus = true } = {}) {
   await sauverMaintenant();       // on enregistre d'abord la scène précédente
   memoriserCurseur();
   const cible = trouverScene(id);
@@ -191,7 +193,7 @@ async function ouvrirScene(id) {
   $("editeur-plein").hidden = false;
   modeAuClavier = null; // (le curseur va dans le texte du mode de la scène)
   appliquerMode();
-  restaurerCurseur();
+  restaurerCurseur({ focus });
   majCompteurs();
   marquerActive(id);
   indiquerEnregistrement("enregistre");
@@ -242,7 +244,7 @@ function restaurerCurseur({ focus = true } = {}) {
 }
 
 // =====================================================================
-// Aller à un nom (depuis une fiche : « Nommé dans ces scènes »)
+// Aller à un passage (depuis une fiche : « Nommé dans ces scènes » ; depuis « Rechercher »)
 // =====================================================================
 
 // Ouvre la scène au premier passage où la fiche est nommée (le texte rédigé d'abord, puis les notes).
@@ -266,12 +268,58 @@ export async function allerAuNom(sceneId, ficheId) {
     const ici = modeActif(), curseur = zoneActive().selectionStart;
     cible = liste.find((p) => rang(p.mode) > rang(ici) || (p.mode === ici && p.debut > curseur)) || liste[0];
   }
-  modeAuClavier = cible.mode;
+  placerPassage(cible.mode, cible.debut, cible.fin);
+}
+
+// Montre un passage d'une scène (pour « Rechercher et remplacer ») : la scène s'ouvre au besoin,
+// le bon texte s'affiche (Notes ou Rédigé, sans changer le mode de la scène), le passage est sélectionné.
+// Le clavier reste où il est (dans la barre de recherche) ; le texte ne défile que si le passage
+// n'est pas déjà bien visible (passer au résultat suivant, sur le même écran, ne fait pas sauter le texte).
+export async function montrerPassage(sceneId, mode, debut, fin) {
+  if (!scene || scene.id !== sceneId) {
+    await ouvrirScene(sceneId, { focus: false });
+    if (!scene || scene.id !== sceneId) return false;
+  }
+  placerPassage(mode, debut, fin, { focus: false, toujours: false });
+  return true;
+}
+
+// Sélectionne un passage, et amène sa ligne au tiers de la hauteur du texte
+// (« toujours : false » : seulement si elle n'est pas déjà bien visible)
+function placerPassage(mode, debut, fin, { focus = true, toujours = true } = {}) {
+  modeAuClavier = mode;
   appliquerMode();
-  const zone = zones[cible.mode];
-  zone.focus({ preventScroll: true });
-  zone.setSelectionRange(cible.debut, cible.fin);
-  zone.scrollTop = Math.max(0, hauteurDansLeTexte(zone, cible.debut) - zone.clientHeight / 3);
+  const zone = zones[mode];
+  if (focus) zone.focus({ preventScroll: true });
+  zone.setSelectionRange(debut, fin);
+  if (!focus) {
+    // (juste après un clic sur un bouton, Chrome remet parfois le curseur du texte qui vient de perdre
+    // le clavier, à la place de cette sélection : on la repose un instant plus tard, si rien ne l'a changée)
+    const jeton = ++selectionsPosees;
+    setTimeout(() => {
+      if (jeton !== selectionsPosees || document.activeElement === zone) return;
+      if (zone.selectionStart !== debut || zone.selectionEnd !== fin) zone.setSelectionRange(debut, fin);
+    }, 0);
+  }
+  const haut = hauteurDansLeTexte(zone, debut);
+  const place = haut - zone.scrollTop, ligne = parseFloat(getComputedStyle(zone).lineHeight) || 30;
+  if (toujours || place < zone.clientHeight * 0.1 || place + ligne > zone.clientHeight * 0.8) {
+    zone.scrollTop = Math.max(0, haut - zone.clientHeight / 3);
+  }
+}
+
+// Le texte d'une scène tel qu'il est en ce moment (pour la scène ouverte : celui qui est à l'écran)
+export function textesActuels(id) {
+  if (scene && scene.id === id) return { notes: zones.notes.value, texte: zones.redige.value };
+  const s = trouverScene(id);
+  return s ? { notes: s.notes || "", texte: s.texte || "" } : null;
+}
+
+// Où est le curseur : la scène ouverte, le texte où l'on écrit (Notes ou Rédigé), la position dans ce texte
+export function positionDuCurseur() {
+  if (!scene) return null;
+  const mode = modeActif();
+  return { sceneId: scene.id, mode, position: zones[mode].selectionStart };
 }
 
 // =====================================================================
@@ -610,7 +658,7 @@ function indiquerEnregistrement(etatEnr) {
   const zone = $("etat-enregistrement");
   if (zone.dataset.etat === etatEnr) return; // rien à changer : on évite de redessiner à chaque touche
   zone.dataset.etat = etatEnr;
-  zone.textContent = { "en-cours": "Enregistrement…", enregistre: "Enregistré ✓", erreur: "Non enregistré !" }[etatEnr];
+  ecrireTexte(zone, { "en-cours": "Enregistrement…", enregistre: "Enregistré ✓", erreur: "Non enregistré !" }[etatEnr]);
 }
 
 // ---------- Copie de secours (localStorage : une écriture instantanée, qui survit à la fermeture) ----------
@@ -718,6 +766,71 @@ export async function toutEnregistrer() {
   return !modifiee && clesSecours().length === 0;
 }
 
+// =====================================================================
+// Remplacer du texte dans plusieurs scènes d'un coup (« Rechercher et remplacer »)
+// =====================================================================
+
+// changements : [{ id, avant: { notes, texte }, apres: { notes, texte } }] (les textes complets).
+// Chaque scène doit avoir encore exactement le texte « avant » : sinon, rien n'est fait.
+// Tout est écrit dans la base en une seule fois (tout ou rien), puis affiché.
+// Dans la scène ouverte, seule la partie qui change est réécrite : le défilement et le curseur
+// restent en place ; l'historique Ctrl+Z du navigateur de ce texte repart de zéro (il ne
+// correspondrait plus au texte : c'est remplacer.js qui sait annuler un remplacement).
+// Renvoie "ok", "change" (un texte a changé entre-temps) ou "attente" (du texte attend encore
+// d'être enregistré). Si la base refuse d'écrire, l'erreur est transmise et rien n'a changé.
+export async function remplacerTextes(changements) {
+  // Pendant ce court moment, on ne peut pas taper dans le texte (la frappe serait écrasée)
+  zones.notes.readOnly = zones.redige.readOnly = true;
+  try {
+    await sauverMaintenant();
+    if (modifiee || clesSecours().length) return "attente";
+    const pareil = (a, b) => a.notes === (b.notes || "") && a.texte === (b.texte || "");
+    const maintenant = Date.now();
+    const copies = [];
+    for (const c of changements) {
+      const actuels = textesActuels(c.id);
+      if (!actuels || !pareil(actuels, c.avant)) return "change";
+      copies.push({ ...trouverScene(c.id), notes: c.apres.notes, texte: c.apres.texte, modifie: maintenant });
+    }
+    if (!copies.length) return "ok";
+    const roman = { ...etat.roman, modifie: Math.max(etat.roman.modifie || 0, maintenant) };
+    await db.lot({ ecrire: { scenes: copies, romans: [roman] } });
+    etat.roman.modifie = roman.modifie;
+    let ouverteChangee = false;
+    for (const copie of copies) {
+      const s = trouverScene(copie.id);
+      if (!s) continue;
+      Object.assign(s, { notes: copie.notes, texte: copie.texte, modifie: maintenant });
+      recompterScene(s.id);
+      if (s === scene) {
+        remettreTexte(zones.notes, s.notes);
+        remettreTexte(zones.redige, s.texte);
+        ouverteChangee = true;
+      }
+    }
+    afficherPlan(); // (les nombres de mots de chaque scène)
+    if (ouverteChangee) annoncer("scene-affichee", scene.id); // (noms en couleur, fiches nommées… suivent le texte)
+    annoncer("plan-change");
+    return "ok";
+  } finally {
+    zones.notes.readOnly = zones.redige.readOnly = false;
+  }
+}
+
+// Réécrit seulement la partie d'un texte qui a changé : le curseur et le défilement restent en place
+function remettreTexte(zone, nouveau) {
+  const ancien = zone.value;
+  if (ancien === nouveau) return;
+  const max = Math.min(ancien.length, nouveau.length);
+  let debut = 0, fin = 0;
+  while (debut < max && ancien[debut] === nouveau[debut]) debut++;
+  while (fin < max - debut && ancien[ancien.length - 1 - fin] === nouveau[nouveau.length - 1 - fin]) fin++;
+  const defilement = zone.scrollTop;
+  zone.setRangeText(nouveau.slice(debut, nouveau.length - fin), debut, ancien.length - fin, "preserve");
+  if (!zone.hidden) zone.scrollTop = defilement;
+  oublierHistorique(zone);
+}
+
 // Après un import, les anciennes copies de secours n'ont plus de sens
 export function effacerTousLesSecours() {
   for (const cle of clesSecours()) {
@@ -734,11 +847,11 @@ function majCompteurs() {
   relire();
   if (scene) {
     recompterScene(scene.id);
-    $("mots-scene").textContent = nombre(motsScene(scene.id));
-    $("mots-chapitre").textContent = nombre(motsChapitre(scene.chapitreId));
+    ecrireTexte($("mots-scene"), nombre(motsScene(scene.id)));
+    ecrireTexte($("mots-chapitre"), nombre(motsChapitre(scene.chapitreId)));
     majComptes(scene.id);
   }
-  $("mots-roman").textContent = pluriel(motsRoman(), "mot");
+  ecrireTexte($("mots-roman"), pluriel(motsRoman(), "mot"));
   majSession();
 }
 
@@ -775,8 +888,8 @@ function majSession() {
   const objectif = etat.roman.objectifSession || OBJECTIF_PAR_DEFAUT;
   const ecrits = motsDeLaSession();
   const pourcentage = Math.min(100, Math.round((ecrits / objectif) * 100));
-  $("mots-session").textContent = nombre(ecrits);
-  $("objectif-session").textContent = nombre(objectif);
+  ecrireTexte($("mots-session"), nombre(ecrits));
+  ecrireTexte($("objectif-session"), nombre(objectif));
   const barre = $("barre-session");
   barre.setAttribute("aria-valuenow", pourcentage);
   barre.style.setProperty("--progression", pourcentage + "%");

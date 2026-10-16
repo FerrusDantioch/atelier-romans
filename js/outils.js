@@ -39,6 +39,17 @@ export function el(balise, attributs = {}, ...enfants) {
   return e;
 }
 
+// Change le texte d'un élément (un compteur, « Enregistré ✓ »…) sans rien retirer de la page.
+// Pendant que l'on tape, Chrome découpe l'annulation (Ctrl+Z) dès que quelque chose est retiré
+// de la page : Ctrl+Z n'annulerait plus la phrase tapée d'un seul coup. Or « textContent = … »
+// retire l'ancien texte : on change donc plutôt le texte lui-même.
+export function ecrireTexte(element, texte) {
+  const n = element.firstChild;
+  if (!n) element.append(texte);
+  else if (n === element.lastChild && n.nodeType === Node.TEXT_NODE) { if (n.data !== texte) n.data = texte; }
+  else element.textContent = texte;
+}
+
 // Compte les mots d'un texte (les symboles de mise en forme * ne comptent pas)
 export function compterMots(texte) {
   if (typeof texte !== "string" || !texte) return 0; // rien (ou pas du texte) : 0 mot
