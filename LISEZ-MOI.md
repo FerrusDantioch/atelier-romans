@@ -191,7 +191,8 @@ Ouvrez un roman depuis la Bibliothèque. L'écran se divise en trois colonnes :
   - Pour écrire sans couleurs : décochez **« Noms en couleur dans le texte »**, sous « Dans cette scène ».
     Ce choix est propre à chaque appareil. En mode concentration, les couleurs s'effacent d'elles-mêmes.
   - Un nom coupé par un retour à la ligne (« Mère » en fin de ligne, « Corbeau » au début de la suivante)
-    n'est pas coloré, mais il compte bien dans « Dans cette scène ».
+    n'est pas coloré en entier : seul « Corbeau » l'est, comme un nom d'un seul mot.
+    Il compte bien, lui, dans « Dans cette scène ».
 - **Fiche épinglée** : elle reste affichée en haut du panneau, quel que soit l'onglet.
   Le premier personnage principal s'épingle tout seul ; « 📌 Épingler » en choisit une autre ;
   « Replier » la réduit à son nom.

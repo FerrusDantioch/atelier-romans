@@ -193,6 +193,9 @@ export function nomsPossibles(texte, noms) {
 // Les noms trouvés dans un texte, à leur position exacte : [{ debut, fin, fiches }], dans l'ordre.
 // Deux noms ne se chevauchent jamais : le plus long l'emporte (« Mère Corbeau » plutôt que « Corbeau ») ;
 // un même passage qui nomme deux fiches les garde toutes les deux.
+// Un nom coupé par un retour à la ligne (« Mère », puis « Corbeau » au début de la ligne suivante)
+// n'est pas pris en entier : ses mots restent repérables chacun de son côté (ici « Corbeau »).
+// (Il compte bien, lui, dans « Dans cette scène » : voir fichesNommees.)
 export function nomsDansLeTexte(texte, noms) {
   if (!texte) return [];
   const { t, origine } = normaliser(texte);
@@ -201,7 +204,7 @@ export function nomsDansLeTexte(texte, noms) {
     n.re.lastIndex = 0;
     for (let r; (r = n.re.exec(t));) {
       const debut = r.index, fin = r.index + r[0].length;
-      if (entier(t, debut, fin)) trouves.push({ debut, fin, fiche: n.fiche });
+      if (entier(t, debut, fin) && !r[0].includes("\n")) trouves.push({ debut, fin, fiche: n.fiche });
       n.re.lastIndex = debut + 1;
     }
   }

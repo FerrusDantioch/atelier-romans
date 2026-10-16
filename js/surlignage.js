@@ -66,8 +66,11 @@ export function initialiserSurlignage() {
     zone.addEventListener("keydown", (e) => { if (!["Shift", "Control", "Alt", "Meta"].includes(e.key)) cacherBulle(); });
     // On ne tape plus dans ce texte : le moment de faire le ménage du calque, sans gêner Ctrl+Z
     zone.addEventListener("blur", () => { if (aNettoyer) planifier(true); });
-    // Largeur changée (fenêtre, volets, concentration, barre de défilement…) : les lignes se recoupent
+    // Taille changée (fenêtre, volets, concentration, barre de défilement…) : les lignes se recoupent.
+    // Deux surveillances : la place du texte (une barre de défilement qui apparaît la réduit),
+    // et la taille totale (sur grand écran, élargir la fenêtre n'élargit que les marges du texte).
     new ResizeObserver(() => planifier()).observe(zone);
+    new ResizeObserver(() => planifier()).observe(zone, { box: "border-box" });
   }
   ecouter("scene-affichee", () => { cacherBulle(); planifier(true); });
   ecouter("mode-affiche", () => { cacherBulle(); planifier(true); });
