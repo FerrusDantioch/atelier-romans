@@ -44,11 +44,16 @@ let dernierMessage = "";   // ce que vient de faire un remplacement (affiché ju
 let faits = [];            // les textes mis en place par « Remplacer », un par un : [{ sceneId, mode, debut, fin }]
                            // (« Ana » → « Anabelle » : le « Ana » de « Anabelle » n'est pas remplacé une 2e fois)
 let minuterie = null;
+let saisieEnAttente = false; // un mot tapé attend encore d'être cherché (voir aJour)
+let ctrlZPossible = false; // Ctrl+Z dans le texte peut-il encore annuler le dernier remplacement ? (voir surCtrlZ)
+let annulationEnCours = false;
 let file = Promise.resolve(); // déplacements et remplacements se font l'un après l'autre
-const historique = [];     // remplacements à annuler : [{ romanId, scenes: [{ id, avant, apres }] }]
+const historique = [];     // remplacements à annuler : [{ romanId, sceneOuverte, scenes: [{ id, avant, apres }] }]
 const calques = {};        // pour chaque texte (notes, redige) : { zone, calque, interieur, styles }
 
 const $ = (id) => document.getElementById(id);
+// Sur Mac, Ctrl+F et Ctrl+H servent déjà dans le texte (avancer d'une lettre, effacer) : on y prend Cmd+F et Cmd+H
+const MAC = /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent);
 
 // =====================================================================
 // Mise en place
@@ -72,7 +77,10 @@ export function initialiserRemplacement() {
     const zone = $("texte-" + mode), calque = $("trouvailles-" + mode);
     const c = { zone, calque, interieur: calque.firstElementChild, styles: "" };
     calques[mode] = c;
-    zone.addEventListener("input", () => { if (ouverte) marquerPerime(); });
+    zone.addEventListener("input", () => {
+      ctrlZPossible = false; // (on a retouché le texte : Ctrl+Z défait la frappe, pas le remplacement)
+      if (ouverte) marquerPerime();
+    });
     zone.addEventListener("scroll", () => suivreDefilement(c));
     zone.addEventListener("keydown", surCtrlZ);
     // (taille du texte changée : le calque suit, sans être refait)
@@ -87,6 +95,7 @@ export function initialiserRemplacement() {
     dernierMessage = "";
     faits = [];
     clearTimeout(minuterie);
+    saisieEnAttente = true;
     minuterie = setTimeout(() => chercher({ depuisCurseur: true }), DELAI);
   });
   saisie.addEventListener("keydown", (e) => {
@@ -94,7 +103,7 @@ export function initialiserRemplacement() {
     e.preventDefault();
     enOrdre(e.shiftKey ? precedent : suivant);
   });
-  $("br-par").addEventListener("input", () => { faits = []; afficherListe(); }); // (l'aperçu du remplacement suit)
+  $("br-par").addEventListener("input", () => afficherListe()); // (l'aperçu du remplacement suit)
   $("br-par").addEventListener("keydown", (e) => {
     if (e.key !== "Enter" || e.isComposing) return;
     e.preventDefault();
@@ -128,6 +137,8 @@ export function initialiserRemplacement() {
 
   // Autre scène, plan changé, Notes ou Rédigé : la recherche suit
   ecouter("scene-affichee", (id) => {
+    // (autre scène ouverte : Ctrl+Z redevient l'annulation habituelle, voir surCtrlZ)
+    if (!derniereOperation() || derniereOperation().sceneOuverte !== id) ctrlZPossible = false;
     if (!ouverte) return;
     if (!id) fermer({ versLeTexte: false }); // (plus aucune scène : la barre n'a plus lieu d'être)
     else chercher();
@@ -153,11 +164,13 @@ function enOrdre(action) {
 function surTouche(e) {
   if ($("vue-roman").hidden || document.querySelector("dialog[open]")) return;
   const touche = e.key.toLowerCase();
-  if ((e.ctrlKey || e.metaKey) && !e.altKey && !e.shiftKey && (touche === "f" || touche === "h")) {
+  const commande = MAC ? e.metaKey && !e.ctrlKey : e.ctrlKey && !e.metaKey;
+  if (commande && !e.altKey && !e.shiftKey && (touche === "f" || touche === "h")) {
     if ($("editeur-plein").hidden) return; // roman encore vide : la recherche du navigateur reste possible
     e.preventDefault();
     if (!e.repeat) ouvrir({ remplacer: touche === "h" });
-  } else if (e.key === "Escape" && ouverte && !document.body.classList.contains("concentration")
+  } else if (e.key === "Escape" && ouverte && !e.defaultPrevented // (Échap a déjà servi : concentration, volet…)
+      && !document.body.classList.contains("concentration")
       && !$("vue-roman").classList.contains("plan-ouvert") && !$("vue-roman").classList.contains("panneau-ouvert")) {
     const ici = document.activeElement;
     if ($("barre-recherche").contains(ici)) { e.preventDefault(); fermer(); }               // retour au texte
@@ -204,6 +217,7 @@ export function fermerRemplacement() {
 // « versLeTexte » : le clavier retourne dans le texte, sur le passage montré (sélectionné)
 function fermer({ versLeTexte = true } = {}) {
   clearTimeout(minuterie);
+  saisieEnAttente = false;
   ouverte = false;
   perime = false;
   faits = [];
@@ -243,8 +257,10 @@ function passages(texte) {
   motif.lastIndex = 0;
   for (let r; (r = motif.exec(texte));) {
     const debut = r.index, fin = debut + r[0].length;
-    if (!options.mot || entier(texte, debut, fin)) trouves.push([debut, fin]);
-    else motif.lastIndex = debut + 1; // (pas un mot entier : on cherche un peu plus loin)
+    // (un accent écrit à part, « e » + « ´ » : le « e » seul n'est pas un passage de « e »)
+    const coupe = fin < texte.length && /\p{M}/u.test(texte[fin]);
+    if (!coupe && (!options.mot || entier(texte, debut, fin))) trouves.push([debut, fin]);
+    else motif.lastIndex = debut + 1; // (pas un passage entier : on cherche un peu plus loin)
   }
   return trouves;
 }
@@ -290,6 +306,7 @@ function prochainLibre(rang, position) {
 // les textes que l'on vient de mettre en place (aucun passage restant : pas de résultat courant).
 function chercher({ depuisCurseur = false, depuis = null } = {}) {
   clearTimeout(minuterie);
+  saisieEnAttente = false;
   if (!ouverte || !etat.roman) return;
   // (on est en train d'écrire dans le texte : on attend le retour dans la barre, voir marquerPerime)
   if (perime && document.activeElement && document.activeElement.classList.contains("texte")) return;
@@ -309,14 +326,16 @@ function chercher({ depuisCurseur = false, depuis = null } = {}) {
       else actuel = premierDepuis(avant.rang, avant.debut);
     } else {
       const c = positionDuCurseur();
-      actuel = c ? premierDepuis(rangDe(c.sceneId, c.mode), c.position) : 0;
+      actuel = c ? prochainLibre(rangDe(c.sceneId, c.mode), c.position) : prochainLibre(-1, 0);
     }
   }
   afficherTout();
   // En tapant le mot : le premier passage qui suit le curseur est montré, s'il est sur l'écran de la scène ouverte
-  // (on n'ouvre pas une autre scène à chaque lettre tapée : Entrée ou ↓ y mènent)
+  // (on n'ouvre pas une autre scène à chaque lettre tapée : Entrée ou ↓ y mènent).
+  // Pas si le clavier est déjà retourné dans le texte : la lettre suivante remplacerait le passage sélectionné.
   const r = resultats[actuel];
-  if (depuisCurseur && r && r.scene.id === etat.sceneId && !calques[r.mode].zone.hidden) {
+  const dansLeTexte = document.activeElement && document.activeElement.classList.contains("texte");
+  if (depuisCurseur && r && !dansLeTexte && r.scene.id === etat.sceneId && !calques[r.mode].zone.hidden) {
     revele = true;
     montrerPassage(r.scene.id, r.mode, r.debut, r.fin);
     marquerActuel();
@@ -327,10 +346,17 @@ function chercher({ depuisCurseur = false, depuis = null } = {}) {
 // Aller d'un passage à l'autre
 // =====================================================================
 
+// Avant d'agir, la recherche doit être à jour : un mot tapé il y a moins de 0,15 s n'a pas encore
+// été cherché (Entrée juste après la dernière lettre), ou l'on a écrit dans le texte depuis.
+function aJour() {
+  if (saisieEnAttente) chercher({ depuisCurseur: true });
+  else if (perime) chercher();
+}
+
 // Montre un passage : sa scène s'ouvre au besoin, il est sélectionné et surligné (le clavier reste dans la barre)
 async function aller(i) {
   if (!ouverte) return;
-  if (perime) chercher();
+  aJour();
   const n = resultats.length;
   if (!n) return;
   actuel = ((i % n) + n) % n;
@@ -338,25 +364,26 @@ async function aller(i) {
   const r = resultats[actuel];
   marquerActuel();
   await montrerPassage(r.scene.id, r.mode, r.debut, r.fin);
-  // (une autre scène s'est ouverte : la recherche a été refaite et le calque redessiné, voir « scene-affichee »)
+  // (une autre scène s'est ouverte : la recherche est refaite et le calque redessiné, voir « scene-affichee » ;
+  // le résultat courant y est retrouvé, il reste le même)
   marquerActuel();
   if (calques[r.mode]) suivreDefilement(calques[r.mode]);
 }
 
 async function suivant() {
-  if (perime) chercher();
+  aJour();
   if (!resultats.length) return;
   await aller(actuel < 0 ? 0 : revele ? actuel + 1 : actuel); // (pas encore montré : c'est lui, le suivant)
 }
 
 async function precedent() {
-  if (perime) chercher();
+  aJour();
   if (resultats.length) await aller(actuel < 0 ? -1 : actuel - 1);
 }
 
 // Va à un passage touché dans la liste (retrouvé, si la recherche a été refaite entre-temps)
 async function allerA(cible) {
-  if (perime) chercher();
+  aJour();
   let i = resultats.indexOf(cible);
   if (i < 0) i = resultats.findIndex((r) => r.scene.id === cible.scene.id && r.mode === cible.mode && r.debut === cible.debut);
   if (i < 0) i = premierDepuis(cible.rang, cible.debut);
@@ -382,7 +409,7 @@ function adapter(par, trouve) {
 // (Un passage pas encore montré est d'abord montré : on ne remplace que ce que l'on a vu.)
 async function remplacerUn() {
   if (!ouverte) return;
-  if (perime) chercher();
+  aJour();
   const r = resultats[actuel];
   if (!r) { if (resultats.length) await aller(0); return; }
   if (!revele || r.scene.id !== etat.sceneId) { await aller(actuel); return; }
@@ -406,7 +433,7 @@ async function remplacerUn() {
 // Remplace tous les passages trouvés, après confirmation
 async function toutRemplacer() {
   if (!ouverte) return;
-  if (perime) chercher();
+  aJour();
   if (!resultats.length) return;
   const q = requete(), par = remplacant();
   const nombreScenes = new Set(resultats.map((r) => r.scene.id)).size;
@@ -415,7 +442,7 @@ async function toutRemplacer() {
     titre: par ? "Tout remplacer ?" : "Tout supprimer ?",
     message: [
       par ? `« ${q} » sera remplacé par « ${par} » : ${combien}.` : `« ${q} » sera supprimé : ${combien}.`,
-      "Vous pourrez l'annuler juste après (bouton « Annuler le remplacement », ou Ctrl+Z dans le texte).",
+      "Vous pourrez l'annuler juste après : bouton « Annuler le remplacement ».",
     ],
     ok: par ? "Tout remplacer" : "Tout supprimer",
     danger: !par,
@@ -428,14 +455,22 @@ async function toutRemplacer() {
     if (!parScene.has(r.scene.id)) parScene.set(r.scene.id, []);
     parScene.get(r.scene.id).push(r);
   }
+  const misEnPlace = []; // (les textes mis en place : « Remplacer » ne les remplacera pas une seconde fois)
   const changements = [...parScene].map(([id, liste]) => {
     const avant = textesActuels(id), apres = { ...avant };
     for (const [mode] of MODES) {
       const ici = liste.filter((r) => r.mode === mode);
       if (!ici.length) continue;
       const t = avant[CHAMP[mode]], morceaux = [];
-      let pos = 0;
-      for (const r of ici) { morceaux.push(t.slice(pos, r.debut), adapter(par, r.trouve)); pos = r.fin; }
+      let pos = 0, longueur = 0;
+      for (const r of ici) {
+        const entre = t.slice(pos, r.debut), nouveau = adapter(par, r.trouve);
+        morceaux.push(entre, nouveau);
+        longueur += entre.length;
+        misEnPlace.push({ sceneId: id, mode, debut: longueur, fin: longueur + nouveau.length });
+        longueur += nouveau.length;
+        pos = r.fin;
+      }
       morceaux.push(t.slice(pos));
       apres[CHAMP[mode]] = morceaux.join("");
     }
@@ -443,7 +478,7 @@ async function toutRemplacer() {
   });
   const total = resultats.length, scenes = parScene.size;
   if (!changements.length || !await appliquer(changements)) return;
-  faits = [];
+  faits = misEnPlace;
   dernierMessage = `${pluriel(total, "passage remplacé", "passages remplacés")} dans ${pluriel(scenes, "scène")}.`;
   chercher({ depuisCurseur: true });
 }
@@ -451,8 +486,9 @@ async function toutRemplacer() {
 // Écrit les nouveaux textes (tout ou rien), et retient de quoi annuler
 async function appliquer(changements) {
   if (!await ecrire(changements)) return false;
-  historique.push({ romanId: etat.roman.id, scenes: changements });
+  historique.push({ romanId: etat.roman.id, sceneOuverte: etat.sceneId, scenes: changements });
   if (historique.length > MAX_HISTORIQUE) historique.shift();
+  ctrlZPossible = true;
   return true;
 }
 
@@ -465,7 +501,8 @@ async function ecrire(changements) {
     return false;
   }
   if (reponse === "attente") {
-    informer("Du texte attend encore d'être enregistré : rien n'a été remplacé. Réessayez dans un instant.", { erreur: true });
+    informer("Du texte attend encore d'être enregistré : rien n'a été remplacé. Réessayez dans un instant ; "
+      + "si cela dure, exportez vos données puis rechargez la page.", { erreur: true, duree: 8000 });
     return false;
   }
   if (reponse === "change") {
@@ -506,24 +543,25 @@ async function annuler() {
   const message = changements.length
     ? "Remplacement annulé." + (retouchees ? ` (${pluriel(retouchees, "scène retouchée", "scènes retouchées")} depuis : laissée${retouchees > 1 ? "s" : ""} telle${retouchees > 1 ? "s" : ""} quelle${retouchees > 1 ? "s" : ""}.)` : "")
     : "Rien à annuler : le texte a été retouché depuis ce remplacement.";
-  if (ouverte) {
-    dernierMessage = message;
-    chercher();
-  } else {
-    informer(message);
-  }
+  dernierMessage = message;
+  if (ouverte) chercher();
+  if (!ouverte || perime) informer(message); // (barre fermée, ou liste en attente : le message s'affiche en bas)
 }
 
-// Ctrl+Z dans le texte, juste après un remplacement (le texte n'a pas été retouché depuis) :
-// c'est le remplacement qui est annulé. (Si l'on a écrit depuis, Ctrl+Z défait d'abord la frappe,
-// comme d'habitude ; une fois revenu au texte d'après le remplacement, il défait le remplacement.)
+// Ctrl+Z dans le texte, juste après un remplacement : c'est le remplacement qui est annulé
+// (puis le précédent, etc.). Seulement tant que l'on n'a ni écrit dans le texte, ni changé de scène :
+// sinon Ctrl+Z redevient l'annulation habituelle de la frappe (et un remplacement ancien ne se
+// défait pas par surprise). Le bouton « Annuler le remplacement », lui, reste possible.
 function surCtrlZ(e) {
   if (!(e.ctrlKey || e.metaKey) || e.shiftKey || e.altKey || e.isComposing || e.key.toLowerCase() !== "z") return;
+  if (annulationEnCours) { e.preventDefault(); return; } // (touche maintenue : une annulation à la fois)
   const op = derniereOperation();
-  const ici = op && op.scenes.find((c) => c.id === etat.sceneId);
-  if (!ici || !pareil(textesActuels(ici.id), ici.apres)) return;
+  if (!ctrlZPossible || !op || op.sceneOuverte !== etat.sceneId) return;
+  if (!op.scenes.some((c) => pareil(textesActuels(c.id), c.apres))) return;
   e.preventDefault();
-  enOrdre(annuler);
+  if (e.repeat) return;
+  annulationEnCours = true;
+  enOrdre(annuler).finally(() => { annulationEnCours = false; });
 }
 
 // =====================================================================
@@ -684,7 +722,9 @@ function dessinerCalques() {
 
 function cacherCalque(c) {
   c.calque.hidden = true;
-  if (c.interieur.firstChild) c.interieur.replaceChildren();
+  // (pas vidé si le clavier est dans le texte : voir l'avertissement en haut ; il sera refait de toute façon)
+  const dansLeTexte = document.activeElement && document.activeElement.classList.contains("texte");
+  if (c.interieur.firstChild && !dansLeTexte) c.interieur.replaceChildren();
 }
 
 // Le calque prend exactement la place, la police et les marges de son texte (comme dans surlignage.js)

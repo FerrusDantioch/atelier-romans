@@ -304,9 +304,11 @@ Pour retrouver un passage, ou renommer un personnage dans tout le roman.
    - **« Remplacer »** (ou `Entrée` dans ce champ) : remplace le passage encadré, puis va au suivant.
      Un passage pas encore montré est d'abord montré : on ne remplace que ce que l'on a vu.
    - **« Tout remplacer »** : remplace tous les passages d'un coup, après une confirmation qui dit combien.
-   - **Annuler** : le bouton **« Annuler le remplacement »**, ou **`Ctrl+Z`** dans le texte juste après.
-     Une scène que vous avez retouchée depuis n'est pas remise en arrière (rien de ce que vous avez écrit
-     ensuite n'est effacé), et le message le dit.
+   - **Annuler** : le bouton **« Annuler le remplacement »** (chaque clic défait un remplacement, du plus
+     récent au plus ancien), ou **`Ctrl+Z`** dans le texte juste après, tant que vous n'y avez rien retapé
+     et que vous n'avez pas changé de scène (ensuite, `Ctrl+Z` défait de nouveau ce que vous tapez, comme
+     d'habitude, et seul le bouton annule le remplacement). Une scène que vous avez retouchée depuis n'est pas
+     remise en arrière (rien de ce que vous avez écrit ensuite n'est effacé), et le message le dit.
 
 Les options (sur téléphone, derrière le bouton « Options ») :
 - **Majuscules exactes** : sans elle, « kaël » trouve aussi « Kaël » et « KAËL », et le remplacement garde
@@ -317,7 +319,7 @@ Les options (sur téléphone, derrière le bouton « Options ») :
 À savoir : les **accents comptent** (« a » ne trouve pas « à ») ; l'apostrophe droite `'` trouve aussi
 l'apostrophe typographique `’` ; les espaces tapées au début ou à la fin ne comptent pas (le clavier d'un
 téléphone en ajoute souvent une). Après « Ana » → « Anabelle », « Remplacer » ne remplace pas une seconde
-fois le « Ana » d'« Anabelle ». Si vous écrivez dans le texte pendant que la barre est ouverte, la liste
+fois le « Ana » d'« Anabelle » (ni après « Tout remplacer »). Si vous écrivez dans le texte pendant que la barre est ouverte, la liste
 s'estompe et se remet à jour dès que vous revenez dans la barre. Les titres des scènes et les fiches ne
 sont pas concernés (renommez la fiche du personnage vous-même).
 
