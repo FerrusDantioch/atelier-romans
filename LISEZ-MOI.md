@@ -571,5 +571,8 @@ d'Anthropic : Ferrus Dantioch, créateur de l'Omni-système, en a imaginé l'id�
 l'apparence ; Claude en a écrit le code.
 (C'est aussi indiqué dans la page « À propos » de l'application.)
 
+Pour découvrir l'Omni-système : **le portfolio**, https://ferrusdantioch.github.io/omni-systeme/
+(lien aussi dans « À propos »).
+
 ---
 *Réalisé par Ferrus Dantioch*

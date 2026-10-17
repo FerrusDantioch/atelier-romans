@@ -139,6 +139,7 @@ select:focus-visible, textarea:focus-visible, summary:focus-visible{
 .apropos .version{ font-family:var(--f-des); color:var(--halo); font-size:.9rem; }
 .conception{ display:grid; gap:var(--esp-2); }
 .conception strong{ color:var(--texte); font-weight:600; }
+.lien-portfolio{ font-weight:600; } /* (le lien vers le portfolio de l'Omni-système) */
 
 /* Démo des couleurs d'univers (page À propos) */
 .palette{ display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:var(--esp-3); }
