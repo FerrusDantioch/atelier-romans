@@ -519,6 +519,11 @@ l'un à l'autre : « Exporter mes données » d'un côté, puis « Importer mes 
 « fourche ») sous le même compte GitHub : elle serait à la même adresse de base et partagerait les
 mêmes romans, copies de secours et réglages que celle-ci.
 
+**Identité de l'application** : dans `manifest.json`, le champ `"id": "/atelier-romans/"` ne doit
+plus jamais changer. Chrome le lit à partir de la racine du site (`https://ferrusdantioch.github.io/`) :
+`"./"` aurait donné à l'Atelier l'identité de la racine, la même que d'autres applications du site.
+Et une application déjà installée dont l'`id` change devient, pour Chrome, une autre application.
+
 **Retirer la publication** : sur GitHub, dans le dépôt, **Settings → Pages → « Unpublish site »**
 (ou le demander). Les romans déjà écrits restent sur l'appareil, mais pensez à les exporter avant.
 
