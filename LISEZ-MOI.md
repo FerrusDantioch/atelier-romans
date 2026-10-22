@@ -574,5 +574,18 @@ l'apparence ; Claude en a écrit le code.
 Pour découvrir l'Omni-système : **le portfolio**, https://ferrusdantioch.github.io/omni-systeme/
 (lien aussi dans « À propos »).
 
+## Licence
+
+Distribué sous licence **[PolyForm Noncommercial 1.0.0](LICENSE)** (texte
+officiel en anglais, suivi d'une traduction française à titre indicatif).
+
+Vous pouvez utiliser, modifier et partager ce code librement, à condition que
+ce ne soit pas dans un but commercial et que le fichier de licence accompagne
+toujours le code. Toute utilisation commerciale nécessite l'accord de
+l'auteur. Le logiciel est fourni « en l'état », sans aucune garantie.
+
+Les polices (dossier `fonts/`) gardent leur propre licence : SIL Open Font
+License 1.1, texte complet dans `fonts/OFL.txt`.
+
 ---
 *Réalisé par Ferrus Dantioch*
