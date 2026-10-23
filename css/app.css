@@ -1089,3 +1089,7 @@ kbd{
   .nav{ margin-left:0; width:100%; }
   .apropos-tete{ flex-direction:column; align-items:flex-start; }
 }
+
+/* Adresse e-mail de la section « À propos » : un long mot sans espace,
+   qu'on autorise à passer à la ligne pour ne pas déborder sur un petit écran. */
+.adresse-mail { overflow-wrap: anywhere; }
