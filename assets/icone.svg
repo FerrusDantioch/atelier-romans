@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- =====================================================================
+       ICÔNE D'OMNI-ROMANCIER : un livre ouvert et une plume d'écriture
+       Dessin source de favicon.png, icone-192.png et icone-512.png (icône ronde,
+       coins transparents). icone-maskable.svg contient le même dessin, réduit :
+       une retouche du livre ou de la plume est à reporter dans les deux fichiers.
+       Couleurs reprises de css/theme.css (pas de blanc pur ni de noir pur).
+       ===================================================================== -->
+  <defs>
+    <!-- Fond : nuit violette (couleur « nuit »), un peu plus claire au centre -->
+    <radialGradient id="fond" cx="50%" cy="42%" r="58%">
+      <stop offset="0" stop-color="#2b2245"/>
+      <stop offset="0.7" stop-color="#1a1627"/>
+      <stop offset="1" stop-color="#14111d"/>
+    </radialGradient>
+    <!-- Lueur violette (couleur « omni ») derrière le livre -->
+    <radialGradient id="lueur" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#a777ff" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#a777ff" stop-opacity="0"/>
+    </radialGradient>
+    <!-- Pages : blanc cassé (couleur « texte »), ombrées près de la reliure -->
+    <linearGradient id="page-gauche" x1="1" y1="0" x2="0" y2="0">
+      <stop offset="0" stop-color="#c9bde0"/>
+      <stop offset="0.25" stop-color="#e9e4f2"/>
+      <stop offset="1" stop-color="#e9e4f2"/>
+    </linearGradient>
+    <linearGradient id="page-droite" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#c9bde0"/>
+      <stop offset="0.25" stop-color="#e9e4f2"/>
+      <stop offset="1" stop-color="#e9e4f2"/>
+    </linearGradient>
+    <!-- Plume : violet de l'Omni-système (couleur « omni »), plus clair vers la pointe (couleur « halo ») -->
+    <linearGradient id="plume" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0" stop-color="#8a55f0"/>
+      <stop offset="0.55" stop-color="#a777ff"/>
+      <stop offset="1" stop-color="#d6c2ff"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Disque de fond et son anneau violet -->
+  <circle cx="256" cy="256" r="256" fill="url(#fond)"/>
+  <circle cx="256" cy="256" r="246" fill="none" stroke="#a777ff" stroke-opacity="0.55" stroke-width="8"/>
+
+  <!-- Lueur derrière le livre -->
+  <ellipse cx="256" cy="290" rx="200" ry="150" fill="url(#lueur)"/>
+
+  <!-- Le livre (réduit à 90 %, un peu abaissé pour laisser de la place à la plume) -->
+  <g transform="translate(256 318) scale(0.9) translate(-256 -300)">
+    <!-- Couverture violette, qui dépasse sous les pages -->
+    <path d="M256 238 C210 212 150 206 86 216 L86 394 C150 384 210 390 256 416 C302 390 362 384 426 394 L426 216 C362 206 302 212 256 238 Z"
+          fill="#6f45c9"/>
+    <!-- Tranche des pages (l'épaisseur du livre) -->
+    <path d="M256 226 C220 198 160 188 102 200 L102 380 C160 368 220 376 256 404 C292 376 352 368 410 380 L410 200 C352 188 292 198 256 226 Z"
+          fill="#a99bc8"/>
+    <!-- Page de gauche -->
+    <path d="M256 214 C220 186 160 176 102 188 L102 366 C160 354 220 362 256 390 Z" fill="url(#page-gauche)"/>
+    <!-- Page de droite -->
+    <path d="M256 214 C292 186 352 176 410 188 L410 366 C352 354 292 362 256 390 Z" fill="url(#page-droite)"/>
+    <!-- Reliure (le pli au milieu) -->
+    <path d="M256 214 L256 390" stroke="#8f7fb3" stroke-width="4"/>
+
+    <!-- Lignes de texte (la dernière, à droite, est en train d'être écrite) -->
+    <g fill="none" stroke="#7d6aa6" stroke-width="10" stroke-linecap="round">
+      <path d="M128 232 C168 222 206 226 234 242"/>
+      <path d="M128 268 C168 258 206 262 234 278"/>
+      <path d="M128 304 C168 294 206 298 234 314"/>
+      <path d="M278 242 C306 226 344 222 384 232"/>
+      <path d="M278 278 C300 266 320 262 336 262"/>
+    </g>
+  </g>
+
+  <!-- La plume : sa pointe (point 0,0 du dessin) touche le bout de la dernière ligne.
+       translate = position de la pointe, rotate = inclinaison, scale = taille -->
+  <g transform="translate(331 288) rotate(18) scale(0.8)">
+    <!-- Contour sombre, pour bien détacher la plume du papier -->
+    <path d="M0 -56 C-58 -96 -64 -200 10 -276 C62 -200 54 -104 0 -56 Z" fill="none" stroke="#1d1929" stroke-width="14" stroke-linejoin="round"/>
+    <path d="M-10 -48 L0 8 L10 -48 Z" fill="none" stroke="#1d1929" stroke-width="12" stroke-linejoin="round"/>
+    <!-- Bec (la partie qui écrit) -->
+    <path d="M-10 -48 L0 8 L10 -48 Z" fill="#d6c2ff"/>
+    <!-- Barbes de la plume -->
+    <path d="M0 -56 C-58 -96 -64 -200 10 -276 C62 -200 54 -104 0 -56 Z" fill="url(#plume)"/>
+    <!-- Tige centrale et quelques barbes plus sombres -->
+    <path d="M0 -50 Q0 -160 8 -268" fill="none" stroke="#3a2a63" stroke-width="5" stroke-linecap="round"/>
+    <g fill="none" stroke="#5b3aa8" stroke-width="4" stroke-linecap="round">
+      <path d="M1 -100 L-34 -128"/>
+      <path d="M2 -150 L-40 -184"/>
+      <path d="M3 -200 L-30 -232"/>
+      <path d="M2 -122 L36 -152"/>
+      <path d="M4 -176 L38 -210"/>
+    </g>
+  </g>
+</svg>

@@ -461,6 +461,7 @@ dans `assets/` (en gardant les mêmes noms) :
 | `icone-192.png`, `icone-512.png` | icônes de l'application installée (rondes, fond sombre) |
 | `icone-maskable-512.png` | icône carrée pleine (Android découpe lui-même la forme) |
 | `favicon.png` | petite icône de l'onglet |
+| `icone.svg`, `icone-maskable.svg` | dessins sources des icônes (livre ouvert et plume), non utilisés par l'application : après une retouche, les reconvertir en PNG aux mêmes noms et tailles |
 
 Après le remplacement : lancer le serveur et ouvrir Omni-Romancier une fois pour qu'il prenne les nouvelles
 images (attendre la ligne ✓ dans « À propos » avant d'arrêter le serveur). L'icône de l'application déjà installée peut mettre un peu de temps à changer (la désinstaller
