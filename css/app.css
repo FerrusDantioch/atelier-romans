@@ -173,7 +173,7 @@ select:focus-visible, textarea:focus-visible, summary:focus-visible{
 .encart-sauvegarde h2{ font-size:1.15rem; }
 .encart-sauvegarde p, .encart-sauvegarde li{ font-size:.95rem; }
 
-/* Encart « Installer l'Atelier » (bibliothèque) */
+/* Encart « Installer Omni-Romancier » (bibliothèque) */
 .encart-installation{
   margin-top:var(--esp-5); padding:var(--esp-5);
   border:var(--filet) solid var(--trait); border-radius:var(--arrondi-panneau);

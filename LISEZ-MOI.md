@@ -1,4 +1,4 @@
-# L'Atelier — Omni-système
+# Omni-Romancier
 
 Application d'écriture de romans tirés des parties de l'Omni-système.
 Elle s'installe comme une application, fonctionne **sans connexion**, et garde tout sur l'appareil
@@ -10,10 +10,10 @@ l'étape 11 (les noms en couleur dans le texte), l'étape 12 (les notes à côt�
 l'étape 13 (sur chaque fiche, les scènes où elle est nommée), l'étape 14 (l'export en ePub et en Word)
 et l'étape 15 (rechercher et remplacer dans tout le roman).
 
-**En ligne : https://ferrusdantioch.github.io/atelier-romans/** — s'ouvre aussi sur téléphone,
-sans rien installer d'autre (voir « L'Atelier en ligne » plus bas).
+**En ligne : https://ferrusdantioch.github.io/omni-romancier/** — s'ouvre aussi sur téléphone,
+sans rien installer d'autre (voir « Omni-Romancier en ligne » plus bas).
 
-## En bref : ce que fait l'Atelier
+## En bref : ce que fait Omni-Romancier
 
 - **Bibliothèque** de romans, chacun dans un univers (Cyberpunk, Fantasy, Space opéra,
   Horreur / enquête, Autre) dont la couleur habille l'interface.
@@ -41,28 +41,28 @@ sans rien installer d'autre (voir « L'Atelier en ligne » plus bas).
 ## Première installation (une seule fois)
 
 *Plus simple : ouvrir l'adresse en ligne ci-dessus dans Chrome ou Edge, puis passer directement
-à l'étape D (installer). Les étapes A à C ne servent que pour faire tourner l'Atelier depuis
+à l'étape D (installer). Les étapes A à C ne servent que pour faire tourner Omni-Romancier depuis
 ses fichiers, sur l'ordinateur.*
 
-L'Atelier a besoin, **la toute première fois**, d'un petit « serveur » sur l'ordinateur (c'est une
+Omni-Romancier a besoin, **la toute première fois**, d'un petit « serveur » sur l'ordinateur (c'est une
 règle des navigateurs). Il se lance avec une commande tapée dans un **terminal** : une fenêtre où
 l'on donne des instructions en tapant du texte au lieu de cliquer.
 Une fois l'application installée, **plus besoin du serveur** pour écrire.
 
 ### Étape A — Récupérer les fichiers (sans terminal)
 
-1. Aller sur https://github.com/FerrusDantioch/atelier-romans
+1. Aller sur https://github.com/FerrusDantioch/omni-romancier
 2. Cliquer sur le bouton vert **« Code »**, puis **« Download ZIP »**.
 3. Décompresser le ZIP :
    - **Windows** : clic droit sur le fichier → **« Extraire tout… »**
    - **Mac** : double-clic sur le fichier
-4. On obtient un dossier `atelier-romans-main`.
+4. On obtient un dossier `omni-romancier-main`.
 
 ### Étape B — Lancer le petit serveur
 
 **Sur Windows**
 
-1. Ouvrir le dossier `atelier-romans-main` dans l'Explorateur de fichiers
+1. Ouvrir le dossier `omni-romancier-main` dans l'Explorateur de fichiers
    (on doit voir `index.html` dedans).
 2. Cliquer dans la **barre d'adresse** en haut de la fenêtre (là où s'affiche le chemin du dossier).
 3. Effacer ce qui est écrit, taper `cmd` puis **Entrée** : une fenêtre noire s'ouvre,
@@ -81,7 +81,7 @@ Une fois l'application installée, **plus besoin du serveur** pour écrire.
 
 1. Ouvrir l'application **Terminal** : `Cmd + Espace`, taper `Terminal`, **Entrée**.
 2. Taper `cd` suivi d'un **espace** (sans appuyer sur Entrée).
-3. **Glisser le dossier** `atelier-romans-main` depuis le Finder dans la fenêtre du Terminal :
+3. **Glisser le dossier** `omni-romancier-main` depuis le Finder dans la fenêtre du Terminal :
    son chemin s'écrit tout seul. Appuyer sur **Entrée**.
 4. Copier-coller cette commande, puis **Entrée** :
 
@@ -91,7 +91,7 @@ Une fois l'application installée, **plus besoin du serveur** pour écrire.
 
    Si le Mac propose d'installer des « outils de développement », accepter, puis relancer la commande.
 
-### Étape C — Ouvrir l'Atelier
+### Étape C — Ouvrir Omni-Romancier
 
 - Le terminal affiche une ligne du type `Serving HTTP on … port 8000` : c'est bon signe.
 - Ouvrir **Chrome ou Edge** à l'adresse **http://localhost:8000**
@@ -106,13 +106,13 @@ Une fois l'application installée, **plus besoin du serveur** pour écrire.
 - Dans la Bibliothèque, cliquer sur **« Installer l'application »**. L'encart apparaît quand le
   navigateur le permet, parfois seulement après quelques instants passés sur la page.
   Autre possibilité : la petite icône d'installation à droite de la barre d'adresse, ou le menu du
-  navigateur (⋮) → **« Installer L'Atelier »** (Edge : « Applications » → « Installer ce site en tant qu'application »).
-- L'Atelier a maintenant **son icône** (bureau, menu Démarrer ou Launchpad) et **sa propre fenêtre**.
+  navigateur (⋮) → **« Installer Omni-Romancier »** (Edge : « Applications » → « Installer ce site en tant qu'application »).
+- Omni-Romancier a maintenant **son icône** (bureau, menu Démarrer ou Launchpad) et **sa propre fenêtre**.
 - On peut alors arrêter le serveur (`Ctrl + C` dans la fenêtre noire, ou la fermer).
 
 ## Au quotidien
 
-1. **Ouvrir l'Atelier** depuis son icône. Pas de serveur, pas de connexion nécessaires.
+1. **Ouvrir Omni-Romancier** depuis son icône. Pas de serveur, pas de connexion nécessaires.
 2. **Écrire** : tout s'enregistre tout seul, en continu.
 3. **Consulter une fiche** sans perdre le fil : `Ctrl+K`, quelques lettres, `Entrée`… et on continue d'écrire.
 4. **Exporter ses données** quand le rappel apparaît (ou une fois par semaine) : bouton
@@ -120,16 +120,16 @@ Une fois l'application installée, **plus besoin du serveur** pour écrire.
    (clé USB, cloud…). **C'est la seule copie hors de cet ordinateur.**
 5. Pour lire ou faire relire : **Exporter (PDF, ePub, Word)**, depuis la page d'écriture du roman.
 
-## Mettre à jour l'Atelier (nouvelle version)
+## Mettre à jour Omni-Romancier (nouvelle version)
 
 1. Retélécharger le ZIP (étape A) et lancer le serveur **depuis le nouveau dossier**, avec la même
    commande que d'habitude (étape B, ou `py serveur.py` si c'est elle qui marche chez vous), et le numéro `8000`.
-2. Ouvrir l'Atelier (son icône, ou http://localhost:8000) : il prend la nouvelle version tout seul,
+2. Ouvrir Omni-Romancier (son icône, ou http://localhost:8000) : il prend la nouvelle version tout seul,
    et la met en réserve pour fonctionner ensuite sans connexion.
 3. Attendre la ligne **« Prête à fonctionner sans connexion ✓ »** dans « À propos », puis arrêter le serveur.
 
 Les romans ne sont pas dans le dossier mais dans le navigateur : une mise à jour n'y touche pas.
-*(Pour les habitués de git : `git clone https://github.com/FerrusDantioch/atelier-romans.git`, puis `git pull`.)*
+*(Pour les habitués de git : `git clone https://github.com/FerrusDantioch/omni-romancier.git`, puis `git pull`.)*
 
 ## Si quelque chose ne va pas
 
@@ -139,7 +139,7 @@ Les romans ne sont pas dans le dossier mais dans le navigateur : une mise à jou
   - si le message apparaît alors que le serveur tourne (cela arrive sur certains Windows), arrêter le
     serveur (`Ctrl + C`) et le relancer avec la solution de secours : `py serveur.py`
     (Mac : `python3 serveur.py`).
-- **« L'Atelier est déjà ouvert ailleurs »** : l'application est ouverte dans un autre onglet ou une
+- **« Omni-Romancier est déjà ouvert ailleurs »** : l'application est ouverte dans un autre onglet ou une
   autre fenêtre (par exemple l'application installée **et** un onglet). Une seule page peut servir à
   la fois, sinon chacune effacerait le travail de l'autre. Fermez l'autre page — celle-ci s'ouvre alors
   toute seule — ou cliquez sur « Utiliser plutôt cette page » : l'autre enregistre tout et vous cède la place.
@@ -338,7 +338,7 @@ Choisissez **le roman entier**, **un chapitre** (dans la liste) ou **la scène o
 Dans tous les cas : le **texte rédigé** seulement (jamais les notes ni les fiches), l'*italique* et le
 **gras** mis en forme, les `* * *` (un séparateur est aussi placé entre deux scènes), une page de titre
 si la case est cochée, et un seul nom, le pseudonyme **Ferrus Dantioch** (auteur du fichier, et
-« Réalisé par Ferrus Dantioch » sur la page de titre). L'Atelier retient le type de fichier, le format
+« Réalisé par Ferrus Dantioch » sur la page de titre). Omni-Romancier retient le type de fichier, le format
 et la case « Page de titre » choisis la dernière fois.
 
 ### ePub et Word
@@ -401,14 +401,14 @@ Sur Mac, `Cmd` remplace `Ctrl` (pour remplacer, `Cmd+H` masquant le navigateur :
 - ⚠️ Si vous effacez les données de navigation du site, ou changez d'ordinateur ou de navigateur,
   vous ne retrouverez pas vos romans… sauf si vous les avez **exportés**.
 - **Exporter** : bouton « Exporter mes données » en bas de la Bibliothèque.
-  Un fichier `atelier-romans-sauvegarde-AAAA-MM-JJ-appareil.json` est téléchargé
+  Un fichier `omni-romancier-sauvegarde-AAAA-MM-JJ-appareil.json` est téléchargé
   (par exemple `…-2026-10-15-telephone-android.json`). Rangez-le en lieu sûr (clé USB, cloud…).
 - **Importer** : bouton « Importer mes données », puis choisir un fichier de sauvegarde.
-  L'Atelier montre ce que contient le fichier et ce qui changerait, puis propose :
+  Omni-Romancier montre ce que contient le fichier et ce qui changerait, puis propose :
   - **Fusionner** (conseillé pour un fichier venant d'un autre appareil) : voir ci-dessous ;
   - **Remplacer tout** : les données de cet appareil sont remplacées par celles du fichier.
   Pour une sauvegarde faite sur ce même appareil, seul « Remplacer » est proposé (c'est une restauration).
-- **Annuler le dernier import** : ce bouton (à côté d'« Importer ») remet l'Atelier exactement
+- **Annuler le dernier import** : ce bouton (à côté d'« Importer ») remet Omni-Romancier exactement
   dans son état d'avant le dernier import, fusion ou remplacement. Attention : ce qui a été écrit
   depuis cet import est retiré aussi. Rien n'est perdu pour autant : l'état d'avant l'annulation est
   gardé, et le bouton devient **« Revenir sur l'annulation »** (en cas d'erreur).
@@ -462,7 +462,7 @@ dans `assets/` (en gardant les mêmes noms) :
 | `icone-maskable-512.png` | icône carrée pleine (Android découpe lui-même la forme) |
 | `favicon.png` | petite icône de l'onglet |
 
-Après le remplacement : lancer le serveur et ouvrir l'Atelier une fois pour qu'il prenne les nouvelles
+Après le remplacement : lancer le serveur et ouvrir Omni-Romancier une fois pour qu'il prenne les nouvelles
 images (attendre la ligne ✓ dans « À propos » avant d'arrêter le serveur). L'icône de l'application déjà installée peut mettre un peu de temps à changer (la désinstaller
 puis la réinstaller la met à jour aussitôt ; les romans ne sont pas touchés).
 
@@ -488,19 +488,19 @@ rechercher et remplacer.)
 - La **coupure des mots** en fin de ligne dans le PDF dépend du navigateur (elle peut manquer).
 - **Sur téléphone** : testé en simulation (Chrome Android) ; l'iPhone et l'iPad (Safari) n'ont pas été testés.
 
-## L'Atelier en ligne (GitHub Pages)
+## Omni-Romancier en ligne (GitHub Pages)
 
-L'Atelier est publié à l'adresse **https://ferrusdantioch.github.io/atelier-romans/**.
+Omni-Romancier est publié à l'adresse **https://ferrusdantioch.github.io/omni-romancier/**.
 C'est la même application : elle s'installe, fonctionne sans connexion, et **les romans restent
 sur l'appareil** (rien n'est envoyé sur Internet). Quelqu'un d'autre qui ouvrirait l'adresse
-trouverait un Atelier vide. L'adresse est signalée aux moteurs de recherche comme à ne pas référencer.
+trouverait une bibliothèque vide. L'adresse est signalée aux moteurs de recherche comme à ne pas référencer.
 
 **Sur un téléphone Android** :
 1. Ouvrir l'adresse dans **Chrome**.
-2. Installer : l'encart « Installer l'Atelier » dans la Bibliothèque, ou le menu **⋮** →
+2. Installer : l'encart « Installer Omni-Romancier » dans la Bibliothèque, ou le menu **⋮** →
    **« Installer l'application »** (ou « Ajouter à l'écran d'accueil »).
 3. Dans « À propos », attendre la ligne **« Prête à fonctionner sans connexion ✓ »**.
-4. L'Atelier s'ouvre ensuite depuis son icône, même en mode avion.
+4. Omni-Romancier s'ouvre ensuite depuis son icône, même en mode avion.
 - Sans clavier, `Ctrl+K` est remplacé par le bouton **⌕** (barre d'outils ou panneau des fiches),
   et `Ctrl+F` par « ☰ Plan » → **« Rechercher et remplacer »**.
 - **PDF** : « ☰ Plan » → « Exporter (PDF, ePub, Word) », cocher PDF, puis « Préparer le PDF » : la fenêtre
@@ -515,14 +515,17 @@ prochaine ouverture avec une connexion (quelques minutes après l'envoi).
 n'apparaissent pas à l'adresse en ligne, ni ceux du téléphone sur l'ordinateur. Pour passer de
 l'un à l'autre : « Exporter mes données » d'un côté, puis « Importer mes données » de l'autre.
 
-**Une seule copie publiée** : ne publiez pas une seconde copie de l'Atelier (un essai, une
+**Une seule copie publiée** : ne publiez pas une seconde copie d'Omni-Romancier (un essai, une
 « fourche ») sous le même compte GitHub : elle serait à la même adresse de base et partagerait les
 mêmes romans, copies de secours et réglages que celle-ci.
 
-**Identité de l'application** : dans `manifest.json`, le champ `"id": "/atelier-romans/"` ne doit
+**Identité de l'application** : dans `manifest.json`, le champ `"id": "/omni-romancier/"` ne doit
 plus jamais changer. Chrome le lit à partir de la racine du site (`https://ferrusdantioch.github.io/`) :
-`"./"` aurait donné à l'Atelier l'identité de la racine, la même que d'autres applications du site.
+`"./"` aurait donné à Omni-Romancier l'identité de la racine, la même que d'autres applications du site.
 Et une application déjà installée dont l'`id` change devient, pour Chrome, une autre application.
+Seule exception (octobre 2026) : l'application s'appelait « L'Atelier » et vivait à `/atelier-romans/`.
+Le changement de nom a changé son adresse, donc son `id` : il faut la réinstaller depuis la nouvelle
+adresse. Les romans ne sont pas perdus (le nom de la base de données n'a pas changé).
 
 **Retirer la publication** : sur GitHub, dans le dépôt, **Settings → Pages → « Unpublish site »**
 (ou le demander). Les romans déjà écrits restent sur l'appareil, mais pensez à les exporter avant.
@@ -555,7 +558,7 @@ js/export-fichiers.js  l'export en ePub et en Word (.docx)
 js/zip.js           les archives ZIP (un ePub et un .docx en sont)
 js/fusion.js        la fusion des données de deux appareils
 js/annulation.js    Ctrl+Z en toute sécurité (n'annule que là où l'on écrit)
-js/onglets.js       une seule page de l'Atelier ouverte à la fois
+js/onglets.js       une seule page d'Omni-Romancier ouverte à la fois
 js/hors-ligne.js    le mode hors ligne et le bouton « Installer l'application »
 js/sauvegarde.js    les boutons d'export/import (fusion, annulation) et le rappel
 js/dialogues.js     les fenêtres de confirmation et les petits messages
@@ -566,7 +569,7 @@ assets/        logos et icônes
 
 ## Conception
 
-L'Atelier a été conçu par **Ferrus Dantioch** et **Claude**, l'assistant d'intelligence artificielle
+Omni-Romancier a été conçu par **Ferrus Dantioch** et **Claude**, l'assistant d'intelligence artificielle
 d'Anthropic : Ferrus Dantioch, créateur de l'Omni-système, en a imaginé l'idée, les besoins et
 l'apparence ; Claude en a écrit le code.
 (C'est aussi indiqué dans la page « À propos » de l'application.)

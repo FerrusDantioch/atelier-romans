@@ -111,7 +111,7 @@ export async function montrerFrise() {
     montrerVue("frise");
     $("vue-frise").scrollTop = 0;
   }
-  document.title = "Frise — " + etat.roman.titre + " — L'Atelier";
+  document.title = "Frise — " + etat.roman.titre + " — Omni-Romancier";
   afficherFrise();
   $("titre-frise").focus({ preventScroll: true });
 }
@@ -121,7 +121,7 @@ export async function revenirDeLaFrise() {
   const action = ensuite;
   oublierFrise();
   montrerVue("roman");
-  document.title = etat.roman.titre + " — L'Atelier";
+  document.title = etat.roman.titre + " — Omni-Romancier";
   afficherPanneau();      // l'ordre des événements a pu changer
   // Curseur et défilement du texte, comme avant ; le clavier y retourne, sauf s'il doit aller dans une fiche
   retrouverPosition({ focus: !action });

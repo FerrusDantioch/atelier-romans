@@ -2,7 +2,7 @@
 // HORS LIGNE ET INSTALLATION
 // - active le service worker (sw.js) : l'application fonctionne sans connexion,
 //   et même sans le petit serveur une fois qu'elle a été ouverte une première fois ;
-// - propose d'installer l'Atelier comme une application (icône, fenêtre à part).
+// - propose d'installer Omni-Romancier comme une application (icône, fenêtre à part).
 // =====================================================================
 
 import { informer } from "./dialogues.js";
@@ -24,7 +24,7 @@ export function initialiserHorsLigne() {
   window.addEventListener("appinstalled", () => {
     invitation = null;
     majInstallation();
-    informer("L'Atelier est installé : vous le retrouverez parmi vos applications.");
+    informer("Omni-Romancier est installé : vous le retrouverez parmi vos applications.");
   });
   $("bouton-installer").addEventListener("click", installer);
   majInstallation();
@@ -45,8 +45,8 @@ async function activer() {
     if (!complete) {
       const local = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
       ecrire("⚠ Pas encore prête à fonctionner sans connexion : " + erreur + (local
-        ? ". Gardez le serveur lancé et rouvrez l'Atelier (voir LISEZ-MOI.md)."
-        : ". Rouvrez l'Atelier avec une connexion à Internet pour terminer la mise en réserve."));
+        ? ". Gardez le serveur lancé et rouvrez Omni-Romancier (voir LISEZ-MOI.md)."
+        : ". Rouvrez Omni-Romancier avec une connexion à Internet pour terminer la mise en réserve."));
     } else if (erreur && erreur !== "le serveur ne répond pas") {
       ecrire("Prête à fonctionner sans connexion ✓ (avec la copie précédente : la nouvelle n'a pas pu être "
         + "mise en réserve, " + erreur + ")");
@@ -54,7 +54,7 @@ async function activer() {
       ecrire("Prête à fonctionner sans connexion ✓");
     }
   } catch (erreur) {
-    ecrire("⚠ Le mode hors ligne n'a pas pu s'activer (" + erreur.message + "). Rouvrez l'Atelier pour réessayer.");
+    ecrire("⚠ Le mode hors ligne n'a pas pu s'activer (" + erreur.message + "). Rouvrez Omni-Romancier pour réessayer.");
   }
 }
 
@@ -87,6 +87,6 @@ async function installer() {
   try {
     await proposition.prompt();              // la fenêtre d'installation du navigateur
   } catch {
-    informer("Utilisez plutôt le menu du navigateur (⋮) → « Installer L'Atelier ».");
+    informer("Utilisez plutôt le menu du navigateur (⋮) → « Installer Omni-Romancier ».");
   }
 }

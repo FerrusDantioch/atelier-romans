@@ -1,5 +1,5 @@
 # =====================================================================
-# PETIT SERVEUR DE L'ATELIER (solution de secours)
+# PETIT SERVEUR D'OMNI-ROMANCIER (solution de secours)
 # Fait la même chose que « py -m http.server 8000 », avec deux précautions :
 #  - il annonce toujours le bon type de chaque fichier (certains ordinateurs Windows
 #    présentent les fichiers .js comme du simple texte, ce qui empêche l'application
@@ -33,16 +33,16 @@ class Gestionnaire(http.server.SimpleHTTPRequestHandler):
 
 
 if __name__ == "__main__":
-    os.chdir(os.path.dirname(os.path.abspath(__file__)))  # sert le dossier de l'Atelier, d'où qu'on lance
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))  # sert le dossier d'Omni-Romancier, d'où qu'on lance
     try:
         serveur = http.server.ThreadingHTTPServer(("localhost", PORT), Gestionnaire)
     except OSError:
-        # Le port est déjà pris : le plus souvent, l'Atelier est déjà servi par une autre fenêtre
-        print(f"Le port {PORT} est déjà utilisé : l'Atelier est sans doute déjà lancé dans une autre fenêtre.")
+        # Le port est déjà pris : le plus souvent, Omni-Romancier est déjà servi par une autre fenêtre
+        print(f"Le port {PORT} est déjà utilisé : Omni-Romancier est sans doute déjà lancé dans une autre fenêtre.")
         print(f"Ouvrez simplement http://localhost:{PORT} (ou fermez l'autre fenêtre, puis relancez).")
         raise SystemExit(1)
     with serveur:
-        print(f"L'Atelier est servi sur http://localhost:{PORT}")
+        print(f"Omni-Romancier est servi sur http://localhost:{PORT}")
         print("Laissez cette fenêtre ouverte pendant l'utilisation (Ctrl+C pour arrêter).")
         try:
             serveur.serve_forever()

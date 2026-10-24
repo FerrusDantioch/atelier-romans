@@ -1,8 +1,8 @@
 {
-  "name": "L'Atelier — Omni-système",
-  "short_name": "L'Atelier",
-  "description": "Atelier d'écriture de romans tirés des parties de l'Omni-système. Fonctionne hors ligne.",
-  "id": "/atelier-romans/",
+  "name": "Omni-Romancier",
+  "short_name": "Omni-Romancier",
+  "description": "Écriture de romans tirés des parties de l'Omni-système. Fonctionne hors ligne.",
+  "id": "/omni-romancier/",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

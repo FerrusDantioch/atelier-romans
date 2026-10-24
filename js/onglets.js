@@ -1,6 +1,6 @@
 // =====================================================================
 // UNE SEULE PAGE À LA FOIS
-// Si l'Atelier était ouvert dans deux onglets (ou dans l'application installée
+// Si Omni-Romancier était ouvert dans deux onglets (ou dans l'application installée
 // ET dans le navigateur), chaque page enregistrerait sa propre version du texte
 // et effacerait le travail de l'autre, sans prévenir.
 // Un « verrou » du navigateur l'empêche : la première page travaille, les

@@ -317,7 +317,7 @@ ${lien("rIdPiedVide", OFFICE + "footer", "footer2.xml")}
 <dcterms:modified xsi:type="dcterms:W3CDTF">${dateIso(date)}</dcterms:modified>
 </cp:coreProperties>
 `;
-  const application = `${ENTETE_XML}<Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties"><Application>L'Atelier — Omni-système</Application></Properties>
+  const application = `${ENTETE_XML}<Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties"><Application>Omni-Romancier</Application></Properties>
 `;
   const fichier = creerZip([
     { nom: "[Content_Types].xml", contenu: typesDeContenu },

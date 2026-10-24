@@ -16,6 +16,8 @@
 // Chaque suppression laisse un « faire-part » dans les réglages : supprime:<tiroir>:<id> = date.
 // =====================================================================
 
+// (Nom hérité de l'ancien nom de l'application, « L'Atelier » : ne jamais le changer,
+// sinon les romans déjà écrits ne seraient plus retrouvés.)
 const NOM_BASE = "atelier-romans";
 const VERSION_BASE = 1;
 export const MAGASINS = ["romans", "chapitres", "scenes", "fiches", "reglages"];
@@ -48,6 +50,7 @@ export function dateMaj(e) {
 }
 
 // Format du fichier de sauvegarde (pour le reconnaître à l'import)
+// (Ancien nom gardé exprès : les sauvegardes déjà faites doivent rester lisibles.)
 export const FORMAT_EXPORT = "atelier-romans";
 export const VERSION_EXPORT = 1;
 
@@ -64,13 +67,13 @@ function attendre(demande) {
 function finTransaction(tx) {
   return new Promise((ok, echec) => {
     tx.oncomplete = () => ok();
-    tx.onerror = () => echec(tx.erreurAtelier || tx.error);
-    tx.onabort = () => echec(tx.erreurAtelier || tx.error || new Error("Écriture annulée"));
+    tx.onerror = () => echec(tx.erreurEcriture || tx.error);
+    tx.onabort = () => echec(tx.erreurEcriture || tx.error || new Error("Écriture annulée"));
   });
 }
 // Annule toute la transaction (rien n'est écrit) en gardant la raison de l'échec
 function abandonner(tx, erreur) {
-  tx.erreurAtelier = erreur;
+  tx.erreurEcriture = erreur;
   try { tx.abort(); } catch { /* déjà terminée */ }
 }
 
@@ -104,7 +107,7 @@ export function ouvrirBase() {
       ok(base);
     };
     demande.onerror = () => echec(demande.error);
-    demande.onblocked = () => echec(new Error("Fermez les autres onglets de l'Atelier, puis rechargez la page."));
+    demande.onblocked = () => echec(new Error("Fermez les autres onglets d'Omni-Romancier, puis rechargez la page."));
   });
 }
 
@@ -387,13 +390,13 @@ function defautElement(nom, e) {
   return null;
 }
 
-// Vérifie qu'un objet lu dans un fichier est bien une sauvegarde de l'Atelier.
+// Vérifie qu'un objet lu dans un fichier est bien une sauvegarde d'Omni-Romancier.
 // Renvoie un message d'erreur clair, ou null si tout va bien.
 export function verifierSauvegarde(objet) {
   if (!objet || typeof objet !== "object") return "Ce fichier ne contient pas de données lisibles.";
-  if (objet.format !== FORMAT_EXPORT) return "Ce fichier n'est pas une sauvegarde de l'Atelier.";
+  if (objet.format !== FORMAT_EXPORT) return "Ce fichier n'est pas une sauvegarde d'Omni-Romancier.";
   if (typeof objet.version !== "number" || objet.version > VERSION_EXPORT) {
-    return "Cette sauvegarde vient d'une version plus récente de l'Atelier. Mettez l'application à jour.";
+    return "Cette sauvegarde vient d'une version plus récente d'Omni-Romancier. Mettez l'application à jour.";
   }
   const d = objet.donnees;
   if (!d || typeof d !== "object") return "La sauvegarde est incomplète (aucune donnée).";

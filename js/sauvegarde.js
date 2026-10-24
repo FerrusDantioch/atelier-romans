@@ -47,9 +47,9 @@ export async function exporter() {
     const sauvegarde = await db.exporterTout(maintenant, appareil);
     const texte = JSON.stringify(sauvegarde, null, 2); // indenté : lisible si on l'ouvre
     const fichier = new Blob([texte], { type: "application/json" });
-    // Le nom dit la date et l'appareil : atelier-romans-sauvegarde-2026-10-15-telephone-android.json
+    // Le nom dit la date et l'appareil : omni-romancier-sauvegarde-2026-10-15-telephone-android.json
     const suffixe = appareil.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase().replace(/[^a-z0-9]+/g, "-");
-    const lien = el("a", { href: URL.createObjectURL(fichier), download: `atelier-romans-sauvegarde-${dateFichier()}-${suffixe}.json` });
+    const lien = el("a", { href: URL.createObjectURL(fichier), download: `omni-romancier-sauvegarde-${dateFichier()}-${suffixe}.json` });
     document.body.append(lien);
     lien.click();      // déclenche le téléchargement
     lien.remove();
@@ -76,7 +76,7 @@ export async function importer(fichier) {
   try {
     sauvegarde = JSON.parse(await fichier.text());
   } catch {
-    informer("Ce fichier est illisible : ce n'est pas une sauvegarde de l'Atelier.", { erreur: true });
+    informer("Ce fichier est illisible : ce n'est pas une sauvegarde d'Omni-Romancier.", { erreur: true });
     return;
   }
   const erreur = db.verifierSauvegarde(sauvegarde);
@@ -219,8 +219,8 @@ async function annulerDernierImport() {
     titre: retour ? "Revenir sur l'annulation ?" : "Annuler le dernier import ?",
     corps: [
       el("p", {}, retour
-        ? `L'Atelier revient exactement à son état d'avant l'annulation du ${dateHeure(info.quand)}.`
-        : `L'Atelier revient exactement à son état d'avant l'import du ${dateHeure(info.quand)}.`),
+        ? `Omni-Romancier revient exactement à son état d'avant l'annulation du ${dateHeure(info.quand)}.`
+        : `Omni-Romancier revient exactement à son état d'avant l'import du ${dateHeure(info.quand)}.`),
       el("p", { class: "avertissement" }, retour
         ? "Ce qui a été écrit ou modifié depuis cette annulation sera retiré aussi."
         : "Ce qui a été écrit ou modifié depuis cet import sera retiré aussi."),
@@ -238,7 +238,7 @@ async function annulerDernierImport() {
     informer("L'import n'a pas pu être annulé : " + e.message, { erreur: true });
     return;
   }
-  informer("C'est fait : l'Atelier est revenu à son état d'avant. (Changement d'avis ? Le même bouton y revient.)",
+  informer("C'est fait : Omni-Romancier est revenu à son état d'avant. (Changement d'avis ? Le même bouton y revient.)",
     { duree: 8000 });
   await apresImport();
   mettreAJourEtat();

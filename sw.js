@@ -2,22 +2,22 @@
 // SERVICE WORKER : l'application fonctionne sans connexion (et sans serveur)
 //
 // Une « réserve » du navigateur garde une copie complète de l'application.
-//   - À chaque ouverture de l'Atelier, la page demande de rafraîchir cette réserve :
+//   - À chaque ouverture d'Omni-Romancier, la page demande de rafraîchir cette réserve :
 //     tous les fichiers sont retéléchargés et vérifiés, puis enregistrés ensemble.
-//     S'il en manque un, ou si ce n'est pas l'Atelier qui répond, on garde l'ancienne copie.
+//     S'il en manque un, ou si ce n'est pas Omni-Romancier qui répond, on garde l'ancienne copie.
 //   - Quand un fichier de l'application est demandé : version fraîche si le serveur répond
 //     (une modification, par exemple de css/theme.css, se voit tout de suite),
 //     sinon la copie en réserve (l'application démarre même sans serveur).
-// Seuls les fichiers de l'Atelier sont concernés : un autre site ouvert à la même adresse
+// Seuls les fichiers d'Omni-Romancier sont concernés : un autre site ouvert à la même adresse
 // (localhost:8000) passe sans être touché, et ne peut rien remplacer dans la réserve.
 //
 // Les romans, eux, ne sont jamais ici : ils sont dans la base IndexedDB.
 // =====================================================================
 
-const RESERVE = "atelier-romans";
+const RESERVE = "omni-romancier";
 const DELAI_RESEAU = 4000;   // au-delà (connexion très lente), on prend la copie en réserve
 const PAUSE_RESEAU = 15000;  // serveur injoignable : pendant ce temps, on ne le redemande plus
-const MARQUE = 'id="vue-bibliotheque"'; // preuve que la page reçue est bien celle de l'Atelier
+const MARQUE = 'id="vue-bibliotheque"'; // preuve que la page reçue est bien celle d'Omni-Romancier
 
 // Tous les fichiers de l'application (à compléter si l'on en ajoute un)
 const FICHIERS = [
@@ -82,12 +82,13 @@ self.addEventListener("install", (e) => {
   e.waitUntil(actualiser().catch(() => {}).then(() => self.skipWaiting()));
 });
 
-// Activation : on supprime les éventuelles anciennes réserves de l'Atelier (seulement les siennes :
+// Activation : on supprime les éventuelles anciennes réserves d'Omni-Romancier, y compris celles
+// de l'époque où l'application s'appelait « L'Atelier » (noms en « atelier… ») (seulement les siennes :
 // d'autres sites publiés à la même adresse, par exemple sur GitHub Pages, peuvent avoir les leurs),
 // et on prend en charge la page ouverte
 self.addEventListener("activate", (e) => {
   e.waitUntil((async () => {
-    for (const nom of await caches.keys()) if (nom !== RESERVE && nom.startsWith("atelier")) await caches.delete(nom);
+    for (const nom of await caches.keys()) if (nom !== RESERVE && (nom.startsWith("atelier") || nom.startsWith("omni-romancier"))) await caches.delete(nom);
     await self.clients.claim();
   })());
 });
@@ -124,7 +125,7 @@ async function telecharger(f) {
   if (!reponse.ok || reponse.redirected) throw new Error("fichier introuvable : " + f);
   reponse = await avecLeBonType(reponse, adresse(f));
   if (f === "index.html" && !(await reponse.clone().text()).includes(MARQUE)) {
-    throw new Error("la page reçue n'est pas l'Atelier (le serveur est-il lancé depuis le bon dossier ?)");
+    throw new Error("la page reçue n'est pas Omni-Romancier (le serveur est-il lancé depuis le bon dossier ?)");
   }
   // Le fichier est reçu EN ENTIER avant d'aller plus loin : la réserve n'est touchée qu'une fois tous les
   // fichiers arrivés (une connexion coupée au milieu d'un fichier ne laisse pas une réserve à moitié neuve)
@@ -149,7 +150,7 @@ self.addEventListener("fetch", (e) => {
   url.hash = "";
   const page = demande.mode === "navigate";
   const cle = page && url.href === ACCUEIL ? PAGE : url.href;
-  // Ce n'est pas un fichier de l'Atelier : le navigateur s'en occupe seul
+  // Ce n'est pas un fichier d'Omni-Romancier : le navigateur s'en occupe seul
   if (page ? cle !== PAGE : !ADRESSES.has(cle)) return;
   e.respondWith(repondre(demande, cle));
 });

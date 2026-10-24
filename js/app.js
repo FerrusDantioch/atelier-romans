@@ -29,7 +29,7 @@ import { initialiserFrise, montrerFrise, revenirDeLaFrise, oublierFrise, friseAf
 export const VERSION = "1.8.0";
 
 // Tous les fichiers de l'application se sont chargés ensemble (voir alerteDemarrage dans index.html)
-window.atelierCharge = true;
+window.applicationChargee = true;
 
 // Liste des pages (« vues ») de l'application
 const VUES = ["bibliotheque", "roman", "frise", "apropos"];
@@ -85,7 +85,7 @@ async function suivreAdresse() {
   fermerRoman();
   document.body.classList.remove("mode-ecriture");
   colorerUnivers("autre");
-  document.title = "L'Atelier — Omni-système";
+  document.title = "Omni-Romancier";
   if (page === "apropos") {
     montrer("apropos");
   } else {
@@ -108,7 +108,7 @@ async function ouvrirRoman(romanId) {
     return false;
   }
   colorerUnivers(roman.univers);
-  document.title = roman.titre + " — L'Atelier";
+  document.title = roman.titre + " — Omni-Romancier";
   document.body.classList.add("mode-ecriture");
   montrer("roman");
   afficherPlan();
